@@ -32,3 +32,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Documentos de contexto del proyecto (solo en la raíz; no se versionan)
+/*.pdf
