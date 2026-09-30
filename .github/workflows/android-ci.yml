@@ -1,0 +1,17 @@
+name: Android CI
+on:
+  pull_request:
+    paths: ["app-movil/**"]
+  push:
+    branches: [main]
+    paths: ["app-movil/**"]
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: "temurin", java-version: "17" }
+      - name: Build y pruebas unitarias
+        working-directory: app-movil
+        run: ./gradlew build testDebugUnitTest
