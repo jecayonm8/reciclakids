@@ -63,5 +63,12 @@ object ReciclaKidsColors {
     val onBotonJugar = Color(0xFF4A3308)
     val botonConfirmar = Color(0xFF2E6B45)
     val botonConfirmarSombra = Color(0xFF1E4A2F)
+    val botonSecundarioSombra = Color(0xFFBFD4D9)
     val tintaNino = Color(0xFF0C3A46)
+    val tintaSobreAgua = Color(0xFF04323F)
+    val onHalo = Color(0xFF00323F)
+
+    // Sobre ilustración el texto siempre va en panel semiopaco, nunca directo sobre el acuario.
+    val panelNino = Color(0xEBFFFFFF)
+    val insigniaBorde = botonJugar
 }
