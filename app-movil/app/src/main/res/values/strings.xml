@@ -28,4 +28,90 @@
     <string name="conexion_guardado_aqui">Guardado aquí</string>
     <string name="conexion_guardando">Guardando…</string>
     <string name="conexion_guardado">¡Guardado!</string>
+
+    <!-- P1 · Acceso común -->
+    <string name="comun_atras">Volver</string>
+    <string name="comun_cerrar">Cerrar</string>
+    <string name="comun_volver_inicio">Volver al inicio</string>
+    <string name="error_sin_conexion">No pudimos conectarnos. Revisa tu internet e intenta de nuevo.</string>
+    <string name="campo_correo">Correo</string>
+    <string name="campo_contrasena">Contraseña</string>
+    <string name="campo_mostrar_contrasena">Mostrar contraseña</string>
+    <string name="campo_ocultar_contrasena">Ocultar contraseña</string>
+    <string name="error_campo_obligatorio">Completa este campo</string>
+    <string name="error_correo">Escribe un correo válido</string>
+    <string name="error_contrasena_corta">Debe tener al menos 8 caracteres</string>
+    <string name="error_correo_en_uso">Ya existe una cuenta con ese correo</string>
+    <string name="paso_de">Paso %1$d de %2$d</string>
+
+    <!-- UI-01 Bienvenida -->
+    <string name="splash_cargando">Cargando el acuario…</string>
+    <string name="splash_descripcion">ReciclaKids. Toca la pantalla para continuar</string>
+
+    <!-- UI-02 Selector de modo y puerta para adultos -->
+    <string name="selector_jugar">¡A jugar!</string>
+    <string name="selector_adultos">Adultos</string>
+    <string name="puerta_titulo">Puerta para adultos</string>
+    <string name="puerta_descripcion">Esta zona es para docentes y acudientes.</string>
+    <string name="puerta_mantener">Mantén presionado 3 s</string>
+    <string name="puerta_mantener_boton">Mantén presionado tres segundos para entrar</string>
+    <string name="puerta_mantener_reposo">Mantén el círculo presionado</string>
+    <string name="puerta_mantener_progreso">Sigue presionando…</string>
+    <string name="puerta_mantener_listo">¡Listo! Abriendo…</string>
+    <string name="puerta_suma_titulo">O resuelve la suma</string>
+    <string name="puerta_suma">%1$d + %2$d = ?</string>
+    <string name="puerta_suma_reposo">Toca la respuesta correcta</string>
+    <string name="puerta_suma_mal">No es esa, intenta de nuevo</string>
+    <string name="puerta_suma_bien">¡Correcto! Abriendo…</string>
+
+    <!-- UI-03 Inicio de sesión -->
+    <string name="login_encabezado">Entra con tu correo. La app abre tu modo: &lt;b&gt;Docente&lt;/b&gt; o &lt;b&gt;Acudiente&lt;/b&gt;.</string>
+    <string name="login_titulo">Inicia sesión</string>
+    <string name="login_olvidaste">¿Olvidaste tu contraseña?</string>
+    <string name="login_entrar">Entrar</string>
+    <string name="login_sin_cuenta">¿No tienes cuenta?</string>
+    <string name="login_crear_cuenta">Crear cuenta</string>
+    <string name="login_error_credenciales">Correo o contraseña incorrectos</string>
+    <string name="login_cuenta_creada">Cuenta creada. Ya puedes iniciar sesión.</string>
+
+    <!-- UI-04 / UI-05 Registro -->
+    <string name="registro_titulo">Crear cuenta</string>
+    <string name="registro_rol_docente">Docente</string>
+    <string name="registro_rol_acudiente">Acudiente</string>
+    <string name="registro_nombre_apellido">Nombre y apellido</string>
+    <string name="registro_correo_institucional">Correo institucional</string>
+    <string name="registro_jardin">Jardín infantil</string>
+    <string name="registro_grupo">Grupo a cargo</string>
+    <string name="registro_terminos">Acepto los términos y la política de tratamiento de datos.</string>
+    <string name="registro_terminos_enlace">política de tratamiento de datos</string>
+    <string name="registro_crear_docente">Crear cuenta de docente</string>
+    <string name="registro_tu_nombre">Tu nombre</string>
+    <string name="registro_codigo_vinculacion">Código de vinculación</string>
+    <string name="registro_codigo_ayuda">Te lo entrega la docente. Solo te vincula a ese niño o niña.</string>
+    <string name="registro_continuar">Continuar</string>
+
+    <!-- UI-06 Recuperar contraseña -->
+    <string name="recuperar_titulo">Recuperar contraseña</string>
+    <string name="recuperar_texto">Escribe el correo de tu cuenta y te enviamos un enlace para crear una contraseña nueva. Vence en 30 minutos.</string>
+    <string name="recuperar_enviar">Enviar enlace</string>
+    <string name="recuperar_enviado">Si ese correo tiene cuenta, ya te llegó el enlace. Revisa también la bandeja de spam.</string>
+
+    <!-- UI-07 Autorización de datos del menor (Ley 1581 de 2012) -->
+    <string name="autorizacion_titulo">Autorización</string>
+    <string name="autorizacion_encabezado">Datos de tu hijo o hija</string>
+    <string name="autorizacion_texto">Para mostrarte su progreso necesitamos tu autorización. Guardamos solo su &lt;b&gt;nombre y la inicial del apellido&lt;/b&gt;, su avatar y los resultados. No pedimos documento, dirección, fotos ni ubicación.</string>
+    <string name="autorizacion_punto_1">Solo tú y la docente del grupo ven esos datos.</string>
+    <string name="autorizacion_punto_2">Puedes retirar la autorización cuando quieras.</string>
+    <string name="autorizacion_punto_3">No se comparten con terceros ni se usan para publicidad.</string>
+    <string name="autorizacion_politica">Leer la política completa (Ley 1581 de 2012)</string>
+    <string name="autorizacion_casilla">Autorizo el tratamiento de los datos personales de mi hijo o hija para el uso de ReciclaKids.</string>
+    <string name="autorizacion_crear">Crear cuenta</string>
+    <string name="autorizacion_nota">Sin esta autorización no podemos crear la cuenta.</string>
+
+    <!-- Destinos que todavía no existen -->
+    <string name="pendiente_titulo">En construcción</string>
+    <string name="pendiente_nino">Modo Niño: sigue el código del reto (UI-08).</string>
+    <string name="pendiente_docente">Modo Docente: sigue el tablero de inicio (UI-21).</string>
+    <string name="pendiente_padres">Modo Padres: sigue el inicio (UI-29).</string>
+    <string name="pendiente_politica">Política de tratamiento de datos: el texto legal está pendiente.</string>
 </resources>
