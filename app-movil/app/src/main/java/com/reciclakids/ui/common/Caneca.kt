@@ -1,4 +1,4 @@
-package com.reciclakids.ui.juego
+package com.reciclakids.ui.common
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes

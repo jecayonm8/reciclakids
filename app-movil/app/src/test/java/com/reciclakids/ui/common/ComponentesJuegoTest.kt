@@ -1,4 +1,4 @@
-package com.reciclakids.ui.juego
+package com.reciclakids.ui.common
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.getValue

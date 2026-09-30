@@ -1,4 +1,4 @@
-package com.reciclakids.ui.juego
+package com.reciclakids.ui.common
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
