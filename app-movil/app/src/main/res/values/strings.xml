@@ -1,3 +1,31 @@
 <resources>
     <string name="app_name">ReciclaKids</string>
+
+    <!-- Canecas (Resolución 2184 de 2019) -->
+    <string name="caneca_blanca">Blanca</string>
+    <string name="caneca_negra">Negra</string>
+    <string name="caneca_verde">Verde</string>
+    <string name="caneca_blanca_descripcion">Caneca blanca: aprovechables</string>
+    <string name="caneca_negra_descripcion">Caneca negra: no aprovechables</string>
+    <string name="caneca_verde_descripcion">Caneca verde: orgánicos</string>
+
+    <!-- Código del reto -->
+    <string name="teclado_borrar">Borrar</string>
+    <string name="teclado_entrar">Entrar</string>
+    <string name="codigo_descripcion">Código del reto: %1$s</string>
+    <string name="codigo_vacio">Código del reto sin escribir</string>
+
+    <!-- Juego -->
+    <string name="racha">racha</string>
+    <string name="racha_doble">×2</string>
+    <string name="racha_descripcion">Racha de %1$d</string>
+    <string name="racha_doble_descripcion">Racha de %1$d, burbujas dobles</string>
+    <string name="insignia_ganada_descripcion">Insignia ganada: %1$s. %2$s</string>
+    <string name="insignia_pendiente_descripcion">Insignia por descubrir: %1$s. %2$s</string>
+
+    <!-- Estado de conexión del Modo Niño: nunca se muestra como error -->
+    <string name="conexion_conectado">Conectado</string>
+    <string name="conexion_guardado_aqui">Guardado aquí</string>
+    <string name="conexion_guardando">Guardando…</string>
+    <string name="conexion_guardado">¡Guardado!</string>
 </resources>
