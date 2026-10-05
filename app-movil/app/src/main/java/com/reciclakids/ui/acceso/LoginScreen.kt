@@ -41,6 +41,7 @@ import com.reciclakids.R
 import com.reciclakids.ui.theme.BalooDos
 import com.reciclakids.ui.theme.Nunito
 import com.reciclakids.ui.theme.ReciclaKidsTheme
+import com.reciclakids.util.correoValido
 
 /** Por qué no se pudo iniciar sesión. */
 enum class ErrorLogin { CredencialesInvalidas, SinConexion }

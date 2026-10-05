@@ -24,9 +24,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
-import com.reciclakids.ui.juego.EstiloMarcador
-import com.reciclakids.ui.juego.MarcadorIlustracion
+import com.reciclakids.ui.common.EstiloMarcador
+import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.theme.ReciclaKidsTheme
+import com.reciclakids.util.correoValido
 
 /**
  * UI-06 Recuperar contraseña. El aviso de envío es el mismo exista o no la cuenta, para no

@@ -1,4 +1,4 @@
-package com.reciclakids.ui.comun
+package com.reciclakids.ui.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

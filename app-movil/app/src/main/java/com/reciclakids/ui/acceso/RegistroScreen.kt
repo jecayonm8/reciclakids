@@ -20,7 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,41 +41,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
-import com.reciclakids.datos.acceso.RegistroAcudiente
-import com.reciclakids.datos.acceso.RegistroDocente
-import com.reciclakids.datos.acceso.RolAdulto
+import com.reciclakids.model.RolAdulto
 import com.reciclakids.ui.theme.ReciclaKidsTheme
-
-/** Campos del registro de docente (UI-04). La aceptación de términos nunca arranca marcada. */
-@Stable
-class FormularioDocente {
-    var nombre by mutableStateOf("")
-    var correo by mutableStateOf("")
-    var jardin by mutableStateOf("")
-    var grupo by mutableStateOf("")
-    var contrasena by mutableStateOf("")
-    var aceptaTerminos by mutableStateOf(false)
-
-    val completo: Boolean
-        get() = nombre.isNotBlank() && correoValido(correo) && jardin.isNotBlank() && grupo.isNotBlank() &&
-            contrasenaValida(contrasena)
-
-    fun aRegistro() = RegistroDocente(nombre.trim(), correo.trim(), jardin.trim(), grupo.trim(), contrasena)
-}
-
-/** Campos del registro de acudiente, paso 1 de 2 (UI-05). */
-@Stable
-class FormularioAcudiente {
-    var nombre by mutableStateOf("")
-    var correo by mutableStateOf("")
-    var contrasena by mutableStateOf("")
-    var codigoVinculacion by mutableStateOf("")
-
-    val completo: Boolean
-        get() = nombre.isNotBlank() && correoValido(correo) && contrasenaValida(contrasena) && codigoVinculacion.isNotBlank()
-
-    fun aRegistro() = RegistroAcudiente(nombre.trim(), correo.trim(), contrasena, codigoVinculacion.trim())
-}
+import com.reciclakids.util.contrasenaValida
+import com.reciclakids.util.correoValido
+import com.reciclakids.viewmodel.FormularioAcudiente
+import com.reciclakids.viewmodel.FormularioDocente
 
 /** Por qué no se pudo crear la cuenta. */
 enum class ErrorRegistro { CorreoEnUso, SinConexion }

@@ -8,7 +8,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -16,14 +15,14 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.reciclakids.R
-import com.reciclakids.datos.acceso.CuentaAdulto
-import com.reciclakids.datos.acceso.ResultadoRegistro
-import com.reciclakids.datos.acceso.ResultadoSesion
-import com.reciclakids.datos.acceso.RolAdulto
-import com.reciclakids.datos.acceso.ServicioAcceso
-import com.reciclakids.ui.comun.PantallaPendiente
-import com.reciclakids.ui.comun.rememberHayConexion
-import com.reciclakids.ui.juego.EstadoConexion
+import com.reciclakids.model.CuentaAdulto
+import com.reciclakids.network.ResultadoRegistro
+import com.reciclakids.network.ResultadoSesion
+import com.reciclakids.network.ServicioAcceso
+import com.reciclakids.ui.common.EstadoConexion
+import com.reciclakids.ui.common.PantallaPendiente
+import com.reciclakids.ui.common.rememberHayConexion
+import com.reciclakids.viewmodel.RegistroViewModel
 import kotlinx.coroutines.launch
 
 /** Rutas del proceso P1 · Acceso común (UI-01 a UI-07). */
@@ -43,16 +42,6 @@ object RutasAcceso {
 }
 
 private const val ClaveCuentaCreada = "cuentaCreada"
-
-/**
- * Formularios del registro. Vive mientras dure el grafo de registro para que los datos del
- * paso 1 lleguen al paso 2 sin viajar como argumentos de navegación ni guardarse en disco.
- */
-class RegistroViewModel : ViewModel() {
-    var rol by mutableStateOf(RolAdulto.Docente)
-    val docente = FormularioDocente()
-    val acudiente = FormularioAcudiente()
-}
 
 /**
  * UI-01 → UI-02 ─┬─ «¡A jugar!» → [onJugar]

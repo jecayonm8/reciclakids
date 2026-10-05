@@ -1,4 +1,4 @@
-package com.reciclakids.ui.comun
+package com.reciclakids.ui.common
 
 import android.net.ConnectivityManager
 import android.net.Network

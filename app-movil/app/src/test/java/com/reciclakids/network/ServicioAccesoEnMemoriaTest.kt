@@ -1,5 +1,6 @@
-package com.reciclakids.datos.acceso
+package com.reciclakids.network
 
+import com.reciclakids.model.RolAdulto
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

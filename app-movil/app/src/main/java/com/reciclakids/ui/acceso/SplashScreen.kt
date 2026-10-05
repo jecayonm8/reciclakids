@@ -38,10 +38,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
-import com.reciclakids.ui.juego.Burbuja
-import com.reciclakids.ui.juego.FondoSubmarino
-import com.reciclakids.ui.juego.MarcadorIlustracion
-import com.reciclakids.ui.juego.flotar
+import com.reciclakids.ui.common.Burbuja
+import com.reciclakids.ui.common.FondoSubmarino
+import com.reciclakids.ui.common.MarcadorIlustracion
+import com.reciclakids.ui.common.flotar
 import com.reciclakids.ui.theme.BalooDos
 import com.reciclakids.ui.theme.EscalaFijaNino
 import com.reciclakids.ui.theme.Nunito

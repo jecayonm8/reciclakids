@@ -1,5 +1,7 @@
-package com.reciclakids.datos.acceso
+package com.reciclakids.network
 
+import com.reciclakids.model.CuentaAdulto
+import com.reciclakids.model.RolAdulto
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

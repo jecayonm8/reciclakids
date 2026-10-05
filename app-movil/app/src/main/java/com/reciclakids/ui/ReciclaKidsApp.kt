@@ -13,13 +13,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.reciclakids.R
-import com.reciclakids.datos.acceso.RolAdulto
-import com.reciclakids.datos.acceso.ServicioAcceso
-import com.reciclakids.datos.acceso.ServicioAccesoEnMemoria
+import com.reciclakids.model.RolAdulto
+import com.reciclakids.network.ServicioAcceso
+import com.reciclakids.network.ServicioAccesoEnMemoria
 import com.reciclakids.ui.acceso.RutasAcceso
 import com.reciclakids.ui.acceso.accesoGraph
-import com.reciclakids.ui.comun.ModoInmersivo
-import com.reciclakids.ui.comun.PantallaPendiente
+import com.reciclakids.ui.common.ModoInmersivo
+import com.reciclakids.ui.common.PantallaPendiente
 import com.reciclakids.ui.theme.Duracion
 
 /** Destinos de los tres modos. Cada uno tendrá su propio grafo; por ahora son provisionales. */

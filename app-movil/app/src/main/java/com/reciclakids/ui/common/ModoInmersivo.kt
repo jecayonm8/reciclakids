@@ -1,4 +1,4 @@
-package com.reciclakids.ui.comun
+package com.reciclakids.ui.common
 
 import android.app.Activity
 import android.content.Context

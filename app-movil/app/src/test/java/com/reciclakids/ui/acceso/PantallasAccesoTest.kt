@@ -14,8 +14,10 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
-import com.reciclakids.datos.acceso.RolAdulto
+import com.reciclakids.model.RolAdulto
 import com.reciclakids.ui.theme.ReciclaKidsTheme
+import com.reciclakids.viewmodel.FormularioAcudiente
+import com.reciclakids.viewmodel.FormularioDocente
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
