@@ -79,6 +79,7 @@ fun BotonNino(
     alto: Dp = 84.dp,
     forma: Shape = CircleShape,
     profundidad: Dp = 8.dp,
+    rellenoHorizontal: Dp = 16.dp,
     content: @Composable () -> Unit,
 ) {
     val fuente = remember { MutableInteractionSource() }
@@ -99,7 +100,7 @@ fun BotonNino(
             }
             .offset { IntOffset(0, hundimiento.roundToPx()) }
             .background(variante.fondo, forma)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = rellenoHorizontal),
         contentAlignment = Alignment.Center,
     ) {
         CompositionLocalProvider(LocalContentColor provides variante.contenido, content = content)
