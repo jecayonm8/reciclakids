@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ReciclaKidsTheme {
-                ReciclaKidsApp()
+                ReciclaKidsApp(contenedor = (application as ReciclaKidsApplication).contenedor)
             }
         }
     }

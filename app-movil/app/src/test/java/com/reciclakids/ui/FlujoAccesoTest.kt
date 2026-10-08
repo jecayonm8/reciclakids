@@ -11,8 +11,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
-import com.reciclakids.network.ServicioAccesoEnMemoria
-import com.reciclakids.network.ServicioRetosEnMemoria
+import com.reciclakids.contenedorDePrueba
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import org.junit.Before
 import org.junit.Rule
@@ -30,7 +29,7 @@ class FlujoAccesoTest {
     @Before
     fun abrirApp() {
         compose.setContent {
-            ReciclaKidsTheme { ReciclaKidsApp(servicioAcceso = ServicioAccesoEnMemoria(latenciaMs = 0), servicioRetos = ServicioRetosEnMemoria(latenciaMs = 0)) }
+            ReciclaKidsTheme { ReciclaKidsApp(contenedor = contenedorDePrueba()) }
         }
     }
 

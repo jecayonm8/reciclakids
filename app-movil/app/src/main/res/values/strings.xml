@@ -121,9 +121,23 @@
     <!-- UI-09 ¿Quién eres? -->
     <string name="quien_eres_titulo">¿Quién eres?</string>
 
+    <!-- UI-10 Menú · acuario -->
+    <string name="menu_saludo">¡Hola, %1$s! Toca el reto diario para jugar</string>
+    <string name="menu_reto_diario">Reto diario</string>
+    <string name="menu_reto_pendiente">Hay un reto nuevo</string>
+    <string name="menu_continuar">Continuar</string>
+    <string name="menu_insignias">Insignias</string>
+    <string name="menu_ajustes">Ajustes</string>
+
+    <!-- UI-11 Tutorial -->
+    <string name="tutorial_titulo">Arrastra el residuo a su caneca</string>
+    <string name="tutorial_entendido">¡Ya entendí!</string>
+
     <!-- Destinos que todavía no existen -->
     <string name="pendiente_titulo">En construcción</string>
-    <string name="pendiente_menu">Modo Niño: sigue el menú del acuario (UI-10).</string>
+    <string name="pendiente_juego">Modo Niño: sigue el juego (UI-12).</string>
+    <string name="pendiente_insignias">Modo Niño: sigue la colección de insignias (UI-17).</string>
+    <string name="pendiente_ajustes">Modo Niño: siguen los ajustes del niño (UI-18).</string>
     <string name="pendiente_docente">Modo Docente: sigue el tablero de inicio (UI-21).</string>
     <string name="pendiente_padres">Modo Padres: sigue el inicio (UI-29).</string>
     <string name="pendiente_politica">Política de tratamiento de datos: el texto legal está pendiente.</string>
