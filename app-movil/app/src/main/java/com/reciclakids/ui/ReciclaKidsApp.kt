@@ -16,15 +16,19 @@ import com.reciclakids.R
 import com.reciclakids.model.RolAdulto
 import com.reciclakids.network.ServicioAcceso
 import com.reciclakids.network.ServicioAccesoEnMemoria
+import com.reciclakids.network.ServicioRetos
+import com.reciclakids.network.ServicioRetosEnMemoria
 import com.reciclakids.ui.acceso.RutasAcceso
 import com.reciclakids.ui.acceso.accesoGraph
 import com.reciclakids.ui.common.ModoInmersivo
 import com.reciclakids.ui.common.PantallaPendiente
+import com.reciclakids.ui.nino.RutasNino
+import com.reciclakids.ui.nino.esDelNino
+import com.reciclakids.ui.nino.ninoGraph
 import com.reciclakids.ui.theme.Duracion
 
-/** Destinos de los tres modos. Cada uno tendrá su propio grafo; por ahora son provisionales. */
+/** Destinos de los modos adultos. Cada uno tendrá su propio grafo; por ahora son provisionales. */
 object Rutas {
-    const val Nino = "nino"
     const val Docente = "docente"
     const val Padres = "padres"
 }
@@ -36,11 +40,12 @@ object Rutas {
 @Composable
 fun ReciclaKidsApp(
     servicioAcceso: ServicioAcceso = remember { ServicioAccesoEnMemoria() },
+    servicioRetos: ServicioRetos = remember { ServicioRetosEnMemoria() },
     navController: NavHostController = rememberNavController(),
 ) {
     val entradaActual by navController.currentBackStackEntryAsState()
     val ruta = entradaActual?.destination?.route
-    ModoInmersivo(activo = ruta == null || ruta in RutasAcceso.DelNino)
+    ModoInmersivo(activo = ruta == null || ruta in RutasAcceso.DelNino || ruta.esDelNino())
 
     NavHost(
         navController = navController,
@@ -51,7 +56,7 @@ fun ReciclaKidsApp(
         accesoGraph(
             navController = navController,
             servicio = servicioAcceso,
-            onJugar = { navController.navigate(Rutas.Nino) { launchSingleTop = true } },
+            onJugar = { navController.navigate(RutasNino.Grafo) { launchSingleTop = true } },
             onSesionIniciada = { cuenta ->
                 val destino = when (cuenta.rol) {
                     RolAdulto.Docente -> Rutas.Docente
@@ -62,9 +67,7 @@ fun ReciclaKidsApp(
             },
         )
         val volverAlSelector = { navController.popBackStack(RutasAcceso.Selector, inclusive = false) }
-        composable(Rutas.Nino) {
-            PantallaPendiente(stringResource(R.string.pendiente_nino), onVolver = { volverAlSelector() })
-        }
+        ninoGraph(navController, servicioRetos, onSalir = { volverAlSelector() })
         composable(Rutas.Docente) {
             PantallaPendiente(stringResource(R.string.pendiente_docente), onVolver = { volverAlSelector() })
         }
