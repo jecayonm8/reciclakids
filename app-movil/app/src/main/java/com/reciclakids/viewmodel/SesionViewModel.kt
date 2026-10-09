@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.reciclakids.model.CuentaAdulto
 import com.reciclakids.model.RolAdulto
 import com.reciclakids.network.ServicioDocente
+import com.reciclakids.network.ServicioPadres
 
 /**
  * Sesión adulta abierta, a nivel de la actividad, para que sobreviva a los cambios de
@@ -20,13 +21,28 @@ class SesionViewModel : ViewModel() {
     var servicioDocente: ServicioDocente? by mutableStateOf(null)
         private set
 
-    // Un servicio por docente mientras viva la app: al volver a entrar encuentra lo que publicó.
-    private val serviciosDocente = mutableMapOf<String, ServicioDocente>()
+    /** Solo existe mientras la sesión es de un acudiente. */
+    var servicioPadres: ServicioPadres? by mutableStateOf(null)
+        private set
 
-    fun iniciar(cuenta: CuentaAdulto, crearServicioDocente: (CuentaAdulto) -> ServicioDocente) {
+    // Un servicio por cuenta mientras viva la app: al volver a entrar encuentra lo que dejó
+    // (lo que publicó la docente, lo que vinculó o pidió el acudiente).
+    private val serviciosDocente = mutableMapOf<String, ServicioDocente>()
+    private val serviciosPadres = mutableMapOf<String, ServicioPadres>()
+
+    fun iniciar(
+        cuenta: CuentaAdulto,
+        crearServicioDocente: (CuentaAdulto) -> ServicioDocente,
+        crearServicioPadres: (CuentaAdulto) -> ServicioPadres,
+    ) {
         this.cuenta = cuenta
         servicioDocente = if (cuenta.rol == RolAdulto.Docente) {
             serviciosDocente.getOrPut(cuenta.correo) { crearServicioDocente(cuenta) }
+        } else {
+            null
+        }
+        servicioPadres = if (cuenta.rol == RolAdulto.Acudiente) {
+            serviciosPadres.getOrPut(cuenta.correo) { crearServicioPadres(cuenta) }
         } else {
             null
         }
@@ -35,5 +51,6 @@ class SesionViewModel : ViewModel() {
     fun cerrar() {
         cuenta = null
         servicioDocente = null
+        servicioPadres = null
     }
 }

@@ -460,9 +460,198 @@
     <string name="cuenta_eliminar_confirmar">Sí, eliminar</string>
     <string name="cuenta_eliminado">Se eliminaron los resultados, insignias y reportes del grupo.</string>
 
+    <!-- P4 · Modo Padres -->
+    <string name="padres_tab_inicio">Inicio</string>
+    <string name="padres_tab_reporte">Reporte</string>
+    <string name="padres_tab_avisos">Avisos</string>
+    <string name="padres_tab_cuenta">Cuenta</string>
+    <string name="padres_error_titulo">No pudimos cargar la información</string>
+    <string name="padres_error_texto">Revisa tu conexión e inténtalo de nuevo. Lo que ya viste sigue guardado en el teléfono.</string>
+    <string name="padres_sin_valor">—</string>
+    <plurals name="padres_edad">
+        <item quantity="one">%d año</item>
+        <item quantity="other">%d años</item>
+    </plurals>
+    <string name="padres_hijo_detalle">%1$s · %2$s</string>
+
+    <!-- Frase interpretativa de la semana (UI-29 y UI-30) -->
+    <string name="mensaje_mejoro">Esta semana mejoró separando %1$s: pasó de %2$s a %3$s de aciertos.</string>
+    <string name="mensaje_practicar">Le cuesta un poco separar %1$s (%2$s). Jugar juntos en casa a separar la basura le ayuda.</string>
+    <string name="mensaje_va_bien">Esta semana separó muy bien los tres tipos de residuo.</string>
+    <string name="mensaje_confunde">Todavía confunde %1$s: %2$s</string>
+    <string name="consejo_aprovechables">en casa pueden separar juntos el papel, el cartón y las botellas limpias.</string>
+    <string name="consejo_no_aprovechables">en casa pueden mirar juntos qué envolturas no se reciclan.</string>
+    <string name="consejo_organicos">en casa pueden separar juntos las cáscaras y los restos de comida.</string>
+    <string name="residuo_botella">la botella plástica</string>
+    <string name="residuo_lata">la lata de jugo</string>
+    <string name="residuo_papel">el papel</string>
+    <string name="residuo_carton">el cartón</string>
+    <string name="residuo_cascara">la cáscara de banano</string>
+    <string name="residuo_restos">el resto de comida</string>
+    <string name="residuo_servilleta">la servilleta usada</string>
+    <string name="residuo_empaque">el empaque metalizado</string>
+
+    <!-- Insignias contadas al acudiente, en tercera persona -->
+    <string name="logro_padres_amiga_tortuga">Terminó un reto sin ninguna ayuda</string>
+    <string name="logro_padres_rapido_pez">Terminó un reto difícil a tiempo</string>
+    <string name="logro_padres_racha_5">Separó cinco residuos seguidos sin error</string>
+    <string name="logro_padres_5_dias">Jugó el reto en cinco días distintos</string>
+    <string name="logro_padres_pulpo">Completó 10 retos</string>
+    <string name="logro_padres_agua">Dejó su acuario limpio</string>
+    <string name="logro_padres_coral">Separó diez residuos seguidos sin error</string>
+    <string name="logro_padres_guardian">Completó 20 retos</string>
+    <string name="cuando_hoy">hoy</string>
+    <string name="cuando_ayer">ayer</string>
+    <string name="cuando_dia_hora">%1$s, %2$s</string>
+
+    <!-- UI-29 Inicio -->
+    <string name="inicio_elegir_hijo">Cambiar de hijo o hija</string>
+    <string name="inicio_esta_semana">Esta semana · %1$s</string>
+    <plurals name="inicio_de_retos">
+        <item quantity="one">de %d reto completado</item>
+        <item quantity="other">de %d retos completados</item>
+    </plurals>
+    <string name="inicio_resumen_descripcion">%1$d de %2$d retos completados esta semana</string>
+    <string name="inicio_aciertos">aciertos</string>
+    <string name="inicio_racha">racha más larga</string>
+    <string name="inicio_sin_juego">Esta semana todavía no ha jugado. La docente publica el reto del día en el jardín.</string>
+    <string name="inicio_ultimo_logro">Último logro · %1$s</string>
+    <string name="inicio_ver_reporte">Ver el reporte completo</string>
+    <string name="inicio_logros">Logros · %1$d de %2$d</string>
+    <string name="inicio_minutos_dia">%1$d min al día</string>
+    <string name="inicio_solo_ves">Solo ves la información de %1$s.</string>
+    <string name="inicio_vacio_titulo">Todavía no hay reportes</string>
+    <string name="inicio_vacio_texto">Cuando %1$s juegue su primer reto verás aquí cómo le fue. Te avisamos por correo cada viernes.</string>
+    <string name="inicio_vacio_preferencias">Revisar preferencias de correo</string>
+    <string name="inicio_vacio_ilustracion">acuario nuevo</string>
+
+    <!-- UI-30 Reporte semanal -->
+    <string name="reporte_padres_titulo">Reporte semanal</string>
+    <string name="reporte_esta_semana">Esta semana</string>
+    <string name="reporte_cargando_semana">Cargando la semana</string>
+    <string name="reporte_evolucion">Evolución</string>
+    <string name="reporte_evolucion_descripcion">Aciertos por semana</string>
+    <string name="reporte_pts_sube">+%1$d pts</string>
+    <string name="reporte_pts_baja">−%1$d pts</string>
+    <string name="reporte_pts_igual">sin cambio</string>
+    <string name="reporte_por_tipo">Aciertos por tipo de residuo</string>
+    <string name="reporte_no_jugo">Esta semana no jugó. Las semanas con juego aparecen arriba.</string>
+    <string name="reporte_tiempo">Tiempo de uso</string>
+    <string name="reporte_tiempo_semana">en la semana</string>
+    <string name="reporte_tiempo_dia_descripcion">%1$s: %2$d min</string>
+    <string name="reporte_tiempo_debajo">Promedio de %1$d min al día, por debajo del límite de %2$d min que definiste.</string>
+    <string name="reporte_tiempo_encima">Promedio de %1$d min al día, por encima del límite de %2$d min que definiste.</string>
+    <string name="reporte_tiempo_igual">Promedio de %1$d min al día, justo en el límite de %2$d min que definiste.</string>
+    <string name="reporte_insignias_semana">Insignias de la semana</string>
+    <string name="reporte_ver_todas">Ver todas</string>
+    <string name="reporte_sin_insignias">Esta semana no ganó insignias nuevas. Se ganan jugando y no se pierden nunca.</string>
+    <string name="reporte_padres_vacio_titulo">Aún no hay semanas para comparar</string>
+    <string name="reporte_padres_vacio_texto">El primer reporte llega el viernes después de la primera semana de juego.</string>
+
+    <!-- UI-31 Logros e insignias -->
+    <string name="logros_titulo">Logros de %1$s</string>
+    <string name="logros_titulo_corto">Logros e insignias</string>
+    <string name="logros_conteo">%1$d de %2$d</string>
+    <string name="logros_nota">Las insignias se ganan jugando; no se pierden nunca.</string>
+    <string name="logro_ganada_el">Ganada el %1$s</string>
+    <string name="logro_ganada_hoy">Ganada hoy</string>
+    <string name="logro_ganada_ayer">Ganada ayer</string>
+    <string name="logro_descripcion_ganada">%1$s, ganada. %2$s</string>
+    <string name="logro_descripcion_pendiente">%1$s, por descubrir. %2$s</string>
+
+    <!-- UI-32 Historial de notificaciones -->
+    <string name="avisos_titulo">Notificaciones</string>
+    <string name="avisos_esta_semana">Esta semana</string>
+    <string name="avisos_antes">Antes</string>
+    <string name="correo_logro_titulo">Nuevo logro: %1$s</string>
+    <string name="correo_reporte_titulo">Reporte semanal listo</string>
+    <string name="correo_reporte_detalle">%1$d de %2$d retos · %3$s de aciertos</string>
+    <string name="correo_reporte_detalle_sin_aciertos">%1$d de %2$d retos</string>
+    <string name="correo_enviado">%1$s · enviado a %2$s</string>
+    <string name="avisos_preferencias">Cambiar preferencias de correo</string>
+    <string name="avisos_vacio_titulo">Sin correos por ahora</string>
+    <string name="avisos_vacio_texto">Aquí queda el registro de cada correo que te enviamos: logros y reporte semanal.</string>
+
+    <!-- UI-33 Control parental -->
+    <string name="control_titulo">Control parental</string>
+    <string name="control_dificultad">Dificultad sugerida</string>
+    <string name="control_dificultad_texto">La docente puede subirla en un reto puntual.</string>
+    <string name="control_facil">2 canecas, sin tiempo</string>
+    <string name="control_medio">3 canecas, sin tiempo</string>
+    <string name="control_dificil">3 canecas, con tiempo</string>
+    <string name="control_tiempo">Tiempo diario de juego</string>
+    <string name="control_minutos">%1$d min</string>
+    <string name="control_menos">Menos tiempo</string>
+    <string name="control_mas">Más tiempo</string>
+    <string name="control_tiempo_nota">Al terminarse, el juego muestra «¡Los peces también descansan!» y no se puede saltar.</string>
+    <string name="control_correos">Correos</string>
+    <string name="control_correo_logros">Avisarme de cada logro</string>
+    <string name="control_correo_logros_detalle">Máximo un correo al día</string>
+    <string name="control_correo_semanal">Reporte semanal</string>
+    <string name="control_correo_semanal_detalle">Los viernes a las 5:00 p. m.</string>
+    <string name="control_correo_recordatorio">Recordatorio si no juega</string>
+    <string name="control_correo_recordatorio_detalle">Después de tres días seguidos</string>
+    <string name="control_guardado">Cambios guardados</string>
+    <string name="control_deshacer">Deshacer</string>
+
+    <!-- UI-34 Privacidad y datos del menor -->
+    <string name="privacidad_titulo">Privacidad y datos</string>
+    <string name="privacidad_autorizada">Autorización otorgada</string>
+    <string name="privacidad_autorizada_texto">El %1$s por %2$s · Ley 1581 de 2012</string>
+    <string name="privacidad_datos">Datos que guardamos de %1$s</string>
+    <string name="privacidad_nombre">Nombre</string>
+    <string name="privacidad_grupo">Grupo</string>
+    <string name="privacidad_avatar">Avatar</string>
+    <string name="privacidad_resultados">Resultados de retos</string>
+    <plurals name="privacidad_registros">
+        <item quantity="one">%d registro</item>
+        <item quantity="other">%d registros</item>
+    </plurals>
+    <plurals name="privacidad_registros_retos">
+        <item quantity="one">%d registro de retos</item>
+        <item quantity="other">%d registros de retos</item>
+    </plurals>
+    <plurals name="privacidad_insignias">
+        <item quantity="one">%d insignia</item>
+        <item quantity="other">%d insignias</item>
+    </plurals>
+    <string name="privacidad_no_guardamos">No guardamos documento, dirección, fotos, voz ni ubicación.</string>
+    <string name="privacidad_descargar">Descargar mis datos</string>
+    <string name="privacidad_solicitud_titulo">Solicitud enviada</string>
+    <string name="privacidad_solicitud_texto">La recibimos el %1$s. Respondemos en máximo 15 días hábiles y te confirmamos por correo cuando se complete el borrado.</string>
+    <string name="privacidad_cancelar_solicitud">Cancelar solicitud</string>
+    <string name="privacidad_solicitud_cancelada">Cancelaste la solicitud. Los datos siguen guardados.</string>
+    <string name="privacidad_eliminar_titulo">Eliminar los datos de %1$s</string>
+    <string name="privacidad_eliminar_texto">Se borran su progreso, sus insignias y sus reportes. La docente deja de ver su actividad y tú pierdes el acceso al historial.</string>
+    <string name="privacidad_eliminar_boton">Solicitar eliminación de datos</string>
+    <string name="privacidad_dialogo_titulo">¿Eliminar los datos de %1$s?</string>
+    <string name="privacidad_dialogo_texto">Es permanente: se borran %1$s, %2$s y todos los reportes. No se puede deshacer una vez procesada.</string>
+    <string name="privacidad_dialogo_casilla">Entiendo que esta acción borra de forma permanente los datos de %1$s y retiro la autorización de tratamiento.</string>
+    <string name="privacidad_dialogo_enviar">Enviar solicitud</string>
+    <string name="privacidad_exportar_texto">Datos que ReciclaKids guarda de %1$s\n• Nombre: %1$s\n• Grupo: %2$s\n• Avatar: %3$s\n• Resultados de retos: %4$s\n• Insignias: %5$s\nAutorización otorgada el %6$s por %7$s (Ley 1581 de 2012).\nNo guardamos documento, dirección, fotos, voz ni ubicación.</string>
+
+    <!-- UI-35 Cuenta -->
+    <string name="cuenta_padres_titulo">Cuenta</string>
+    <string name="cuenta_cambiar_contrasena">Cambiar contraseña</string>
+    <string name="cuenta_privacidad_menor">Privacidad y datos del menor</string>
+    <string name="cuenta_hijos">Hijos vinculados</string>
+    <string name="cuenta_hijo_detalle">%1$s · desde el %2$s</string>
+    <string name="cuenta_vincular">Vincular otro hijo o hija</string>
+    <string name="cuenta_vincular_nota">Necesitas el código de vinculación que entrega la docente.</string>
+    <string name="cuenta_vinculado">Listo: ya ves el progreso de %1$s.</string>
+    <string name="cuenta_ya_vinculado">%1$s ya estaba en tu cuenta.</string>
+
+    <!-- Vincular otro hijo o hija -->
+    <string name="vincular_titulo">Vincular otro hijo o hija</string>
+    <string name="vincular_texto">Escribe el código que te entregó su docente. Cada código sirve para un solo niño o niña.</string>
+    <string name="vincular_campo">Código de vinculación</string>
+    <string name="vincular_ejemplo">Ejemplo: JB-2M91</string>
+    <string name="vincular_boton">Vincular</string>
+    <string name="vincular_invalido">Ese código no existe o ya se usó. Pídele uno nuevo a la docente.</string>
+    <string name="vincular_privacidad">Solo verás los datos de ese niño o niña: nombre, avatar y resultados.</string>
+
     <!-- Destinos que todavía no existen -->
     <string name="pendiente_titulo">En construcción</string>
     <string name="pendiente_editar_perfil">Editar perfil: la pantalla todavía no está diseñada.</string>
-    <string name="pendiente_padres">Modo Padres: sigue el inicio (UI-29).</string>
     <string name="pendiente_politica">Política de tratamiento de datos: el texto legal está pendiente.</string>
 </resources>

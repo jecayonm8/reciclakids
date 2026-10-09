@@ -246,7 +246,12 @@ private fun BloqueEsqueleto(modifier: Modifier, alfa: State<Float>, radio: Dp = 
 }
 
 @Composable
-internal fun EstadoErrorRed(onReintentar: () -> Unit, modifier: Modifier = Modifier) {
+internal fun EstadoErrorRed(
+    onReintentar: () -> Unit,
+    modifier: Modifier = Modifier,
+    titulo: String = stringResource(R.string.docente_error_titulo),
+    texto: String = stringResource(R.string.docente_error_texto),
+) {
     PantallaCentrada(modifier) {
         Box(
             Modifier.size(120.dp).background(MaterialTheme.colorScheme.errorContainer, CircleShape),
@@ -260,12 +265,12 @@ internal fun EstadoErrorRed(onReintentar: () -> Unit, modifier: Modifier = Modif
             )
         }
         Text(
-            stringResource(R.string.docente_error_titulo),
+            titulo,
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
         )
         Text(
-            stringResource(R.string.docente_error_texto),
+            texto,
             style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -570,6 +575,7 @@ internal fun GraficoBarras(
     modifier: Modifier = Modifier,
     altoMaximo: Dp = 120.dp,
     anchoMaximo: Dp = 56.dp,
+    colorPorValor: ((Int) -> Color)? = null,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -599,7 +605,10 @@ internal fun GraficoBarras(
                             scaleY = crecimiento.value
                             transformOrigin = TransformOrigin(0.5f, 1f)
                         }
-                        .background(color, RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp, bottomStart = 4.dp, bottomEnd = 4.dp))
+                        .background(
+                            colorPorValor?.invoke(valor) ?: color,
+                            RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp, bottomStart = 4.dp, bottomEnd = 4.dp),
+                        )
                 )
                 Text(
                     etiqueta,
