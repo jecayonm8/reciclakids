@@ -38,10 +38,12 @@ class RepositorioProgresoTest {
         fun nivel(retos: Int) = ProgresoNino("nino-1", retosCompletados = retos).nivelAcuario
 
         assertEquals(1, nivel(0))
-        assertEquals(1, nivel(5))
-        assertEquals(2, nivel(6))
-        assertEquals(3, nivel(16))
-        assertEquals(4, nivel(17))
+        assertEquals(1, nivel(3))
+        assertEquals(2, nivel(4))
+        assertEquals(2, nivel(7))
+        assertEquals(3, nivel(8))
+        assertEquals(3, nivel(12))
+        assertEquals(4, nivel(13))
         assertEquals(4, nivel(RetosParaAcuarioLimpio * 3))
     }
 }
