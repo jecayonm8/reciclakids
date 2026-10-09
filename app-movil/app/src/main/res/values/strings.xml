@@ -519,7 +519,8 @@
     <string name="inicio_ver_reporte">Ver el reporte completo</string>
     <string name="inicio_logros">Logros · %1$d de %2$d</string>
     <string name="inicio_minutos_dia">%1$d min al día</string>
-    <string name="inicio_solo_ves">Solo ves la información de %1$s.</string>
+    <!-- Sin punto final: el nombre ya termina con el de la inicial del apellido («Salomé M.»). -->
+    <string name="inicio_solo_ves">Solo ves la información de %1$s</string>
     <string name="inicio_vacio_titulo">Todavía no hay reportes</string>
     <string name="inicio_vacio_texto">Cuando %1$s juegue su primer reto verás aquí cómo le fue. Te avisamos por correo cada viernes.</string>
     <string name="inicio_vacio_preferencias">Revisar preferencias de correo</string>
@@ -638,7 +639,8 @@
     <string name="cuenta_hijo_detalle">%1$s · desde el %2$s</string>
     <string name="cuenta_vincular">Vincular otro hijo o hija</string>
     <string name="cuenta_vincular_nota">Necesitas el código de vinculación que entrega la docente.</string>
-    <string name="cuenta_vinculado">Listo: ya ves el progreso de %1$s.</string>
+    <!-- Sin punto final: el nombre ya termina con el de la inicial del apellido («Emilio R.»). -->
+    <string name="cuenta_vinculado">Listo: ya ves el progreso de %1$s</string>
     <string name="cuenta_ya_vinculado">%1$s ya estaba en tu cuenta.</string>
 
     <!-- Vincular otro hijo o hija -->
