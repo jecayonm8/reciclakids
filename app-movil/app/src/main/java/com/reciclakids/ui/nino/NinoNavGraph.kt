@@ -1,6 +1,9 @@
 package com.reciclakids.ui.nino
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -11,7 +14,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -20,11 +28,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.reciclakids.R
 import com.reciclakids.di.ContenedorApp
+import com.reciclakids.model.AjustesNino
 import com.reciclakids.model.Nino
+import com.reciclakids.model.NivelesVolumen
+import com.reciclakids.ui.common.FondoSubmarino
 import com.reciclakids.ui.common.PantallaPendiente
+import com.reciclakids.ui.common.caneca
 import com.reciclakids.ui.common.rememberHayConexion
 import com.reciclakids.ui.common.rememberLocutor
+import com.reciclakids.ui.theme.ReciclaKidsColors
 import com.reciclakids.viewmodel.CodigoRetoViewModel
+import com.reciclakids.viewmodel.JuegoViewModel
+import com.reciclakids.viewmodel.Retroalimentacion
 import com.reciclakids.viewmodel.SesionNinoViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -37,6 +52,8 @@ object RutasNino {
     const val Menu = "nino/menu"
     const val Tutorial = "nino/tutorial"
     const val Juego = "nino/juego"
+    const val Resultado = "nino/resultado"
+    const val InsigniaObtenida = "nino/insignia"
     const val Insignias = "nino/insignias"
     const val Ajustes = "nino/ajustes"
 }
@@ -167,7 +184,94 @@ fun NavGraphBuilder.ninoGraph(
             )
         }
 
-        pendiente(navController, RutasNino.Juego, R.string.pendiente_juego)
+        composable(RutasNino.Juego) { entrada ->
+            val sesion = sesionNino(navController, entrada)
+            val nino = sesion.nino
+            val reto = sesion.reto
+            if (nino == null || reto == null) {
+                LaunchedEffect(Unit) { onSalir() }
+                return@composable
+            }
+            val juego = viewModel(key = "juego-${reto.codigo}-${nino.id}") { JuegoViewModel(reto, nino, contenedor.juego) }
+            val ajustes by contenedor.ajustes.observar().collectAsState(initial = AjustesNino())
+            val alcance = rememberCoroutineScope()
+            val locutor = rememberLocutor(ajustes.volumenSonidos / NivelesVolumen.toFloat())
+            val haptico = LocalHapticFeedback.current
+            val muyBien = stringResource(R.string.juego_muy_bien)
+            val casi = stringResource(R.string.juego_casi)
+            val guia = juego.residuoEnPantalla?.let { residuo ->
+                stringResource(R.string.juego_guia, residuo.nombre, stringResource(residuo.categoria.caneca.etiqueta).lowercase())
+            }
+
+            LaunchedEffect(juego.retroalimentacion) {
+                when (juego.retroalimentacion) {
+                    Retroalimentacion.Acierto -> {
+                        haptico.performHapticFeedback(HapticFeedbackType.Confirm)
+                        locutor.decir(muyBien)
+                    }
+                    Retroalimentacion.Rebote -> locutor.decir(casi)
+                    Retroalimentacion.Ninguna -> Unit
+                }
+            }
+            LaunchedEffect(juego.resultado) {
+                val resultado = juego.resultado ?: return@LaunchedEffect
+                sesion.terminarReto(resultado)
+                navController.navigate(RutasNino.Resultado) {
+                    popUpTo(RutasNino.Juego) { inclusive = true }
+                }
+            }
+            // El botón atrás del sistema pausa: el niño no sale del juego por accidente.
+            BackHandler(enabled = !juego.pausado) { juego.pausar() }
+
+            val estado = juego.estado
+            if (estado == null) {
+                FondoSubmarino(agua = ReciclaKidsColors.aguaJuego, altoArena = 90.dp, modifier = Modifier.fillMaxSize()) {}
+                return@composable
+            }
+            Box(Modifier.fillMaxSize()) {
+                JuegoScreen(
+                    dificultad = reto.dificultad,
+                    estado = estado,
+                    residuo = juego.residuoEnPantalla,
+                    retroalimentacion = juego.retroalimentacion,
+                    fraccionTiempo = juego.fraccionTiempoRestante,
+                    pausado = juego.pausado,
+                    onClasificar = juego::clasificar,
+                    onPausar = juego::pausar,
+                    onGuia = { guia?.let(locutor::decir) },
+                )
+                if (juego.pausado) {
+                    PausaDialog(
+                        volumen = ajustes.volumenSonidos,
+                        onVolumen = { nivel -> alcance.launch { contenedor.ajustes.guardar(ajustes.conSonidos(nivel)) } },
+                        onContinuar = juego::reanudar,
+                        onReiniciar = juego::reiniciar,
+                        onMenu = { navController.popBackStack(RutasNino.Menu, inclusive = false) },
+                    )
+                }
+            }
+        }
+
+        composable(RutasNino.Resultado) { entrada ->
+            val sesion = sesionNino(navController, entrada)
+            val resultado = sesion.ultimoResultado
+            if (resultado == null) {
+                LaunchedEffect(Unit) { navController.popBackStack(RutasNino.Menu, inclusive = false) }
+                return@composable
+            }
+            val ajustes by contenedor.ajustes.observar().collectAsState(initial = AjustesNino())
+            val locutor = rememberLocutor(ajustes.volumenSonidos / NivelesVolumen.toFloat())
+            val anuncio = pluralStringResource(R.plurals.resultado_titulo, resultado.residuosSeparados, resultado.residuosSeparados) + " " +
+                stringResource(if (resultado.sumoAlAcuario) R.string.resultado_acuario else R.string.resultado_buen_trabajo)
+            LaunchedEffect(Unit) { locutor.decir(anuncio) }
+            ResultadoScreen(
+                resultado = resultado,
+                onVerPremio = { navController.navigate(RutasNino.InsigniaObtenida) { launchSingleTop = true } },
+                onMenu = { navController.popBackStack(RutasNino.Menu, inclusive = false) },
+            )
+        }
+
+        pendiente(navController, RutasNino.InsigniaObtenida, R.string.pendiente_insignia_obtenida)
         pendiente(navController, RutasNino.Insignias, R.string.pendiente_insignias)
         pendiente(navController, RutasNino.Ajustes, R.string.pendiente_ajustes)
     }

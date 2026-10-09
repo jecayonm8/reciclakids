@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
+import com.reciclakids.model.RachaConBonificacion
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.ui.theme.Tactil
 import org.junit.Assert.assertEquals

@@ -25,12 +25,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
+import com.reciclakids.model.RachaConBonificacion
 import com.reciclakids.ui.theme.BalooDos
 import com.reciclakids.ui.theme.ReciclaKidsColors
 import com.reciclakids.ui.theme.ReciclaKidsTheme
-
-/** Aciertos seguidos a partir de los cuales la racha da bonificación doble (+20 en vez de +10). */
-const val RachaConBonificacion = 3
 
 /**
  * Burbuja con los aciertos seguidos. Desde [RachaConBonificacion] pasa a turquesa y muestra «×2».
