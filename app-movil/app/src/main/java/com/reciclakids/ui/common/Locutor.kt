@@ -1,9 +1,11 @@
 package com.reciclakids.ui.common
 
 import android.content.Context
+import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -37,8 +39,13 @@ private class LocutorTextoAVoz(context: Context) : Locutor {
         }
     }
 
+    /** 0 a 1, según el volumen de «Sonidos» que eligió el niño en sus ajustes. */
+    var volumen = 1f
+
     override fun decir(texto: String) {
-        if (iniciado && enEspanol) motor.speak(texto, TextToSpeech.QUEUE_FLUSH, null, texto)
+        if (!iniciado || !enEspanol || volumen <= 0f) return
+        val parametros = Bundle().apply { putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volumen) }
+        motor.speak(texto, TextToSpeech.QUEUE_FLUSH, parametros, texto)
     }
 
     fun cerrar() {
@@ -48,10 +55,11 @@ private class LocutorTextoAVoz(context: Context) : Locutor {
 }
 
 @Composable
-fun rememberLocutor(): Locutor {
+fun rememberLocutor(volumen: Float = 1f): Locutor {
     if (LocalInspectionMode.current) return LocutorMudo
     val context = LocalContext.current
     val locutor = remember(context) { LocutorTextoAVoz(context) }
+    SideEffect { locutor.volumen = volumen }
     DisposableEffect(locutor) { onDispose { locutor.cerrar() } }
     return locutor
 }

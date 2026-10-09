@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
+import com.reciclakids.model.CategoriaResiduo
 import com.reciclakids.ui.theme.BalooDos
 import com.reciclakids.ui.theme.Duracion
 import com.reciclakids.ui.theme.ReciclaKidsColors
@@ -76,6 +77,21 @@ enum class TipoCaneca(
         ReciclaKidsColors.canecaVerde, ReciclaKidsColors.canecaVerde, TipoPersonaje.Tortuga,
     ),
 }
+
+/** Caneca de cada categoría del código de colores. */
+val CategoriaResiduo.caneca: TipoCaneca
+    get() = when (this) {
+        CategoriaResiduo.Aprovechable -> TipoCaneca.Blanca
+        CategoriaResiduo.NoAprovechable -> TipoCaneca.Negra
+        CategoriaResiduo.Organico -> TipoCaneca.Verde
+    }
+
+val TipoCaneca.categoria: CategoriaResiduo
+    get() = when (this) {
+        TipoCaneca.Blanca -> CategoriaResiduo.Aprovechable
+        TipoCaneca.Negra -> CategoriaResiduo.NoAprovechable
+        TipoCaneca.Verde -> CategoriaResiduo.Organico
+    }
 
 enum class EstadoCaneca {
     Normal,
