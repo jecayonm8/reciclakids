@@ -122,6 +122,8 @@ class FlujoAccesoTest {
         compose.onNodeWithText("Cuenta creada. Ya puedes iniciar sesión.").assertIsDisplayed()
         iniciarSesion("mariana.r@correo.com", "clave-de-prueba")
 
-        compose.onNodeWithText("Modo Padres: sigue el inicio (UI-29).").assertIsDisplayed()
+        // UI-29 abre con el hijo o hija vinculado y el atajo al reporte.
+        compose.onNodeWithText("Salomé M.").assertIsDisplayed()
+        compose.onNodeWithText("Ver el reporte completo").performScrollTo().assertIsDisplayed()
     }
 }

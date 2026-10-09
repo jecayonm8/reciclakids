@@ -6,6 +6,7 @@ import com.reciclakids.model.RolAdulto
 import com.reciclakids.network.Respuesta
 import com.reciclakids.network.ServicioDocente
 import com.reciclakids.network.ServicioDocenteEnMemoria
+import com.reciclakids.network.ServicioPadresEnMemoria
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -138,23 +139,34 @@ class ViewModelsDocenteTest {
             ServicioDocenteEnMemoria(it, latenciaMs = 0)
         }
 
-        sesion.iniciar(cuenta, crear)
+        sesion.iniciar(cuenta, crear) { error("no se usa") }
         val primero = sesion.servicioDocente
         sesion.cerrar()
         assertNull(sesion.servicioDocente)
-        sesion.iniciar(cuenta, crear)
+        sesion.iniciar(cuenta, crear) { error("no se usa") }
 
         assertSame(primero, sesion.servicioDocente)
         assertEquals(1, creados)
     }
 
     @Test
-    fun unaSesionDeAcudienteNoTieneServicioDocente() {
+    fun unaSesionDeAcudienteTieneServicioDePadresYNoDeDocente() {
         val sesion = SesionViewModel()
+        val acudiente = CuentaAdulto("Mariana Ríos", "mariana.r@correo.com", RolAdulto.Acudiente)
+        var creados = 0
 
-        sesion.iniciar(CuentaAdulto("Mariana Ríos", "mariana.r@correo.com", RolAdulto.Acudiente)) { error("no se usa") }
+        sesion.iniciar(acudiente, { error("no se usa") }) {
+            creados++
+            ServicioPadresEnMemoria(it, latenciaMs = 0)
+        }
+        val primero = sesion.servicioPadres
+        sesion.cerrar()
+        assertNull(sesion.servicioPadres)
+        sesion.iniciar(acudiente, { error("no se usa") }) { error("ya existe") }
 
         assertNull(sesion.servicioDocente)
+        assertSame(primero, sesion.servicioPadres)
+        assertEquals(1, creados)
         assertEquals(RolAdulto.Acudiente, sesion.cuenta?.rol)
     }
 }

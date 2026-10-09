@@ -193,7 +193,7 @@ private fun TarjetaPerfil(perfil: PerfilDocente, onEditarPerfil: () -> Unit) {
 }
 
 @Composable
-private fun FilaDato(etiqueta: String, valor: String) {
+internal fun FilaDato(etiqueta: String, valor: String) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(etiqueta, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(
@@ -232,7 +232,7 @@ private fun TarjetaAvisos(avisos: AvisosDocente, onAvisos: (AvisosDocente) -> Un
 
 /** Toda la fila es el objetivo táctil del interruptor. */
 @Composable
-private fun FilaInterruptor(titulo: String, detalle: String, activo: Boolean, onCambio: (Boolean) -> Unit) {
+internal fun FilaInterruptor(titulo: String, detalle: String, activo: Boolean, onCambio: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

@@ -5,33 +5,32 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.reciclakids.R
 import com.reciclakids.di.ContenedorApp
 import com.reciclakids.model.RolAdulto
 import com.reciclakids.ui.acceso.RutasAcceso
 import com.reciclakids.ui.acceso.accesoGraph
 import com.reciclakids.ui.common.ModoInmersivo
-import com.reciclakids.ui.common.PantallaPendiente
 import com.reciclakids.ui.docente.ModoDocente
 import com.reciclakids.ui.nino.RutasNino
 import com.reciclakids.ui.nino.VigilanteTiempoJuego
 import com.reciclakids.ui.nino.esDelNino
 import com.reciclakids.ui.nino.irATiempoTerminado
 import com.reciclakids.ui.nino.ninoGraph
+import com.reciclakids.ui.padres.ModoPadres
 import com.reciclakids.ui.theme.Duracion
 import com.reciclakids.viewmodel.SesionNinoViewModel
 import com.reciclakids.viewmodel.SesionViewModel
 
-/** Destinos de los modos adultos. Docente ya tiene su grafo; Padres sigue provisional. */
+/** Destinos de los modos adultos: cada uno tiene su propio grafo con su NavigationBar. */
 object Rutas {
     const val Docente = "docente"
     const val Padres = "padres"
@@ -62,7 +61,7 @@ fun ReciclaKidsApp(
             servicio = contenedor.servicioAcceso,
             onJugar = { navController.navigate(RutasNino.Grafo) { launchSingleTop = true } },
             onSesionIniciada = { cuenta ->
-                sesionAdulta.iniciar(cuenta, contenedor.crearServicioDocente)
+                sesionAdulta.iniciar(cuenta, contenedor.crearServicioDocente, contenedor.crearServicioPadres)
                 val destino = when (cuenta.rol) {
                     RolAdulto.Docente -> Rutas.Docente
                     RolAdulto.Acudiente -> Rutas.Padres
@@ -91,7 +90,20 @@ fun ReciclaKidsApp(
             }
         }
         composable(Rutas.Padres) {
-            PantallaPendiente(stringResource(R.string.pendiente_padres), onVolver = { volverAlSelector() })
+            val servicio = remember { sesionAdulta.servicioPadres }
+            if (servicio != null) {
+                ModoPadres(
+                    servicio = servicio,
+                    onCerrarSesion = {
+                        sesionAdulta.cerrar()
+                        volverAlSelector()
+                    },
+                    onVerPolitica = { navController.navigate(RutasAcceso.Politica) },
+                    onCambiarContrasena = { navController.navigate(RutasAcceso.Recuperar) },
+                )
+            } else {
+                LaunchedEffect(Unit) { volverAlSelector() }
+            }
         }
     }
 
@@ -101,10 +113,12 @@ fun ReciclaKidsApp(
         if (grafo != null) {
             val sesion: SesionNinoViewModel = viewModel(grafo)
             sesion.nino?.let { nino ->
+                val controles = contenedor.controlesParentales
+                val control by remember(nino.id) { controles.observar(nino.id) }.collectAsState(controles.de(nino.id))
                 VigilanteTiempoJuego(
                     nino = nino,
                     tiempo = contenedor.tiempo,
-                    control = contenedor.controlParental,
+                    control = control,
                     onAgotado = { navController.irATiempoTerminado() },
                 )
             }
