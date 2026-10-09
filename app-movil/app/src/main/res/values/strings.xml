@@ -133,9 +133,44 @@
     <string name="tutorial_titulo">Arrastra el residuo a su caneca</string>
     <string name="tutorial_entendido">¡Ya entendí!</string>
 
+    <!-- UI-12 Juego y UI-13 Microinteracciones: nunca hay rojo, cruces ni sonido de fallo -->
+    <string name="juego_pausa">Pausa</string>
+    <plurals name="juego_avance">
+        <item quantity="one">Llevas %1$d de %2$d residuo</item>
+        <item quantity="other">Llevas %1$d de %2$d residuos</item>
+    </plurals>
+    <plurals name="juego_puntos">
+        <item quantity="one">%1$d punto</item>
+        <item quantity="other">%1$d puntos</item>
+    </plurals>
+    <string name="juego_tiempo">Tiempo del reto</string>
+    <string name="juego_muy_bien">¡Muy bien!</string>
+    <string name="juego_casi">¡Casi! Mira la caneca que brilla</string>
+    <string name="juego_guia">%1$s va en la caneca %2$s</string>
+
+    <!-- UI-14 Pausa -->
+    <string name="pausa_continuar">Continuar</string>
+    <string name="pausa_reiniciar">Reiniciar</string>
+    <string name="pausa_menu">Menú</string>
+    <string name="volumen_bajar">Bajar el volumen</string>
+    <string name="volumen_subir">Subir el volumen</string>
+    <string name="volumen_descripcion">Volumen %1$d de %2$d</string>
+
+    <!-- UI-15 Resultado: todo reto termina en logro -->
+    <plurals name="resultado_titulo">
+        <item quantity="one">¡Separaste %d residuo!</item>
+        <item quantity="other">¡Separaste %d residuos!</item>
+    </plurals>
+    <string name="resultado_acuario">Tu acuario está más limpio</string>
+    <string name="resultado_buen_trabajo">¡Qué buen trabajo!</string>
+    <string name="resultado_racha">Racha de %1$d</string>
+    <string name="resultado_estrellas">%1$d de 3 estrellas</string>
+    <string name="resultado_ver_premio">Ver premio</string>
+    <string name="resultado_menu">Menú</string>
+
     <!-- Destinos que todavía no existen -->
     <string name="pendiente_titulo">En construcción</string>
-    <string name="pendiente_juego">Modo Niño: sigue el juego (UI-12).</string>
+    <string name="pendiente_insignia_obtenida">Modo Niño: sigue la insignia obtenida (UI-16).</string>
     <string name="pendiente_insignias">Modo Niño: sigue la colección de insignias (UI-17).</string>
     <string name="pendiente_ajustes">Modo Niño: siguen los ajustes del niño (UI-18).</string>
     <string name="pendiente_docente">Modo Docente: sigue el tablero de inicio (UI-21).</string>

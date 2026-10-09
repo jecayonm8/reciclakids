@@ -2,6 +2,8 @@ package com.reciclakids.di
 
 import android.content.Context
 import com.reciclakids.local.BaseDatosReciclaKids
+import com.reciclakids.local.RepositorioAjustes
+import com.reciclakids.local.RepositorioJuego
 import com.reciclakids.local.RepositorioProgreso
 import com.reciclakids.network.ServicioAcceso
 import com.reciclakids.network.ServicioAccesoEnMemoria
@@ -18,6 +20,8 @@ class ContenedorApp(
     val baseDatos: BaseDatosReciclaKids,
 ) {
     val progreso by lazy { RepositorioProgreso(baseDatos.progresoDao()) }
+    val juego by lazy { RepositorioJuego(baseDatos) }
+    val ajustes by lazy { RepositorioAjustes(baseDatos.juegoDao()) }
 
     companion object {
         fun produccion(context: Context) = ContenedorApp(
