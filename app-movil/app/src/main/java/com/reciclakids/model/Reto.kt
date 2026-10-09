@@ -18,6 +18,14 @@ enum class Dificultad(val categorias: List<CategoriaResiduo>, val conTiempo: Boo
     Dificil(CategoriaResiduo.entries, conTiempo = true),
 }
 
+/** Residuos que trae un reto de cada dificultad. Lo usan el juego y el resumen del asistente docente. */
+val Dificultad.residuosPorReto: Int
+    get() = when (this) {
+        Dificultad.Facil -> 4
+        Dificultad.Medio -> 6
+        Dificultad.Dificil -> 8
+    }
+
 /**
  * Reto diario publicado por la docente. El [codigo] de cuatro dígitos no identifica a ningún
  * niño y solo sirve el día [fecha]: vence a medianoche.

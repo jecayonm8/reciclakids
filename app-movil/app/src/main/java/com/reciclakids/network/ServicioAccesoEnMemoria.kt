@@ -28,8 +28,16 @@ class ServicioAccesoEnMemoria(private val latenciaMs: Long = 600) : ServicioAcce
         }
     }
 
-    override suspend fun registrarDocente(datos: RegistroDocente): ResultadoRegistro =
-        registrar(CuentaAdulto(datos.nombre.trim(), datos.correo.normalizado(), RolAdulto.Docente), datos.contrasena)
+    override suspend fun registrarDocente(datos: RegistroDocente): ResultadoRegistro {
+        val cuenta = CuentaAdulto(
+            nombre = datos.nombre.trim(),
+            correo = datos.correo.normalizado(),
+            rol = RolAdulto.Docente,
+            jardin = datos.jardin.trim(),
+            grupo = datos.grupo.trim(),
+        )
+        return registrar(cuenta, datos.contrasena)
+    }
 
     override suspend fun registrarAcudiente(datos: RegistroAcudiente): ResultadoRegistro =
         registrar(CuentaAdulto(datos.nombre.trim(), datos.correo.normalizado(), RolAdulto.Acudiente), datos.contrasena)

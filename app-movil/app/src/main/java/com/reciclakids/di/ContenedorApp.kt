@@ -7,8 +7,11 @@ import com.reciclakids.local.RepositorioJuego
 import com.reciclakids.local.RepositorioProgreso
 import com.reciclakids.local.RepositorioTiempo
 import com.reciclakids.model.ControlParental
+import com.reciclakids.model.CuentaAdulto
 import com.reciclakids.network.ServicioAcceso
 import com.reciclakids.network.ServicioAccesoEnMemoria
+import com.reciclakids.network.ServicioDocente
+import com.reciclakids.network.ServicioDocenteEnMemoria
 import com.reciclakids.network.ServicioResultados
 import com.reciclakids.network.ServicioResultadosEnMemoria
 import com.reciclakids.network.ServicioRetos
@@ -29,6 +32,8 @@ class ContenedorApp(
     val controlParental: ControlParental = ControlParental(),
     /** Pide sincronizar los resultados en segundo plano. Las pruebas no programan nada. */
     val programarSincronizacion: () -> Unit = {},
+    /** Servicio del Modo Docente para la cuenta que inicia sesión. */
+    val crearServicioDocente: (CuentaAdulto) -> ServicioDocente = { ServicioDocenteEnMemoria(it) },
 ) {
     val progreso by lazy { RepositorioProgreso(baseDatos.progresoDao()) }
     val juego by lazy { RepositorioJuego(baseDatos) }
