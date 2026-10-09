@@ -57,6 +57,15 @@ data class InsigniaGanadaEntity(
     val fecha: String,
 )
 
+/** Tiempo que el niño lleva jugando cada día, para el límite del control parental (UI-19). */
+@Entity(tableName = "tiempo_juego", primaryKeys = ["ninoId", "fecha"])
+data class TiempoJuegoEntity(
+    val ninoId: String,
+    /** Fecha ISO-8601 del día. */
+    val fecha: String,
+    val ms: Long,
+)
+
 /** Volumen de la voz y de la música, de 0 a 5. Uno solo por teléfono. */
 @Entity(tableName = "ajustes_nino")
 data class AjustesNinoEntity(
@@ -75,6 +84,9 @@ interface JuegoDao {
 
     @Insert
     suspend fun crearPartida(partida: PartidaEntity): Long
+
+    @Query("SELECT * FROM partida WHERE id = :id")
+    suspend fun leerPartida(id: Long): PartidaEntity?
 
     @Query(
         "UPDATE partida SET indice = :indice, aciertos = :aciertos, errores = :errores, racha = :racha, " +
@@ -103,8 +115,26 @@ interface JuegoDao {
     @Query("SELECT COUNT(DISTINCT fecha) FROM partida WHERE ninoId = :ninoId AND terminada = 1")
     suspend fun diasConRetoTerminado(ninoId: String): Int
 
+    @Query("SELECT COUNT(DISTINCT fecha) FROM partida WHERE ninoId = :ninoId AND terminada = 1")
+    fun observarDiasConRetoTerminado(ninoId: String): Flow<Int>
+
     @Query("SELECT COUNT(*) FROM intento WHERE sincronizado = 0")
     fun intentosPendientes(): Flow<Int>
+
+    @Query("SELECT * FROM intento WHERE sincronizado = 0 ORDER BY id LIMIT :limite")
+    suspend fun intentosSinSincronizar(limite: Int): List<IntentoEntity>
+
+    @Query("UPDATE intento SET sincronizado = 1 WHERE id IN (:ids)")
+    suspend fun marcarSincronizados(ids: List<Long>)
+
+    @Query("SELECT ms FROM tiempo_juego WHERE ninoId = :ninoId AND fecha = :fecha")
+    fun observarTiempo(ninoId: String, fecha: String): Flow<Long?>
+
+    @Query("SELECT ms FROM tiempo_juego WHERE ninoId = :ninoId AND fecha = :fecha")
+    suspend fun leerTiempo(ninoId: String, fecha: String): Long?
+
+    @Upsert
+    suspend fun guardarTiempo(tiempo: TiempoJuegoEntity)
 
     @Query("SELECT * FROM insignia_ganada WHERE ninoId = :ninoId")
     fun insigniasGanadas(ninoId: String): Flow<List<InsigniaGanadaEntity>>

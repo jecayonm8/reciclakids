@@ -49,6 +49,16 @@ class InsigniaTest {
     }
 
     @Test
+    fun laColeccionDiceCuantoFaltaSoloEnLasDeConstancia() {
+        val progreso = ProgresoNino("n", retosCompletados = 8)
+
+        assertEquals(Faltante(2, enDias = false), Insignia.PulpoOrdenado.faltante(progreso, diasConReto = 3))
+        assertEquals(Faltante(12, enDias = false), Insignia.GuardianDelMar.faltante(progreso, diasConReto = 3))
+        assertEquals(Faltante(2, enDias = true), Insignia.CincoRetosDiarios.faltante(progreso, diasConReto = 3))
+        assertEquals(null, Insignia.AmigaTortuga.faltante(progreso, diasConReto = 3))
+    }
+
+    @Test
     fun unaInsigniaNoSeOtorgaDosVeces() {
         assertFalse(Insignia.AmigaTortuga in nuevas(ya = setOf(Insignia.AmigaTortuga)))
     }

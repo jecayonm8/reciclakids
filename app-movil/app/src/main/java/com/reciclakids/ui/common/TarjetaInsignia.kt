@@ -3,6 +3,7 @@ package com.reciclakids.ui.common
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +54,7 @@ fun TarjetaInsignia(
     ganada: Boolean,
     modifier: Modifier = Modifier,
     ilustracion: Painter? = null,
+    onClick: (() -> Unit)? = null,
 ) {
     val descripcion = stringResource(
         if (ganada) R.string.insignia_ganada_descripcion else R.string.insignia_pendiente_descripcion,
@@ -71,6 +74,7 @@ fun TarjetaInsignia(
                         .bordePunteado(Color.White.copy(alpha = 0.7f))
                 }
             )
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .padding(12.dp)
             .clearAndSetSemantics { contentDescription = descripcion },
         horizontalAlignment = Alignment.CenterHorizontally,
