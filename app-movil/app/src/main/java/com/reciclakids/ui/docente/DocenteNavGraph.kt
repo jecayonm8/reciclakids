@@ -366,7 +366,7 @@ private fun NavController.irAPestana(pestana: PestanaDocente) {
     }
 }
 
-private fun compartirTexto(contexto: Context, texto: String) {
+internal fun compartirTexto(contexto: Context, texto: String) {
     val envio = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
         putExtra(Intent.EXTRA_TEXT, texto)
