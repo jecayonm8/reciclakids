@@ -29,3 +29,15 @@ If the server starts successfully, you'll see the following output:
 2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
 2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
 ```
+
+## Vista previa de los correos (UI-36 y UI-37)
+Las plantillas viven en `com.reciclakids.services.notificaciones.correos`. Con `./gradlew run`
+se ven en el navegador con datos ficticios:
+
+| Ruta | Correo |
+|------|--------|
+| `/correos/vista-previa/logro` | UI-36 · Correo de logro |
+| `/correos/vista-previa/reporte-semanal` | UI-37 · Correo de reporte semanal |
+
+Agrega `?formato=texto` para ver el asunto y la alternativa en texto plano. La vista previa se
+apaga con la variable de entorno `RECICLAKIDS_VISTA_PREVIA_CORREOS=false` (hazlo en producción).
