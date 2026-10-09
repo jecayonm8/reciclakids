@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import com.reciclakids.network.ServicioAccesoEnMemoria
+import com.reciclakids.network.ServicioDocenteEnMemoria
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import org.junit.Before
 import org.junit.Rule
@@ -29,7 +30,12 @@ class FlujoAccesoTest {
     @Before
     fun abrirApp() {
         compose.setContent {
-            ReciclaKidsTheme { ReciclaKidsApp(servicioAcceso = ServicioAccesoEnMemoria(latenciaMs = 0)) }
+            ReciclaKidsTheme {
+                ReciclaKidsApp(
+                    servicioAcceso = ServicioAccesoEnMemoria(latenciaMs = 0),
+                    crearServicioDocente = { ServicioDocenteEnMemoria(it, latenciaMs = 0) },
+                )
+            }
         }
     }
 
@@ -99,7 +105,7 @@ class FlujoAccesoTest {
         compose.onNodeWithText("Cuenta creada. Ya puedes iniciar sesión.").assertIsDisplayed()
         iniciarSesion("laura.r@jardin.edu.co", "clave-de-prueba")
 
-        compose.onNodeWithText("Modo Docente: sigue el tablero de inicio (UI-21).").assertIsDisplayed()
+        compose.onNodeWithText("Hola, Laura").assertIsDisplayed()
     }
 
     @Test
