@@ -116,8 +116,15 @@ class RepositorioJuego(
     fun insigniasGanadas(ninoId: String): Flow<Set<Insignia>> =
         dao.insigniasGanadas(ninoId).map { ganadas -> ganadas.mapNotNull { it.aInsignia() }.toSet() }
 
+    /** Días distintos en los que el niño terminó un reto (insignia «5 retos diarios»). */
+    fun diasConReto(ninoId: String): Flow<Int> = dao.observarDiasConRetoTerminado(ninoId)
+
     /** Intentos guardados en el teléfono que todavía no llegan al backend. */
     fun intentosPendientes(): Flow<Int> = dao.intentosPendientes()
+
+    suspend fun intentosSinSincronizar(limite: Int): List<IntentoEntity> = dao.intentosSinSincronizar(limite)
+
+    suspend fun marcarSincronizados(ids: List<Long>) = dao.marcarSincronizados(ids)
 
     private suspend fun guardarAvance(partidaId: Long, estado: EstadoPartida, tiempoMs: Long) {
         dao.guardarAvance(
