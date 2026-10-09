@@ -83,8 +83,11 @@ enum class EstadoCaneca {
     /** Hay un objeto dentro del radio del imán: escala 1,06 y halo. */
     Resaltada,
 
-    /** Pista tras 5 s sin tocar o tras un error: halo y flecha en bucle. Nunca bloquea el juego. */
+    /** Pista tras 5 s sin tocar: halo y flecha en bucle. Nunca bloquea el juego. */
     Guia,
+
+    /** La caneca correcta brilla tras un error (y en el tutorial): solo el halo en bucle. */
+    Brillante,
 }
 
 private val FormaTapa = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomEnd = 5.dp, bottomStart = 5.dp)
