@@ -199,9 +199,270 @@
     </plurals>
     <string name="tiempo_nota">El tiempo lo define el control parental. No se puede saltar desde el Modo Niño.</string>
 
+    <!-- P3 · Modo Docente -->
+    <string name="comun_cancelar">Cancelar</string>
+    <string name="porcentaje">%1$d\u00A0%%</string>
+    <string name="docente_tab_inicio">Inicio</string>
+    <string name="docente_tab_biblioteca">Biblioteca</string>
+    <string name="docente_tab_grupo">Grupo</string>
+    <string name="docente_tab_reportes">Reportes</string>
+    <string name="docente_tab_cuenta">Cuenta</string>
+    <string name="docente_cargando">Cargando…</string>
+    <string name="docente_error_titulo">No pudimos cargar esta información</string>
+    <string name="docente_error_texto">Revisa la conexión del jardín. Lo que ya publicaste sigue disponible para los niños: el juego funciona sin internet.</string>
+    <string name="docente_reintentar">Reintentar</string>
+    <string name="docente_error_accion">No hay conexión. Intenta de nuevo en un momento.</string>
+
+    <!-- Canecas, dificultad y estado de un reto -->
+    <string name="categoria_aprovechables">Aprovechables</string>
+    <string name="categoria_no_aprovechables">No aprovechables</string>
+    <string name="categoria_organicos">Orgánicos</string>
+    <string name="categoria_aprovechables_frase">aprovechables</string>
+    <string name="categoria_no_aprovechables_frase">no aprovechables</string>
+    <string name="categoria_organicos_frase">orgánicos</string>
+    <string name="categoria_aprovechables_ejemplos">Botella, lata, papel</string>
+    <string name="categoria_no_aprovechables_ejemplos">Servilleta, metalizado</string>
+    <string name="categoria_organicos_ejemplos">Cáscaras, restos de comida</string>
+    <string name="caneca_blanca_frase">blanca</string>
+    <string name="caneca_negra_frase">negra</string>
+    <string name="caneca_verde_frase">verde</string>
+    <string name="categorias_todas">Las tres canecas</string>
+    <string name="categorias_ninguna">Sin canecas elegidas</string>
+    <string name="dificultad_facil">Fácil</string>
+    <string name="dificultad_medio">Medio</string>
+    <string name="dificultad_dificil">Difícil</string>
+    <string name="dificultad_facil_resumen">Fácil · 2 canecas</string>
+    <string name="dificultad_medio_resumen">Medio · 3 canecas</string>
+    <string name="dificultad_dificil_resumen">Difícil · 3 canecas con tiempo</string>
+    <string name="dificultad_facil_detalle">2 canecas, sin tiempo. Ideal para empezar.</string>
+    <string name="dificultad_medio_detalle">3 canecas, sin tiempo. El más usado.</string>
+    <string name="dificultad_dificil_detalle">3 canecas, con tiempo y más residuos.</string>
+    <string name="dificultad_facil_edad">3 años</string>
+    <string name="dificultad_medio_edad">4–5 años</string>
+    <string name="dificultad_dificil_edad">5–6 años</string>
+    <plurals name="residuos">
+        <item quantity="one">%d residuo</item>
+        <item quantity="other">%d residuos</item>
+    </plurals>
+    <string name="reto_fecha_hoy">hoy</string>
+    <string name="reto_sin_fecha">sin fecha</string>
+    <string name="reto_detalle">%1$s · %2$s · %3$s</string>
+    <string name="reto_resumen_corto">%1$s · %2$s</string>
+    <string name="estado_publicado">Publicado</string>
+    <string name="estado_programado">Programado</string>
+    <string name="estado_borrador">Borrador</string>
+    <string name="codigo_vence_hoy">Vence hoy a medianoche</string>
+
+    <!-- UI-21 Tablero de inicio -->
+    <string name="tablero_hola">Hola, %1$s</string>
+    <string name="tablero_grupo_hoy">%1$s · hoy</string>
+    <string name="tablero_codigo_activo">Código activo</string>
+    <string name="tablero_mostrar_codigo">Mostrar código</string>
+    <string name="tablero_resumen">Resumen del grupo</string>
+    <string name="tablero_completaron">de %1$d completaron</string>
+    <string name="tablero_aciertos">de aciertos</string>
+    <string name="tablero_aciertos_pendientes">Los aciertos aparecen cuando alguien termine el reto.</string>
+    <string name="tablero_reutilizar">Crear a partir de uno anterior</string>
+    <string name="tablero_crear">Crear</string>
+    <string name="tablero_crear_descripcion">Crear reto</string>
+    <string name="tablero_vacio_titulo">Hoy todavía no hay reto</string>
+    <string name="tablero_vacio_texto">Publica uno y los niños podrán entrar con el código del día. Toma menos de un minuto.</string>
+    <string name="tablero_vacio_crear">Crear reto</string>
+    <string name="tablero_vacio_reutilizar">Reutilizar uno anterior</string>
+    <string name="tablero_vacio_ilustracion">acuario vacío</string>
+
+    <!-- UI-22 Crear reto -->
+    <string name="crear_titulo">Crear reto</string>
+    <string name="crear_titulo_editar">Editar reto</string>
+    <string name="crear_cerrar">Cerrar el asistente</string>
+    <string name="crear_menos_minuto">Menos de 1 minuto</string>
+    <string name="crear_paso_chip">%1$d. %2$s</string>
+    <string name="crear_paso_canecas">Canecas</string>
+    <string name="crear_paso_dificultad">Dificultad</string>
+    <string name="crear_paso_fecha">Fecha</string>
+    <string name="crear_paso_vista">Vista previa</string>
+    <string name="crear_paso_publicar">Publicar</string>
+    <string name="crear_paso_falta_caneca">%1$s · elige al menos una caneca</string>
+    <string name="crear_atras">Atrás</string>
+    <string name="crear_siguiente">Siguiente</string>
+    <string name="crear_todo_listo">Todo listo</string>
+    <string name="crear_publicar">Publicar</string>
+    <string name="crear_reutilizar_titulo">Crear a partir de un reto anterior</string>
+    <string name="crear_reutilizar_texto">Lo más rápido: eliges uno, cambias la fecha y publicas.</string>
+    <string name="crear_desde_cero">o empieza desde cero</string>
+    <string name="crear_pregunta_canecas">¿Qué canecas va a practicar el grupo?</string>
+    <string name="crear_pregunta_dificultad">¿Qué tan difícil?</string>
+    <string name="crear_pregunta_fecha">¿Cuándo lo juegan?</string>
+    <string name="crear_fecha_hoy">Hoy</string>
+    <string name="crear_fecha_hoy_texto">Se publica ya y el código vence a medianoche</string>
+    <string name="crear_fecha_programar">Programar</string>
+    <string name="crear_fecha_programar_texto">Queda listo y se activa solo ese día</string>
+    <string name="crear_elige_dia">Elige el día</string>
+    <string name="crear_codigo_esa_manana">El código se genera automáticamente esa mañana.</string>
+    <string name="crear_vista_titulo">Así lo verá el niño</string>
+    <string name="crear_vista_descripcion">Vista previa del juego con %1$s</string>
+    <string name="crear_vista_residuo">botella</string>
+    <string name="crear_resumen">Resumen</string>
+    <string name="crear_resumen_canecas">Canecas</string>
+    <string name="crear_resumen_dificultad">Dificultad</string>
+    <string name="crear_resumen_residuos">Residuos</string>
+    <string name="crear_resumen_fecha">Fecha</string>
+    <string name="crear_fecha_resumen_hoy">Hoy, %1$s</string>
+    <string name="crear_fecha_resumen_programada">Programado para %1$s</string>
+    <string name="crear_voz_sola">La voz y las pistas se activan solas: el niño no necesita leer.</string>
+    <string name="crear_listo_titulo">Todo listo para publicar</string>
+    <string name="crear_listo_texto_hoy">%1$s · %2$s · %3$s. Al publicar se genera el código del día para el grupo.</string>
+    <string name="crear_listo_texto_programado">%1$s · %2$s · %3$s. Al publicar queda programado y el código se genera esa mañana.</string>
+    <string name="crear_publicar_reto">Publicar reto</string>
+    <string name="crear_publicando">Publicando el reto…</string>
+    <string name="crear_publicado_titulo">¡Reto publicado!</string>
+    <string name="crear_publicado_texto">El código del día ya está activo. Muéstraselo al grupo para que entren.</string>
+    <string name="crear_programado_titulo">¡Reto programado!</string>
+    <string name="crear_programado_texto">Queda listo para el %1$s. El código se genera automáticamente esa mañana.</string>
+    <string name="crear_ir_tablero">Ir al tablero</string>
+    <string name="crear_mostrar_grupo">Mostrar al grupo</string>
+    <string name="crear_ver_biblioteca">Ver en la biblioteca</string>
+    <string name="crear_fallo_titulo">No se pudo publicar</string>
+    <string name="crear_fallo_texto">Se guardó como borrador en este dispositivo. Cuando vuelva la conexión puedes reintentar; no se pierde nada.</string>
+    <string name="crear_ver_borrador">Ver borrador</string>
+    <string name="reutilizar_titulo">Reutilizar un reto</string>
+    <string name="reutilizar_usar">Usar</string>
+    <string name="reutilizar_usar_descripcion">Usar «%1$s»</string>
+    <string name="reutilizar_vacio">Todavía no hay retos publicados para reutilizar.</string>
+    <string name="reutilizar_aciertos">%1$s de aciertos</string>
+
+    <!-- UI-23 Biblioteca de retos -->
+    <string name="biblioteca_titulo">Biblioteca de retos</string>
+    <string name="biblioteca_crear">Crear reto</string>
+    <string name="filtro_todos">Todos</string>
+    <string name="filtro_esta_semana">Esta semana</string>
+    <string name="biblioteca_conteo">%1$d de %2$d retos</string>
+    <string name="biblioteca_duplicar">Duplicar</string>
+    <string name="biblioteca_resultados">Ver resultados</string>
+    <string name="biblioteca_editar">Editar</string>
+    <string name="biblioteca_sin_resultados">Ningún reto con ese filtro</string>
+    <string name="biblioteca_quitar_filtros">Quitar filtros</string>
+    <string name="biblioteca_vacia_titulo">Aquí van a quedar tus retos</string>
+    <string name="biblioteca_vacia_texto">Cada reto que publiques se guarda aquí para que lo vuelvas a usar. Empieza con uno sencillo: dos canecas y cuatro residuos.</string>
+    <string name="biblioteca_vacia_crear">Crear mi primer reto</string>
+    <string name="biblioteca_vacia_ilustracion">biblioteca vacía</string>
+
+    <!-- UI-24 Reto publicado · código -->
+    <string name="codigo_titulo">Escriban este código</string>
+    <string name="codigo_barra">Código del reto</string>
+    <plurals name="codigo_ninos_entraron">
+        <item quantity="one">%d niño ya entró</item>
+        <item quantity="other">%d niños ya entraron</item>
+    </plurals>
+    <string name="codigo_ningun_nino">Todavía no entra ningún niño</string>
+    <string name="codigo_mismo_color">Cada dígito tiene el mismo color y la misma forma en el teléfono del niño.</string>
+    <string name="codigo_no_disponible_titulo">Este reto ya no tiene código activo</string>
+    <string name="codigo_no_disponible_texto">Los códigos vencen a medianoche. Publica el reto de hoy para generar uno nuevo.</string>
+
+    <!-- UI-25 Mi grupo -->
+    <string name="grupo_titulo">Mi grupo · %1$s</string>
+    <plurals name="grupo_ninos">
+        <item quantity="one">%d niño</item>
+        <item quantity="other">%d niños</item>
+    </plurals>
+    <string name="grupo_reto_hoy">Reto de hoy: %1$s</string>
+    <string name="grupo_sin_reto_hoy">Hoy no hay reto publicado</string>
+    <string name="grupo_avatar">avatar</string>
+    <string name="nino_completo">Completó</string>
+    <string name="nino_en_curso">En curso</string>
+    <string name="nino_sin_empezar">Sin empezar</string>
+    <string name="nino_completo_detalle">Completó en %1$d min · %2$d de %3$d aciertos</string>
+    <string name="nino_en_curso_detalle">Va en el residuo %1$d</string>
+    <string name="nino_sin_empezar_detalle">Todavía no entra</string>
+    <string name="grupo_vacio_titulo">Aún no hay niños en el grupo</string>
+    <string name="grupo_vacio_texto">Pide a la coordinación que cargue la lista del grupo, o compártela desde Cuenta.</string>
+    <string name="grupo_vacio_cuenta">Ir a Cuenta</string>
+    <string name="grupo_vacio_ilustracion">grupo vacío</string>
+
+    <!-- UI-26 Reporte grupal semanal -->
+    <string name="reporte_titulo">Reporte semanal</string>
+    <string name="reporte_enviar">Enviar</string>
+    <string name="reporte_enviar_descripcion">Enviar el reporte a los acudientes</string>
+    <string name="reporte_enviado">Reporte enviado. Cada acudiente recibe solo los datos de su hijo o hija.</string>
+    <string name="reporte_semana">Semana del %1$s</string>
+    <string name="reporte_completados">Retos completados</string>
+    <string name="reporte_aciertos">Aciertos del grupo</string>
+    <string name="reporte_publicados">Retos publicados</string>
+    <plurals name="reporte_reutilizados">
+        <item quantity="one">%d reutilizado de semanas previas</item>
+        <item quantity="other">%d reutilizados de semanas previas</item>
+    </plurals>
+    <string name="reporte_insignias">Insignias otorgadas</string>
+    <string name="reporte_cambio_sube">+%1$d pts vs. semana pasada</string>
+    <string name="reporte_cambio_baja">−%1$d pts vs. semana pasada</string>
+    <string name="reporte_cambio_insignias_sube">+%1$d vs. semana pasada</string>
+    <string name="reporte_cambio_insignias_baja">−%1$d vs. semana pasada</string>
+    <string name="reporte_cambio_igual">igual que la semana pasada</string>
+    <string name="reporte_participacion">Participación por día</string>
+    <string name="reporte_por_nino">Retos completados por niño</string>
+    <string name="reporte_privacidad">Se muestran nombre y primera letra del apellido, nada más.</string>
+    <string name="reporte_vacio_titulo">Todavía no hay datos de esta semana</string>
+    <string name="reporte_vacio_texto">El reporte se arma con los retos jugados. Publica uno y vuelve el viernes.</string>
+    <string name="reporte_vacio_crear">Crear reto</string>
+
+    <!-- UI-27 Detalle de un niño -->
+    <string name="detalle_privacidad">Solo tú y su acudiente ven esta información</string>
+    <string name="detalle_evolucion">Evolución semanal</string>
+    <string name="detalle_evolucion_sub">aciertos por semana</string>
+    <string name="detalle_cambio_sube">+%1$d pts en %2$d semanas</string>
+    <string name="detalle_cambio_baja">−%1$d pts en %2$d semanas</string>
+    <string name="detalle_cambio_igual">igual en %1$d semanas</string>
+    <string name="detalle_semana">sem %1$d</string>
+    <string name="detalle_por_caneca">Aciertos por caneca</string>
+    <string name="detalle_por_caneca_sub">Dónde se confunde más</string>
+    <string name="detalle_confunde">Confunde %1$s con %2$s. Un reto solo de caneca %3$s le ayudaría.</string>
+    <string name="detalle_caneca_dificil">Le cuesta más la caneca %1$s (%2$s). Un reto solo de esa caneca le ayudaría.</string>
+    <string name="detalle_va_bien">Clasifica bien en las tres canecas. ¡Va muy bien!</string>
+    <string name="detalle_insignias">Insignias · %1$d de %2$d</string>
+    <string name="detalle_insignia_ganada">%1$s, ganada</string>
+    <string name="detalle_insignia_pendiente">%1$s, todavía no</string>
+    <string name="detalle_vacio_titulo">Todavía no hay resultados</string>
+    <string name="detalle_vacio_texto">Cuando %1$s juegue su primer reto, aquí verás su evolución y en qué caneca se confunde.</string>
+
+    <!-- UI-28 Cuenta y ajustes -->
+    <string name="cuenta_titulo">Cuenta y ajustes</string>
+    <string name="cuenta_jardin">Jardín</string>
+    <string name="cuenta_grupo">Grupo a cargo</string>
+    <string name="cuenta_grupo_valor">%1$s · %2$s</string>
+    <string name="cuenta_editar_perfil">Editar perfil</string>
+    <string name="cuenta_avisos">Avisos</string>
+    <string name="aviso_publicacion">Confirmar cada publicación</string>
+    <string name="aviso_publicacion_detalle">Aviso cuando el reto queda activo</string>
+    <string name="aviso_resumen">Resumen diario a las 5 p. m.</string>
+    <string name="aviso_resumen_detalle">Cuántos niños jugaron hoy</string>
+    <string name="aviso_sin_jugar">Avisarme de niños sin jugar</string>
+    <string name="aviso_sin_jugar_detalle">Después de dos días seguidos</string>
+    <string name="cuenta_avisos_error">No se guardó el cambio. Revisa la conexión.</string>
+    <string name="cuenta_vinculacion">Código de vinculación para acudientes</string>
+    <string name="cuenta_vinculacion_texto">Cada acudiente lo usa una vez para ver únicamente a su hijo o hija.</string>
+    <string name="cuenta_compartir">Compartir</string>
+    <string name="cuenta_compartir_texto">Código de vinculación de ReciclaKids para %1$s: %2$s. Úsalo una sola vez al crear tu cuenta de acudiente.</string>
+    <string name="cuenta_regenerar">Regenerar</string>
+    <string name="cuenta_regenerar_titulo">¿Generar un código nuevo?</string>
+    <string name="cuenta_regenerar_texto">El código actual deja de servir para vincular cuentas nuevas. Los acudientes que ya están vinculados no se ven afectados.</string>
+    <string name="cuenta_regenerar_confirmar">Generar código</string>
+    <string name="cuenta_regenerado">Código nuevo: %1$s</string>
+    <string name="cuenta_privacidad">Datos y privacidad</string>
+    <string name="cuenta_privacidad_texto">Los datos de los niños se guardan mínimos: nombre, inicial del apellido y resultados. Ley 1581 de 2012.</string>
+    <string name="cuenta_ver_politica">Ver política</string>
+    <string name="cuenta_cerrar_sesion">Cerrar sesión</string>
+    <string name="cuenta_eliminar">Eliminar datos del grupo</string>
+    <string name="cuenta_eliminar_titulo">¿Eliminar los datos del grupo?</string>
+    <plurals name="cuenta_eliminar_texto">
+        <item quantity="one">Se borran resultados, insignias y reportes de %d niño. Su acudiente deja de ver el progreso. No se puede deshacer.</item>
+        <item quantity="other">Se borran resultados, insignias y reportes de los %d niños. Los acudientes dejan de ver el progreso. No se puede deshacer.</item>
+    </plurals>
+    <string name="cuenta_eliminar_confirmar">Sí, eliminar</string>
+    <string name="cuenta_eliminado">Se eliminaron los resultados, insignias y reportes del grupo.</string>
+
     <!-- Destinos que todavía no existen -->
     <string name="pendiente_titulo">En construcción</string>
-    <string name="pendiente_docente">Modo Docente: sigue el tablero de inicio (UI-21).</string>
+    <string name="pendiente_editar_perfil">Editar perfil: la pantalla todavía no está diseñada.</string>
     <string name="pendiente_padres">Modo Padres: sigue el inicio (UI-29).</string>
     <string name="pendiente_politica">Política de tratamiento de datos: el texto legal está pendiente.</string>
 </resources>

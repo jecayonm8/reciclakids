@@ -99,7 +99,7 @@ class FlujoAccesoTest {
         compose.onNodeWithText("Cuenta creada. Ya puedes iniciar sesión.").assertIsDisplayed()
         iniciarSesion("laura.r@jardin.edu.co", "clave-de-prueba")
 
-        compose.onNodeWithText("Modo Docente: sigue el tablero de inicio (UI-21).").assertIsDisplayed()
+        compose.onNodeWithText("Hola, Laura").assertIsDisplayed()
     }
 
     @Test
