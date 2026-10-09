@@ -2,8 +2,11 @@ package com.reciclakids.model
 
 import java.time.LocalDate
 
-/** Retos completados que llevan el acuario al 100 % (insignia «Guardián del mar»). */
-const val RetosParaAcuarioLimpio = 20
+/**
+ * Retos completados que llevan el acuario al 100 % (insignia «Agua cristalina»). Queda antes de
+ * los 20 retos de «Guardián del mar» para que las dos insignias no se ganen a la vez.
+ */
+const val RetosParaAcuarioLimpio = 15
 
 /**
  * Lo que el niño lleva acumulado en este teléfono. El acuario solo crece con los retos
