@@ -68,6 +68,8 @@ fun ResultadoScreen(
     onVerPremio: () -> Unit,
     onMenu: () -> Unit,
     modifier: Modifier = Modifier,
+    /** UI-20: «Guardado aquí» sin red, «Guardando…» mientras sincroniza y «¡Guardado!» al terminar. */
+    guardado: EstadoConexion = EstadoConexion.Sincronizado,
 ) {
     EscalaFijaNino {
         FondoSubmarino(
@@ -132,7 +134,7 @@ fun ResultadoScreen(
                         )
                     }
                 }
-                IndicadorSinConexion(EstadoConexion.Sincronizado, Modifier.align(Alignment.BottomEnd).padding(14.dp))
+                IndicadorSinConexion(guardado, Modifier.align(Alignment.BottomEnd).padding(14.dp))
             }
         }
     }

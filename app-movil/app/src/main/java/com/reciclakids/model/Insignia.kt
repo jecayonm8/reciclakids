@@ -46,3 +46,21 @@ fun insigniasNuevas(
     }
     return cumplidas.filterNot { it in yaGanadas }
 }
+
+/** Cuánto le falta al niño para una insignia que se gana por constancia. */
+data class Faltante(val cantidad: Int, val enDias: Boolean)
+
+/**
+ * Lo que falta para ganar la insignia, cuando se puede contar (retos o días). Las que dependen
+ * de cómo se juega un reto (sin errores, a tiempo, rachas) devuelven null.
+ */
+fun Insignia.faltante(progreso: ProgresoNino, diasConReto: Int): Faltante? {
+    fun retos(meta: Int) = Faltante((meta - progreso.retosCompletados).coerceAtLeast(1), enDias = false)
+    return when (this) {
+        Insignia.CincoRetosDiarios -> Faltante((DiasParaCincoRetos - diasConReto).coerceAtLeast(1), enDias = true)
+        Insignia.PulpoOrdenado -> retos(RetosParaPulpoOrdenado)
+        Insignia.AguaCristalina -> retos(RetosParaAcuarioLimpio)
+        Insignia.GuardianDelMar -> retos(RetosParaGuardian)
+        else -> null
+    }
+}

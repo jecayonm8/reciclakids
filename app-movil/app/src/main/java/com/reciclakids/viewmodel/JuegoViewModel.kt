@@ -40,6 +40,8 @@ class JuegoViewModel(
     private val reto: Reto,
     private val nino: Nino,
     private val repositorio: RepositorioJuego,
+    /** Se llama con la partida ya guardada como terminada; programa la sincronización. */
+    private val alTerminar: () -> Unit = {},
 ) : ViewModel() {
 
     /** null mientras se abre la partida. */
@@ -139,6 +141,7 @@ class JuegoViewModel(
             resultado = escrituras.withLock {
                 repositorio.terminarPartida(partidaId, nino.id, reto, final, tiempoMs)
             }
+            alTerminar()
         }
     }
 }

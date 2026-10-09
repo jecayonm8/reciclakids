@@ -5,7 +5,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,9 +21,12 @@ import com.reciclakids.ui.acceso.accesoGraph
 import com.reciclakids.ui.common.ModoInmersivo
 import com.reciclakids.ui.common.PantallaPendiente
 import com.reciclakids.ui.nino.RutasNino
+import com.reciclakids.ui.nino.VigilanteTiempoJuego
 import com.reciclakids.ui.nino.esDelNino
+import com.reciclakids.ui.nino.irATiempoTerminado
 import com.reciclakids.ui.nino.ninoGraph
 import com.reciclakids.ui.theme.Duracion
+import com.reciclakids.viewmodel.SesionNinoViewModel
 
 /** Destinos de los modos adultos. Cada uno tendrá su propio grafo; por ahora son provisionales. */
 object Rutas {
@@ -68,6 +73,22 @@ fun ReciclaKidsApp(
         }
         composable(Rutas.Padres) {
             PantallaPendiente(stringResource(R.string.pendiente_padres), onVolver = { volverAlSelector() })
+        }
+    }
+
+    // UI-19 intercepta cualquier ruta del niño cuando se acaba el tiempo del control parental.
+    if (ruta != null && ruta.esDelNino() && ruta !in RutasNino.SinReloj) {
+        val grafo = remember(entradaActual) { runCatching { navController.getBackStackEntry(RutasNino.Grafo) }.getOrNull() }
+        if (grafo != null) {
+            val sesion: SesionNinoViewModel = viewModel(grafo)
+            sesion.nino?.let { nino ->
+                VigilanteTiempoJuego(
+                    nino = nino,
+                    tiempo = contenedor.tiempo,
+                    control = contenedor.controlParental,
+                    onAgotado = { navController.irATiempoTerminado() },
+                )
+            }
         }
     }
 }

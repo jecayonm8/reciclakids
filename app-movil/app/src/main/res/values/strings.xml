@@ -168,11 +168,39 @@
     <string name="resultado_ver_premio">Ver premio</string>
     <string name="resultado_menu">Menú</string>
 
+    <!-- UI-16 Insignia obtenida -->
+    <string name="insignia_nueva">¡Nueva insignia!</string>
+    <string name="insignia_seguir">Seguir</string>
+    <string name="insignia_mis_insignias">Mis insignias</string>
+
+    <!-- UI-17 Colección de insignias -->
+    <string name="coleccion_titulo">Mis insignias</string>
+    <string name="coleccion_contador">%1$d de %2$d</string>
+    <plurals name="coleccion_faltan_retos">
+        <item quantity="one">Falta %d reto</item>
+        <item quantity="other">Faltan %d retos</item>
+    </plurals>
+    <plurals name="coleccion_faltan_dias">
+        <item quantity="one">Falta %d día</item>
+        <item quantity="other">Faltan %d días</item>
+    </plurals>
+
+    <!-- UI-18 Ajustes del niño -->
+    <string name="ajustes_titulo">Ajustes</string>
+    <string name="ajustes_musica">Música</string>
+    <string name="ajustes_sonidos">Sonidos</string>
+    <string name="ajustes_seccion_padres">Sección de padres</string>
+
+    <!-- UI-19 Tiempo de juego terminado -->
+    <string name="tiempo_titulo">¡Los peces también descansan!\nVuelve mañana</string>
+    <plurals name="tiempo_jugado">
+        <item quantity="one">Ya jugaste tu %d minuto</item>
+        <item quantity="other">Ya jugaste tus %d minutos</item>
+    </plurals>
+    <string name="tiempo_nota">El tiempo lo define el control parental. No se puede saltar desde el Modo Niño.</string>
+
     <!-- Destinos que todavía no existen -->
     <string name="pendiente_titulo">En construcción</string>
-    <string name="pendiente_insignia_obtenida">Modo Niño: sigue la insignia obtenida (UI-16).</string>
-    <string name="pendiente_insignias">Modo Niño: sigue la colección de insignias (UI-17).</string>
-    <string name="pendiente_ajustes">Modo Niño: siguen los ajustes del niño (UI-18).</string>
     <string name="pendiente_docente">Modo Docente: sigue el tablero de inicio (UI-21).</string>
     <string name="pendiente_padres">Modo Padres: sigue el inicio (UI-29).</string>
     <string name="pendiente_politica">Política de tratamiento de datos: el texto legal está pendiente.</string>

@@ -4,6 +4,7 @@ import android.os.Looper
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -148,13 +149,43 @@ class FlujoNinoTest {
     }
 
     @Test
-    fun sinErroresHayPremio() {
+    fun sinErroresSeGanaUnaInsigniaQueQuedaEnLaColeccion() {
         empezarRetoFacil()
         listOf(blanca, verde, blanca, verde).forEach(::tocarCaneca)
 
         compose.onNodeWithText("Ver premio").performClick()
+        compose.onNodeWithText("¡Nueva insignia!").assertIsDisplayed()
+        compose.onNodeWithText("Amiga tortuga").assertIsDisplayed()
 
-        compose.onNodeWithText("Modo Niño: sigue la insignia obtenida (UI-16).").assertIsDisplayed()
+        compose.onNodeWithText("Mis insignias").performClick()
+        compose.onNodeWithText("1 de 8").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Insignia ganada: Amiga tortuga. Sin errores").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Insignia por descubrir: Pulpo ordenado. Faltan 9 retos").assertExists()
+    }
+
+    // --- Ajustes y tiempo de juego ---
+
+    @Test
+    fun elVolumenElegidoEnAjustesQuedaGuardado() {
+        entrarComo("Sara P.")
+        compose.onNodeWithContentDescription("Ajustes").performClick()
+
+        compose.onAllNodesWithContentDescription("Bajar el volumen")[1].performClick()
+        compose.onAllNodesWithContentDescription("Volumen 3 de 5")[1].assertIsDisplayed()
+
+        compose.onNodeWithContentDescription("Volver").performClick()
+        compose.onNodeWithContentDescription("Ajustes").performClick()
+        compose.onAllNodesWithContentDescription("Volumen 3 de 5")[1].assertIsDisplayed()
+    }
+
+    @Test
+    fun laSeccionDePadresPasaPorLaPuertaParaAdultos() {
+        entrarComo("Sara P.")
+        compose.onNodeWithContentDescription("Ajustes").performClick()
+
+        compose.onNodeWithText("Sección de padres").performClick()
+
+        compose.onNodeWithText("Puerta para adultos").assertIsDisplayed()
     }
 
     @Test
