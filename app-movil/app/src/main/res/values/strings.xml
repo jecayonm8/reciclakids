@@ -108,9 +108,22 @@
     <string name="autorizacion_crear">Crear cuenta</string>
     <string name="autorizacion_nota">Sin esta autorización no podemos crear la cuenta.</string>
 
+    <!-- P2 · Modo Niño -->
+    <string name="nino_repetir_voz">Escuchar otra vez</string>
+
+    <!-- UI-08 Código del reto -->
+    <string name="codigo_mensaje_editando">Toca los números que te dijo la profe</string>
+    <string name="codigo_mensaje_correcto">¡Ese es! Vamos a jugar</string>
+    <string name="codigo_mensaje_invalido">Ese código no es. ¡Probemos otra vez!</string>
+    <string name="codigo_mensaje_vencido">Ese código ya descansó. Pídele uno nuevo a la profe</string>
+    <string name="codigo_pista">Los colores y las formas son los mismos que ves en el salón</string>
+
+    <!-- UI-09 ¿Quién eres? -->
+    <string name="quien_eres_titulo">¿Quién eres?</string>
+
     <!-- Destinos que todavía no existen -->
     <string name="pendiente_titulo">En construcción</string>
-    <string name="pendiente_nino">Modo Niño: sigue el código del reto (UI-08).</string>
+    <string name="pendiente_menu">Modo Niño: sigue el menú del acuario (UI-10).</string>
     <string name="pendiente_docente">Modo Docente: sigue el tablero de inicio (UI-21).</string>
     <string name="pendiente_padres">Modo Padres: sigue el inicio (UI-29).</string>
     <string name="pendiente_politica">Política de tratamiento de datos: el texto legal está pendiente.</string>
