@@ -23,18 +23,14 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
@@ -42,6 +38,7 @@ import com.reciclakids.ui.common.Burbuja
 import com.reciclakids.ui.common.FondoSubmarino
 import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.common.flotar
+import com.reciclakids.ui.common.sombraTitular
 import com.reciclakids.ui.theme.BalooDos
 import com.reciclakids.ui.theme.EscalaFijaNino
 import com.reciclakids.ui.theme.Nunito
@@ -54,13 +51,6 @@ private val AguaSplash = Brush.verticalGradient(
     0.55f to Color(0xFF17A2C4),
     1f to Color(0xFF0C5C73),
 )
-
-/** Sombra dura bajo los titulares blancos que van directo sobre el agua. */
-@Composable
-internal fun sombraTitular(desplazamiento: Dp = 4.dp): Shadow {
-    val px = with(LocalDensity.current) { desplazamiento.toPx() }
-    return Shadow(color = Color(0x5904323F), offset = Offset(0f, px), blurRadius = 0.5f)
-}
 
 /**
  * UI-01 Bienvenida. Da tiempo de carga sin pantalla muerta y fija el mundo submarino.

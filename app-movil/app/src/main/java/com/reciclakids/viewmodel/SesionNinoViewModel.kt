@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.reciclakids.model.Nino
+import com.reciclakids.model.ResultadoReto
 import com.reciclakids.model.Reto
 
 /**
@@ -17,6 +18,10 @@ class SesionNinoViewModel : ViewModel() {
     var nino by mutableStateOf<Nino?>(null)
         private set
 
+    /** Resultado del último reto terminado, para el resultado (UI-15) y la insignia (UI-16). */
+    var ultimoResultado by mutableStateOf<ResultadoReto?>(null)
+        private set
+
     fun abrirReto(reto: Reto) {
         this.reto = reto
         nino = null
@@ -24,5 +29,9 @@ class SesionNinoViewModel : ViewModel() {
 
     fun elegirNino(nino: Nino) {
         this.nino = nino
+    }
+
+    fun terminarReto(resultado: ResultadoReto) {
+        ultimoResultado = resultado
     }
 }
