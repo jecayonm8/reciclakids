@@ -4,13 +4,14 @@ import com.reciclakids.model.CatalogoResiduos
 import com.reciclakids.model.Dificultad
 import com.reciclakids.model.Nino
 import com.reciclakids.model.Reto
+import com.reciclakids.model.residuosPorReto
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 
 /**
- * Implementación PROVISIONAL mientras no existan el Modo Docente ni el backend: nadie puede
- * publicar retos todavía, así que se dejan unos códigos de demostración para recorrer el
- * Modo Niño. Se reemplaza por el cliente del backend.
+ * Implementación PROVISIONAL mientras no exista el backend: lo que publica el Modo Docente vive
+ * en su propio servicio en memoria y no llega aquí, así que se dejan unos códigos de
+ * demostración para recorrer el Modo Niño. Se reemplaza por el cliente del backend.
  *
  * - 4729: reto de hoy, dificultad media (el código de los prototipos).
  * - 1111: reto de hoy, fácil. 9999: reto de hoy, difícil.
@@ -48,11 +49,5 @@ class ServicioRetosEnMemoria(private val latenciaMs: Long = 300) : ServicioRetos
     /** Fácil usa 4 residuos de dos canecas, medio 6 y difícil los 8 del catálogo. */
     private fun residuosPara(dificultad: Dificultad) = CatalogoResiduos.todos
         .filter { it.categoria in dificultad.categorias }
-        .take(
-            when (dificultad) {
-                Dificultad.Facil -> 4
-                Dificultad.Medio -> 6
-                Dificultad.Dificil -> 8
-            }
-        )
+        .take(dificultad.residuosPorReto)
 }

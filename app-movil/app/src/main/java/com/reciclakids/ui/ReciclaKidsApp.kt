@@ -4,6 +4,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
@@ -20,6 +21,7 @@ import com.reciclakids.ui.acceso.RutasAcceso
 import com.reciclakids.ui.acceso.accesoGraph
 import com.reciclakids.ui.common.ModoInmersivo
 import com.reciclakids.ui.common.PantallaPendiente
+import com.reciclakids.ui.docente.ModoDocente
 import com.reciclakids.ui.nino.RutasNino
 import com.reciclakids.ui.nino.VigilanteTiempoJuego
 import com.reciclakids.ui.nino.esDelNino
@@ -27,8 +29,9 @@ import com.reciclakids.ui.nino.irATiempoTerminado
 import com.reciclakids.ui.nino.ninoGraph
 import com.reciclakids.ui.theme.Duracion
 import com.reciclakids.viewmodel.SesionNinoViewModel
+import com.reciclakids.viewmodel.SesionViewModel
 
-/** Destinos de los modos adultos. Cada uno tendrá su propio grafo; por ahora son provisionales. */
+/** Destinos de los modos adultos. Docente ya tiene su grafo; Padres sigue provisional. */
 object Rutas {
     const val Docente = "docente"
     const val Padres = "padres"
@@ -43,6 +46,7 @@ fun ReciclaKidsApp(
     contenedor: ContenedorApp,
     navController: NavHostController = rememberNavController(),
 ) {
+    val sesionAdulta: SesionViewModel = viewModel()
     val entradaActual by navController.currentBackStackEntryAsState()
     val ruta = entradaActual?.destination?.route
     ModoInmersivo(activo = ruta == null || ruta in RutasAcceso.DelNino || ruta.esDelNino())
@@ -58,6 +62,7 @@ fun ReciclaKidsApp(
             servicio = contenedor.servicioAcceso,
             onJugar = { navController.navigate(RutasNino.Grafo) { launchSingleTop = true } },
             onSesionIniciada = { cuenta ->
+                sesionAdulta.iniciar(cuenta, contenedor.crearServicioDocente)
                 val destino = when (cuenta.rol) {
                     RolAdulto.Docente -> Rutas.Docente
                     RolAdulto.Acudiente -> Rutas.Padres
@@ -69,7 +74,21 @@ fun ReciclaKidsApp(
         val volverAlSelector = { navController.popBackStack(RutasAcceso.Selector, inclusive = false) }
         ninoGraph(navController, contenedor, onSalir = { volverAlSelector() })
         composable(Rutas.Docente) {
-            PantallaPendiente(stringResource(R.string.pendiente_docente), onVolver = { volverAlSelector() })
+            // Se toma al entrar: así la pantalla no se vacía mientras se anima la salida al cerrar sesión.
+            val servicio = remember { sesionAdulta.servicioDocente }
+            if (servicio != null) {
+                ModoDocente(
+                    servicio = servicio,
+                    onCerrarSesion = {
+                        sesionAdulta.cerrar()
+                        volverAlSelector()
+                    },
+                    onVerPolitica = { navController.navigate(RutasAcceso.Politica) },
+                )
+            } else {
+                // La sesión no se guarda en disco: si el sistema cerró la app, se vuelve a la puerta.
+                LaunchedEffect(Unit) { volverAlSelector() }
+            }
         }
         composable(Rutas.Padres) {
             PantallaPendiente(stringResource(R.string.pendiente_padres), onVolver = { volverAlSelector() })

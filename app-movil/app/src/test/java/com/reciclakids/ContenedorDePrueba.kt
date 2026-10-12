@@ -5,6 +5,7 @@ import com.reciclakids.di.ContenedorApp
 import com.reciclakids.local.BaseDatosReciclaKids
 import com.reciclakids.model.ControlParental
 import com.reciclakids.network.ServicioAccesoEnMemoria
+import com.reciclakids.network.ServicioDocenteEnMemoria
 import com.reciclakids.network.ServicioResultadosEnMemoria
 import com.reciclakids.network.ServicioRetosEnMemoria
 import org.robolectric.RuntimeEnvironment
@@ -23,4 +24,5 @@ fun contenedorDePrueba(controlParental: ControlParental = ControlParental()): Co
         .setTransactionExecutor { it.run() }
         .build(),
     controlParental = controlParental,
+    crearServicioDocente = { ServicioDocenteEnMemoria(it, latenciaMs = 0) },
 )
