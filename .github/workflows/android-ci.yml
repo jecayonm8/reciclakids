@@ -1,17 +1,47 @@
 name: Android CI
+
 on:
   pull_request:
-    paths: ["app-movil/**"]
+    paths:
+      - "app-movil/**"
+      - ".github/workflows/android-ci.yml"
   push:
     branches: [main]
-    paths: ["app-movil/**"]
+    paths:
+      - "app-movil/**"
+      - ".github/workflows/android-ci.yml"
+
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    env:
+      HAS_TESTRAIL: ${{ secrets.TESTRAIL_URL != '' }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
-        with: { distribution: "temurin", java-version: "17" }
-      - name: Build y pruebas unitarias
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Build y pruebas
         working-directory: app-movil
         run: ./gradlew build testDebugUnitTest
+
+      - name: Instalar TestRail CLI
+        if: always() && github.event_name == 'push' && env.HAS_TESTRAIL == 'true'
+        continue-on-error: true
+        run: pip install trcli
+
+      - name: Subir resultados a TestRail
+        if: always() && github.event_name == 'push' && env.HAS_TESTRAIL == 'true'
+        continue-on-error: true
+        env:
+          TESTRAIL_URL: ${{ secrets.TESTRAIL_URL }}
+          TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
+          TESTRAIL_API_KEY: ${{ secrets.TESTRAIL_API_KEY }}
+        run: |
+          trcli -y -h "$TESTRAIL_URL" --project "ReciclaKids" \
+            -u "$TESTRAIL_USER" -k "$TESTRAIL_API_KEY" \
+            parse_junit --title "CI app movil #${{ github.run_number }}" \
+            -f "app-movil/app/build/test-results/testDebugUnitTest/**/*.xml"
