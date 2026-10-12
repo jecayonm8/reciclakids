@@ -4,3 +4,9 @@ ktor:
   application:
     modules:
       - com.example.com.reciclakids.plugins.RoutingKt.configureRouting
+
+reciclakids:
+  correos:
+    # Vista previa de las plantillas de correo con datos ficticios en /correos/vista-previa/...
+    # Encendida para desarrollo; en producción se apaga con RECICLAKIDS_VISTA_PREVIA_CORREOS=false.
+    vistaPrevia: "$RECICLAKIDS_VISTA_PREVIA_CORREOS:true"
