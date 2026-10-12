@@ -1,13 +1,13 @@
 package com.reciclakids.ui.nino
 
 import androidx.activity.compose.BackHandler
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -31,8 +31,11 @@ import com.reciclakids.di.ContenedorApp
 import com.reciclakids.model.AjustesNino
 import com.reciclakids.model.Nino
 import com.reciclakids.model.NivelesVolumen
+import com.reciclakids.model.ProgresoNino
+import com.reciclakids.ui.acceso.PuertaAdultosSheet
+import com.reciclakids.ui.acceso.RutasAcceso
+import com.reciclakids.ui.common.EstadoConexion
 import com.reciclakids.ui.common.FondoSubmarino
-import com.reciclakids.ui.common.PantallaPendiente
 import com.reciclakids.ui.common.caneca
 import com.reciclakids.ui.common.rememberHayConexion
 import com.reciclakids.ui.common.rememberLocutor
@@ -54,6 +57,10 @@ object RutasNino {
     const val Juego = "nino/juego"
     const val Resultado = "nino/resultado"
     const val InsigniaObtenida = "nino/insignia"
+    const val TiempoTerminado = "nino/tiempo-terminado"
+
+    /** Rutas sin niño elegido todavía, o donde ya no se cuenta el tiempo de juego. */
+    val SinReloj = setOf(Codigo, QuienEres, TiempoTerminado)
     const val Insignias = "nino/insignias"
     const val Ajustes = "nino/ajustes"
 }
@@ -192,7 +199,9 @@ fun NavGraphBuilder.ninoGraph(
                 LaunchedEffect(Unit) { onSalir() }
                 return@composable
             }
-            val juego = viewModel(key = "juego-${reto.codigo}-${nino.id}") { JuegoViewModel(reto, nino, contenedor.juego) }
+            val juego = viewModel(key = "juego-${reto.codigo}-${nino.id}") {
+                JuegoViewModel(reto, nino, contenedor.juego, alTerminar = contenedor.programarSincronizacion)
+            }
             val ajustes by contenedor.ajustes.observar().collectAsState(initial = AjustesNino())
             val alcance = rememberCoroutineScope()
             val locutor = rememberLocutor(ajustes.volumenSonidos / NivelesVolumen.toFloat())
@@ -263,28 +272,114 @@ fun NavGraphBuilder.ninoGraph(
             val locutor = rememberLocutor(ajustes.volumenSonidos / NivelesVolumen.toFloat())
             val anuncio = pluralStringResource(R.plurals.resultado_titulo, resultado.residuosSeparados, resultado.residuosSeparados) + " " +
                 stringResource(if (resultado.sumoAlAcuario) R.string.resultado_acuario else R.string.resultado_buen_trabajo)
+            val hayConexion by rememberHayConexion()
+            val pendientes by contenedor.juego.intentosPendientes().collectAsState(initial = 0)
             LaunchedEffect(Unit) { locutor.decir(anuncio) }
             ResultadoScreen(
                 resultado = resultado,
                 onVerPremio = { navController.navigate(RutasNino.InsigniaObtenida) { launchSingleTop = true } },
                 onMenu = { navController.popBackStack(RutasNino.Menu, inclusive = false) },
+                guardado = when {
+                    !hayConexion -> EstadoConexion.SinConexion
+                    pendientes > 0 -> EstadoConexion.Sincronizando
+                    else -> EstadoConexion.Sincronizado
+                },
             )
         }
 
-        pendiente(navController, RutasNino.InsigniaObtenida, R.string.pendiente_insignia_obtenida)
-        pendiente(navController, RutasNino.Insignias, R.string.pendiente_insignias)
-        pendiente(navController, RutasNino.Ajustes, R.string.pendiente_ajustes)
+        composable(RutasNino.InsigniaObtenida) { entrada ->
+            val sesion = sesionNino(navController, entrada)
+            val nuevas = sesion.ultimoResultado?.insigniasNuevas.orEmpty()
+            var indice by rememberSaveable { mutableIntStateOf(0) }
+            val insignia = nuevas.getOrNull(indice)
+            if (insignia == null) {
+                LaunchedEffect(Unit) { navController.popBackStack(RutasNino.Menu, inclusive = false) }
+                return@composable
+            }
+            val ajustes by contenedor.ajustes.observar().collectAsState(initial = AjustesNino())
+            val locutor = rememberLocutor(ajustes.volumenSonidos / NivelesVolumen.toFloat())
+            val anuncio = stringResource(R.string.insignia_nueva) + " " + insignia.nombre
+            LaunchedEffect(insignia) { locutor.decir(anuncio) }
+            InsigniaObtenidaScreen(
+                insignia = insignia,
+                // Si ganó varias, «Seguir» muestra la siguiente antes de volver al menú.
+                onSeguir = {
+                    if (indice < nuevas.lastIndex) indice++ else navController.popBackStack(RutasNino.Menu, inclusive = false)
+                },
+                onMisInsignias = {
+                    navController.navigate(RutasNino.Insignias) { popUpTo(RutasNino.Menu) }
+                },
+            )
+        }
+
+        composable(RutasNino.Insignias) { entrada ->
+            val sesion = sesionNino(navController, entrada)
+            val nino = sesion.nino
+            if (nino == null) {
+                LaunchedEffect(Unit) { onSalir() }
+                return@composable
+            }
+            val ganadas by contenedor.juego.insigniasGanadas(nino.id).collectAsState(initial = emptySet())
+            val progreso by contenedor.progreso.observar(nino.id).collectAsState(initial = ProgresoNino(nino.id))
+            val dias by contenedor.juego.diasConReto(nino.id).collectAsState(initial = 0)
+            val ajustes by contenedor.ajustes.observar().collectAsState(initial = AjustesNino())
+            val locutor = rememberLocutor(ajustes.volumenSonidos / NivelesVolumen.toFloat())
+            val titulo = stringResource(R.string.coleccion_titulo)
+            LaunchedEffect(Unit) { locutor.decir(titulo) }
+            ColeccionInsigniasScreen(
+                ganadas = ganadas,
+                progreso = progreso,
+                diasConReto = dias,
+                onTocar = { locutor.decir(it.nombre) },
+                onVolver = { navController.popBackStack() },
+            )
+        }
+
+        composable(RutasNino.Ajustes) {
+            val ajustes by contenedor.ajustes.observar().collectAsState(initial = AjustesNino())
+            val alcance = rememberCoroutineScope()
+            val locutor = rememberLocutor(ajustes.volumenSonidos / NivelesVolumen.toFloat())
+            val titulo = stringResource(R.string.ajustes_titulo)
+            var puertaVisible by rememberSaveable { mutableStateOf(false) }
+            LaunchedEffect(Unit) { locutor.decir(titulo) }
+            AjustesNinoScreen(
+                ajustes = ajustes,
+                onMusica = { nivel -> alcance.launch { contenedor.ajustes.guardar(ajustes.conMusica(nivel)) } },
+                onSonidos = { nivel -> alcance.launch { contenedor.ajustes.guardar(ajustes.conSonidos(nivel)) } },
+                onVolver = { navController.popBackStack() },
+                onSeccionPadres = { puertaVisible = true },
+            )
+            if (puertaVisible) {
+                PuertaAdultosSheet(
+                    onAbierta = {
+                        puertaVisible = false
+                        // Sale del Modo Niño: al volver atrás desde el inicio de sesión se llega al selector.
+                        navController.navigate(RutasAcceso.Login) { popUpTo(RutasAcceso.Selector) }
+                    },
+                    onCerrar = { puertaVisible = false },
+                )
+            }
+        }
+
+        composable(RutasNino.TiempoTerminado) {
+            val locutor = rememberLocutor()
+            val mensaje = stringResource(R.string.tiempo_titulo)
+            LaunchedEffect(Unit) { locutor.decir(mensaje) }
+            // No se puede saltar desde el Modo Niño: el botón atrás no hace nada.
+            BackHandler { }
+            TiempoTerminadoScreen(
+                minutos = contenedor.controlParental.limiteMinutosDiarios,
+                onRepetirVoz = { locutor.decir(mensaje) },
+            )
+        }
     }
 }
 
-/** Destino provisional mientras llega su pantalla: vuelve al menú. */
-private fun NavGraphBuilder.pendiente(navController: NavController, ruta: String, @StringRes descripcion: Int) {
-    composable(ruta) {
-        PantallaPendiente(
-            descripcion = stringResource(descripcion),
-            onVolver = { navController.popBackStack() },
-            etiquetaVolver = stringResource(R.string.comun_atras),
-        )
+/** Lleva a UI-19 desde cualquier pantalla del niño, sin dejar a dónde volver dentro del modo. */
+fun NavController.irATiempoTerminado() {
+    navigate(RutasNino.TiempoTerminado) {
+        popUpTo(RutasNino.Grafo)
+        launchSingleTop = true
     }
 }
 

@@ -16,8 +16,9 @@ import androidx.room.RoomDatabase
         IntentoEntity::class,
         InsigniaGanadaEntity::class,
         AjustesNinoEntity::class,
+        TiempoJuegoEntity::class,
     ],
-    version = 2,
+    version = 3,
     // Piloto: sin historial de migraciones todavía. Al publicar la primera versión se exporta el esquema.
     exportSchema = false,
 )

@@ -28,6 +28,7 @@ enum class EstiloMarcador(val claro: Color, val oscuro: Color, val texto: Color)
     Avatar(Color(0xFFDCEFF3), Color(0xFFF2F9FA), Color(0xFF5F6F73)),
     Insignia(Color(0xFFFFF3D6), Color(0xFFFFE9B8), Color(0xFF7A6330)),
     Adulto(Color(0xFFE4EFF2), Color(0xFFF2F8F9), Color(0xFF5F6F73)),
+    Noche(Color(0x38FFFFFF), Color(0x1AFFFFFF), Color(0xFFCFE6EC)),
 }
 
 /** Rayado diagonal de los marcadores de ilustración del prototipo. */
