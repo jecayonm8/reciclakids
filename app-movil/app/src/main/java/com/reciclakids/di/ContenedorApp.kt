@@ -6,12 +6,14 @@ import com.reciclakids.local.RepositorioAjustes
 import com.reciclakids.local.RepositorioJuego
 import com.reciclakids.local.RepositorioProgreso
 import com.reciclakids.local.RepositorioTiempo
-import com.reciclakids.model.ControlParental
 import com.reciclakids.model.CuentaAdulto
+import com.reciclakids.network.ControlesParentales
 import com.reciclakids.network.ServicioAcceso
 import com.reciclakids.network.ServicioAccesoEnMemoria
 import com.reciclakids.network.ServicioDocente
 import com.reciclakids.network.ServicioDocenteEnMemoria
+import com.reciclakids.network.ServicioPadres
+import com.reciclakids.network.ServicioPadresEnMemoria
 import com.reciclakids.network.ServicioResultados
 import com.reciclakids.network.ServicioResultadosEnMemoria
 import com.reciclakids.network.ServicioRetos
@@ -28,12 +30,14 @@ class ContenedorApp(
     val servicioRetos: ServicioRetos,
     val servicioResultados: ServicioResultados,
     val baseDatos: BaseDatosReciclaKids,
-    /** PROVISIONAL hasta que el Modo Padres configure el control parental (UI-33). */
-    val controlParental: ControlParental = ControlParental(),
+    /** El control parental de cada niño: lo cambia el Modo Padres (UI-33) y lo hace cumplir el Modo Niño (UI-19). */
+    val controlesParentales: ControlesParentales = ControlesParentales(),
     /** Pide sincronizar los resultados en segundo plano. Las pruebas no programan nada. */
     val programarSincronizacion: () -> Unit = {},
     /** Servicio del Modo Docente para la cuenta que inicia sesión. */
     val crearServicioDocente: (CuentaAdulto) -> ServicioDocente = { ServicioDocenteEnMemoria(it) },
+    /** Servicio del Modo Padres para la cuenta que inicia sesión. */
+    val crearServicioPadres: (CuentaAdulto) -> ServicioPadres = { ServicioPadresEnMemoria(it, controlesParentales) },
 ) {
     val progreso by lazy { RepositorioProgreso(baseDatos.progresoDao()) }
     val juego by lazy { RepositorioJuego(baseDatos) }

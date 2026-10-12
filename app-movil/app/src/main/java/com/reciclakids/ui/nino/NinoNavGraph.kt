@@ -29,6 +29,7 @@ import androidx.navigation.navigation
 import com.reciclakids.R
 import com.reciclakids.di.ContenedorApp
 import com.reciclakids.model.AjustesNino
+import com.reciclakids.model.ControlParental
 import com.reciclakids.model.Nino
 import com.reciclakids.model.NivelesVolumen
 import com.reciclakids.model.ProgresoNino
@@ -361,14 +362,18 @@ fun NavGraphBuilder.ninoGraph(
             }
         }
 
-        composable(RutasNino.TiempoTerminado) {
+        composable(RutasNino.TiempoTerminado) { entrada ->
+            val sesion = sesionNino(navController, entrada)
+            // El límite es el del control parental de este niño (UI-33).
+            val minutos = sesion.nino?.let { contenedor.controlesParentales.de(it.id) }?.limiteMinutosDiarios
+                ?: ControlParental().limiteMinutosDiarios
             val locutor = rememberLocutor()
             val mensaje = stringResource(R.string.tiempo_titulo)
             LaunchedEffect(Unit) { locutor.decir(mensaje) }
             // No se puede saltar desde el Modo Niño: el botón atrás no hace nada.
             BackHandler { }
             TiempoTerminadoScreen(
-                minutos = contenedor.controlParental.limiteMinutosDiarios,
+                minutos = minutos,
                 onRepetirVoz = { locutor.decir(mensaje) },
             )
         }
