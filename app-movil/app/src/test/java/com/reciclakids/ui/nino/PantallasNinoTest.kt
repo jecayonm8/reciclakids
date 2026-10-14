@@ -33,6 +33,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.GraphicsMode
 
 /** Pantallas del Modo Niño montadas solas, para revisar su disposición y su accesibilidad. */
 @RunWith(RobolectricTestRunner::class)
@@ -43,6 +44,8 @@ class PantallasNinoTest {
 
     // --- UI-08 Código del reto ---
 
+    // Con los gráficos nativos el texto se mide de verdad y los mensajes largos ocupan más líneas.
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
     @Test
     fun elTecladoNoSeMueveCuandoCambiaElMensajeDelPez() {
         var estado by mutableStateOf(EstadoCodigo.Editando)
