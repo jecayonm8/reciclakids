@@ -285,6 +285,8 @@ class PantallasPadresTest {
             }
         }
 
+        // La dificultad dice cuántos residuos y si hay tiempo; las canecas las elige la docente.
+        compose.onNodeWithText("6 residuos, sin tiempo").assertIsDisplayed()
         compose.onNodeWithText("Fácil").performClick()
         compose.onNodeWithContentDescription("Más tiempo").performScrollTo().performClick()
         compose.onNodeWithText("25 min").assertIsDisplayed()

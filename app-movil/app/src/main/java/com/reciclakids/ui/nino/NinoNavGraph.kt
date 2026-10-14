@@ -240,7 +240,7 @@ fun NavGraphBuilder.ninoGraph(
             }
             Box(Modifier.fillMaxSize()) {
                 JuegoScreen(
-                    dificultad = reto.dificultad,
+                    canecas = reto.canecas,
                     estado = estado,
                     residuo = juego.residuoEnPantalla,
                     retroalimentacion = juego.retroalimentacion,

@@ -62,7 +62,6 @@ import androidx.compose.ui.unit.sp
 import com.reciclakids.R
 import com.reciclakids.model.CatalogoResiduos
 import com.reciclakids.model.CategoriaResiduo
-import com.reciclakids.model.Dificultad
 import com.reciclakids.model.EstadoPartida
 import com.reciclakids.model.Residuo
 import com.reciclakids.ui.common.Alga
@@ -107,11 +106,12 @@ private val AlturaResiduo = 230.dp
  * pulgar. El arrastre es tolerante: si se suelta a menos de 110 dp del centro de una caneca, entra;
  * si no, vuelve flotando y no cuenta como error. Tocar una caneca evalúa igual que arrastrar.
  *
- * [onGuia] avisa cuando, tras 5 s sin tocar, la caneca correcta empieza a hacer de guía.
+ * [canecas] son las del reto ([com.reciclakids.model.Reto.canecas]). [onGuia] avisa cuando, tras
+ * 5 s sin tocar, la caneca correcta empieza a hacer de guía.
  */
 @Composable
 fun JuegoScreen(
-    dificultad: Dificultad,
+    canecas: List<CategoriaResiduo>,
     estado: EstadoPartida,
     residuo: Residuo?,
     retroalimentacion: Retroalimentacion,
@@ -122,8 +122,8 @@ fun JuegoScreen(
     onGuia: (Residuo) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val canecas = dificultad.categorias.map { it.caneca }.sortedBy { it.ordinal }
-    val dosCanecas = canecas.size == 2
+    val tipos = canecas.map { it.caneca }.sortedBy { it.ordinal }
+    val dosCanecas = tipos.size == 2
     val radioIman = with(LocalDensity.current) { Tactil.radioIman.toPx() }
     val alcance = rememberCoroutineScope()
     val clasificar by rememberUpdatedState(onClasificar)
@@ -270,7 +270,7 @@ fun JuegoScreen(
                     horizontalArrangement = Arrangement.spacedBy(if (dosCanecas) 24.dp else 10.dp, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.Bottom,
                 ) {
-                    canecas.forEach { tipo ->
+                    tipos.forEach { tipo ->
                         val correcta = residuo?.categoria?.caneca == tipo
                         Caneca(
                             tipo = tipo,
@@ -448,7 +448,7 @@ private fun MensajeCasi(modifier: Modifier = Modifier) {
 private fun JuegoScreenPreview() {
     ReciclaKidsTheme {
         JuegoScreen(
-            dificultad = Dificultad.Dificil,
+            canecas = CategoriaResiduo.entries,
             estado = EstadoPartida(CatalogoResiduos.todos, indice = 3, aciertos = 3, racha = 3, puntaje = 60),
             residuo = CatalogoResiduos.lata,
             retroalimentacion = Retroalimentacion.Ninguna,
