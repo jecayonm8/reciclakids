@@ -78,6 +78,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.reciclakids.R
+import com.reciclakids.model.CatalogoResiduos
 import com.reciclakids.model.CategoriaResiduo
 import com.reciclakids.model.Dificultad
 import com.reciclakids.model.EstadoReto
@@ -581,13 +582,19 @@ private fun textoFechaAsistente(asistente: AsistenteReto): String =
 /**
  * Miniatura de la pantalla de juego dibujada a 560 × 350 dp y escalada al ancho disponible,
  * como en el prototipo. Muestra las mismas canecas que verá el niño con las [categorias] elegidas,
- * cada una con su color y su ícono.
+ * cada una con su color y su ícono, y un residuo de ejemplo de una de esas categorías.
  */
 @Composable
 private fun VistaPreviaJuego(categorias: Set<CategoriaResiduo>) {
     val forma = RoundedCornerShape(18.dp)
     val mostradas = canecasDelJuego(categorias)
-    val descripcion = stringResource(R.string.crear_vista_descripcion, textoCategorias(mostradas.toSet(), enFrase = true))
+    // De una caneca elegida: un residuo de otra no tendría dónde ir.
+    val residuo = CatalogoResiduos.todos.firstOrNull { it.categoria in categorias } ?: CatalogoResiduos.todos.first()
+    val descripcion = stringResource(
+        R.string.crear_vista_descripcion,
+        textoCategorias(mostradas.toSet(), enFrase = true),
+        residuo.nombre,
+    )
     val panel = Color.White.copy(alpha = 0.9f)
     BoxWithConstraints(
         Modifier
@@ -633,7 +640,7 @@ private fun VistaPreviaJuego(categorias: Set<CategoriaResiduo>) {
                 Box(Modifier.size(80.dp, 34.dp).background(panel, CircleShape))
             }
             MarcadorIlustracion(
-                etiqueta = stringResource(R.string.crear_vista_residuo),
+                etiqueta = residuo.nombre,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 90.dp)
