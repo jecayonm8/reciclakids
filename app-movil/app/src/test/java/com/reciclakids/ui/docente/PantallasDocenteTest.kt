@@ -14,6 +14,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -88,6 +89,8 @@ class PantallasDocenteTest {
         }
 
         compose.onNodeWithText("Hola, Laura").assertIsDisplayed()
+        // La dificultad ya no habla de canecas: esas las elige la docente.
+        compose.onNodeWithText("Medio · sin tiempo · 6 residuos").assertIsDisplayed()
         // El FAB extendido no expone su texto: TalkBack lee la etiqueta del ícono.
         compose.onNodeWithContentDescription("Crear reto").assertHasClickAction()
         compose.onNodeWithContentDescription("Código del reto: 4 7 2 9").assertIsDisplayed()
@@ -168,6 +171,38 @@ class PantallasDocenteTest {
         compose.onNodeWithText("Siguiente").assertIsNotEnabled()
         compose.onNodeWithText("2. Dificultad").assertIsNotEnabled()
         compose.onNodeWithText("Paso 1 de 5 · elige al menos una caneca").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun laDificultadDiceResiduosYTiempoPeroNoCanecas() {
+        compose.setContent { ReciclaKidsTheme { AsistenteDePrueba(AsistenteReto(martes, paso = 2)) } }
+
+        compose.onNodeWithText("4 residuos, sin tiempo. Ideal para empezar.").assertIsDisplayed()
+        compose.onNodeWithText("6 residuos, sin tiempo. El más usado.").assertIsDisplayed()
+        compose.onNodeWithText("8 residuos, con tiempo.").performScrollTo().assertIsDisplayed()
+        compose.onAllNodes(hasText("canecas", substring = true)).assertCountEquals(0)
+    }
+
+    @Test
+    fun laVistaPreviaMuestraLasCanecasElegidasYNoLasDeLaDificultad() {
+        val elegidas = setOf(CategoriaResiduo.NoAprovechable, CategoriaResiduo.Organico)
+        compose.setContent {
+            ReciclaKidsTheme { AsistenteDePrueba(AsistenteReto(martes, paso = 4, categorias = elegidas, dificultad = Dificultad.Facil)) }
+        }
+
+        compose.onNodeWithContentDescription("Vista previa del juego con No aprovechables + Orgánicos").assertIsDisplayed()
+        compose.onNodeWithText("Fácil · sin tiempo").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("4 residuos").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun conUnaSolaCanecaLaVistaPreviaMuestraLasTresComoElJuego() {
+        compose.setContent {
+            ReciclaKidsTheme { AsistenteDePrueba(AsistenteReto(martes, paso = 4, categorias = setOf(CategoriaResiduo.Organico))) }
+        }
+
+        compose.onNodeWithContentDescription("Vista previa del juego con las tres canecas").assertIsDisplayed()
+        compose.onNodeWithText("Orgánicos").performScrollTo().assertIsDisplayed()
     }
 
     @Test

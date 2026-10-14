@@ -697,10 +697,12 @@ internal fun CategoriaResiduo.ejemplos(): String = stringResource(
 )
 
 /** «Aprovechables + Orgánicos», o «Las tres canecas». */
+/** «Aprovechables + Orgánicos» o «Las tres canecas»; con [enFrase], «las tres canecas» para ir dentro de una frase. */
 @Composable
-internal fun textoCategorias(categorias: Set<CategoriaResiduo>): String = when {
+internal fun textoCategorias(categorias: Set<CategoriaResiduo>, enFrase: Boolean = false): String = when {
     categorias.isEmpty() -> stringResource(R.string.categorias_ninguna)
-    categorias.size == CategoriaResiduo.entries.size -> stringResource(R.string.categorias_todas)
+    categorias.size == CategoriaResiduo.entries.size ->
+        stringResource(if (enFrase) R.string.categorias_todas_frase else R.string.categorias_todas)
     else -> categorias.sorted().map { it.nombre() }.joinToString(" + ")
 }
 
@@ -713,7 +715,7 @@ internal fun Dificultad.nombre(): String = stringResource(
     }
 )
 
-/** «Medio · 3 canecas» */
+/** «Medio · sin tiempo». Las canecas no dependen de la dificultad: las elige la docente. */
 @Composable
 internal fun Dificultad.resumen(): String = stringResource(
     when (this) {
@@ -723,13 +725,15 @@ internal fun Dificultad.resumen(): String = stringResource(
     }
 )
 
+/** «6 residuos, sin tiempo. El más usado.» */
 @Composable
 internal fun Dificultad.detalle(): String = stringResource(
     when (this) {
         Dificultad.Facil -> R.string.dificultad_facil_detalle
         Dificultad.Medio -> R.string.dificultad_medio_detalle
         Dificultad.Dificil -> R.string.dificultad_dificil_detalle
-    }
+    },
+    residuosPorReto,
 )
 
 @Composable

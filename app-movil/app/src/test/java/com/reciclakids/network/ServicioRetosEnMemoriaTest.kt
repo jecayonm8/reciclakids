@@ -18,12 +18,14 @@ class ServicioRetosEnMemoriaTest {
     }
 
     @Test
-    fun facilSoloUsaLasCanecasBlancaYVerde() {
+    fun elRetoFacilDeDemoEsDeAprovechablesYOrganicosConSusDosCanecas() {
         val reto = reto("1111")
 
         assertEquals(Dificultad.Facil, reto.dificultad)
+        assertEquals(setOf(CategoriaResiduo.Aprovechable, CategoriaResiduo.Organico), reto.categorias)
         assertEquals(4, reto.residuos.size)
-        assertTrue(reto.residuos.none { it.categoria == CategoriaResiduo.NoAprovechable })
+        assertTrue(reto.residuos.all { it.categoria in reto.categorias })
+        assertEquals(listOf(CategoriaResiduo.Aprovechable, CategoriaResiduo.Organico), reto.canecas)
     }
 
     @Test
@@ -32,6 +34,7 @@ class ServicioRetosEnMemoriaTest {
         val dificil = reto("9999")
 
         assertEquals(CategoriaResiduo.entries.toSet(), medio.residuos.map { it.categoria }.toSet())
+        assertEquals(CategoriaResiduo.entries, medio.canecas)
         assertTrue(dificil.residuos.size > medio.residuos.size)
         assertTrue(dificil.dificultad.conTiempo)
     }
