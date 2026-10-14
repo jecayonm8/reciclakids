@@ -1,10 +1,13 @@
 package com.reciclakids.ui
 
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -56,6 +59,25 @@ class FlujoAccesoTest {
         compose.onNodeWithText("Entrar").performScrollTo().performClick()
     }
 
+    /** Al volver del registro el correo de la cuenta nueva ya está escrito: solo falta la contraseña. */
+    private fun entrarConLaCuentaCreada(correo: String, contrasena: String) {
+        compose.onNodeWithText("Cuenta creada. Ya puedes iniciar sesión.").assertIsDisplayed()
+        campo("Correo").assert(hasText(correo))
+        campo("Contraseña").performTextInput(contrasena)
+        compose.onNodeWithText("Entrar").performScrollTo().performClick()
+    }
+
+    private fun registrarDocente() {
+        compose.onNodeWithText("Crear cuenta").performScrollTo().performClick()
+        campo("Nombre y apellido").performTextInput("Laura Restrepo")
+        campo("Correo institucional").performTextInput("laura.r@jardin.edu.co")
+        campo("Jardín infantil").performTextInput("Jardín Gotitas")
+        campo("Grupo a cargo").performTextInput("Jardín B")
+        campo("Contraseña").performTextInput("clave-de-prueba")
+        compose.onNode(isToggleable()).performScrollTo().performClick()
+        compose.onNodeWithText("Crear cuenta de docente").performScrollTo().performClick()
+    }
+
     @Test
     fun laBienvenidaAvanzaSolaAlSelector() {
         compose.mainClock.advanceTimeBy(3_000)
@@ -86,20 +108,27 @@ class FlujoAccesoTest {
     fun laDocenteSeRegistraYSuSesionAbreElModoDocente() {
         saltarBienvenida()
         pasarPuertaDeAdultos()
-        compose.onNodeWithText("Crear cuenta").performScrollTo().performClick()
 
-        campo("Nombre y apellido").performTextInput("Laura Restrepo")
-        campo("Correo institucional").performTextInput("laura.r@jardin.edu.co")
-        campo("Jardín infantil").performTextInput("Jardín Gotitas")
-        campo("Grupo a cargo").performTextInput("Jardín B")
-        campo("Contraseña").performTextInput("clave-de-prueba")
-        compose.onNode(isToggleable()).performScrollTo().performClick()
-        compose.onNodeWithText("Crear cuenta de docente").performScrollTo().performClick()
-
-        compose.onNodeWithText("Cuenta creada. Ya puedes iniciar sesión.").assertIsDisplayed()
-        iniciarSesion("laura.r@jardin.edu.co", "clave-de-prueba")
+        registrarDocente()
+        entrarConLaCuentaCreada("laura.r@jardin.edu.co", "clave-de-prueba")
 
         compose.onNodeWithText("Hola, Laura").assertIsDisplayed()
+    }
+
+    @Test
+    fun alVolverDelRegistroElLoginTraeElCorreoNuevoSinErroresViejos() {
+        saltarBienvenida()
+        pasarPuertaDeAdultos()
+        campo("Correo").performTextInput("viejo@correo.com")
+        compose.onNodeWithText("Entrar").performScrollTo().performClick()
+        compose.onNodeWithText("Completa este campo").assertIsDisplayed()
+
+        registrarDocente()
+
+        compose.onNodeWithText("Cuenta creada. Ya puedes iniciar sesión.").assertIsDisplayed()
+        campo("Correo").assert(hasText("laura.r@jardin.edu.co"))
+        compose.onAllNodesWithText("viejo@correo.com").assertCountEquals(0)
+        compose.onAllNodesWithText("Completa este campo").assertCountEquals(0)
     }
 
     @Test
@@ -119,8 +148,7 @@ class FlujoAccesoTest {
         compose.onNode(isToggleable()).performScrollTo().performClick()
         compose.onNodeWithText("Crear cuenta").performScrollTo().performClick()
 
-        compose.onNodeWithText("Cuenta creada. Ya puedes iniciar sesión.").assertIsDisplayed()
-        iniciarSesion("mariana.r@correo.com", "clave-de-prueba")
+        entrarConLaCuentaCreada("mariana.r@correo.com", "clave-de-prueba")
 
         // UI-29 abre con el hijo o hija vinculado y el atajo al reporte.
         compose.onNodeWithText("Salomé M.").assertIsDisplayed()

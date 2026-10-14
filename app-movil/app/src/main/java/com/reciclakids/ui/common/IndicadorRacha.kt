@@ -32,7 +32,7 @@ import com.reciclakids.ui.theme.ReciclaKidsTheme
 
 /**
  * Burbuja con los aciertos seguidos. Desde [RachaConBonificacion] pasa a turquesa y muestra «×2».
- * Un error deja la racha quieta: el número solo crece, nunca se borra.
+ * Un error la corta: el número vuelve a 0.
  */
 @Composable
 fun IndicadorRacha(racha: Int, modifier: Modifier = Modifier) {

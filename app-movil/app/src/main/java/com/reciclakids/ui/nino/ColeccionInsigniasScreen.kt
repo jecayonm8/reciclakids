@@ -44,6 +44,7 @@ import com.reciclakids.ui.theme.ReciclaKidsColors
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 
 private val AguaColeccion = Brush.verticalGradient(listOf(Color(0xFF5FB9CE), Color(0xFF0C5C73)))
+private val AltoArenaColeccion = 50.dp
 
 /**
  * UI-17 Colección de insignias. Muestra lo logrado y lo que falta sin sensación de castigo:
@@ -59,7 +60,7 @@ fun ColeccionInsigniasScreen(
     modifier: Modifier = Modifier,
 ) {
     EscalaFijaNino {
-        FondoSubmarino(agua = AguaColeccion, altoArena = 50.dp, modifier = modifier.fillMaxSize()) {
+        FondoSubmarino(agua = AguaColeccion, altoArena = AltoArenaColeccion, modifier = modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().safeDrawingPadding()) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
@@ -94,7 +95,9 @@ fun ColeccionInsigniasScreen(
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 16.dp),
+                    // Al final de la lista la última fila queda sobre el agua: encima de la arena su
+                    // texto blanco no se lee.
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 6.dp, bottom = AltoArenaColeccion + 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {

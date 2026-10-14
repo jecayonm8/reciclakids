@@ -30,15 +30,29 @@ class EstadoPartidaTest {
     }
 
     @Test
-    fun unErrorNoRestaNiBorraLaRacha() {
+    fun unErrorNoRestaPuntosPeroReiniciaLaRacha() {
         val conRacha = EstadoPartida(residuos).acertar().acertar()
 
         val trasError = conRacha.fallar()
 
         assertEquals(conRacha.puntaje, trasError.puntaje)
-        assertEquals(conRacha.racha, trasError.racha)
+        assertEquals(0, trasError.racha)
+        assertEquals(2, trasError.rachaMaxima)
         assertEquals(conRacha.indice, trasError.indice)
         assertEquals(1, trasError.errores)
+    }
+
+    @Test
+    fun trasUnErrorLaBonificacionVuelveAEmpezarDesdeCero() {
+        var estado = EstadoPartida(residuos).acertar().acertar().acertar().fallar()
+        val puntos = (1..3).map {
+            val antes = estado.puntaje
+            estado = estado.acertar()
+            estado.puntaje - antes
+        }
+
+        assertEquals(listOf(10, 10, 20), puntos)
+        assertEquals(3, estado.rachaMaxima)
     }
 
     @Test

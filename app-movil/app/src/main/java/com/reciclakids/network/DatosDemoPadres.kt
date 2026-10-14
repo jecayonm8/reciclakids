@@ -105,13 +105,24 @@ internal object DatosDemoPadres {
     fun insignias(ninoId: String, dias: List<DiaDeJuego>): Map<Insignia, LocalDate> {
         val ganadas = linkedMapOf<Insignia, LocalDate>()
         var completados = 0
+        // De cada día solo se sabe su racha más larga, así que de la racha entre retos se cuenta lo
+        // seguro: un día sin errores alarga la del día anterior y uno con errores la deja en 0.
+        var racha = 0
+        var mejorRacha = 0
         dias.sortedBy { it.fecha }.filter { it.completo }.forEachIndexed { i, dia ->
             completados++
+            racha = if (dia.errores == 0) racha + dia.porCategoria.values.sumOf { it.total } else 0
+            mejorRacha = maxOf(mejorRacha, racha, dia.rachaMaxima)
             val nuevas = insigniasNuevas(
-                estado = EstadoPartida(residuos = emptyList(), errores = dia.errores, rachaMaxima = dia.rachaMaxima),
+                estado = EstadoPartida(residuos = emptyList(), errores = dia.errores),
                 dificultad = Dificultad.Medio,
                 aTiempo = false,
-                progreso = ProgresoNino(ninoId, retosCompletados = completados),
+                progreso = ProgresoNino(
+                    ninoId,
+                    retosCompletados = completados,
+                    rachaEntreRetos = racha,
+                    mejorRachaEntreRetos = mejorRacha,
+                ),
                 diasConReto = i + 1,
                 yaGanadas = ganadas.keys,
             )

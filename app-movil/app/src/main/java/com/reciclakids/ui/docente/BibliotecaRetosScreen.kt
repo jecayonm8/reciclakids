@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
@@ -17,6 +18,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -112,8 +114,12 @@ private fun ListaRetos(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        // Cada filtro empieza arriba. Si la lista conservara la posición por clave, el primer reto
+        // del filtro nuevo podría quedar escondido. Al volver a la pantalla sí se restaura.
+        val estadoLista = rememberSaveable(filtro, saver = LazyListState.Saver) { LazyListState() }
         LazyColumn(
             modifier = Modifier.weight(1f),
+            state = estadoLista,
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {

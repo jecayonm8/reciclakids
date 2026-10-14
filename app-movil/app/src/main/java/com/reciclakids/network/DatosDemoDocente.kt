@@ -74,16 +74,16 @@ internal object DatosDemoDocente {
     )
 
     fun ninos(): List<NinoDemo> = listOf(
-        nino("nino-1", "Salomé M.", Completo(3, 8, 8), listOf(78, 85, 92, 100), 100, 90, 100, null, 6, 100),
+        nino("nino-1", "Salomé M.", Completo(3, 6, 6), listOf(78, 85, 92, 100), 100, 90, 100, null, 6, 100),
         nino(
-            "nino-2", "Juan T.", Completo(5, 6, 8), listOf(62, 71, 68, 74), 94, 61, 88,
+            "nino-2", "Juan T.", Completo(5, 5, 6), listOf(62, 71, 68, 74), 94, 61, 88,
             Confusion("el empaque metalizado", correcta = NoAprovechable, elegida = Aprovechable), 4, 80,
         ),
         nino(
             "nino-3", "Ana L.", EnCurso(4), listOf(55, 60, 66, 70), 80, 58, 72,
             Confusion("la servilleta usada", correcta = NoAprovechable, elegida = Organico), 3, 60,
         ),
-        nino("nino-4", "Emilio R.", Completo(4, 7, 8), listOf(70, 76, 80, 87), 90, 82, 88, null, 5, 100),
+        nino("nino-4", "Emilio R.", Completo(4, 5, 6), listOf(70, 76, 80, 87), 90, 82, 88, null, 5, 100),
         nino(
             "nino-5", "Sara P.", SinEmpezar, listOf(40, 48, 52, 50), 62, 45, 55,
             Confusion("la cáscara de banano", correcta = Organico, elegida = NoAprovechable), 1, 40,
@@ -92,16 +92,16 @@ internal object DatosDemoDocente {
             "nino-6", "Tomás G.", EnCurso(2), listOf(58, 64, 70, 69), 78, 60, 74,
             Confusion("el cartón", correcta = Aprovechable, elegida = NoAprovechable), 2, 80,
         ),
-        nino("nino-7", "Valeria C.", Completo(3, 8, 8), listOf(85, 90, 95, 100), 100, 96, 100, null, 7, 100),
+        nino("nino-7", "Valeria C.", Completo(3, 6, 6), listOf(85, 90, 95, 100), 100, 96, 100, null, 7, 100),
         nino(
             "nino-8", "Mateo S.", SinEmpezar, listOf(45, 50, 58, 62), 70, 52, 66,
             Confusion("la lata", correcta = Aprovechable, elegida = NoAprovechable), 2, 60,
         ),
         nino(
-            "nino-9", "Luciana B.", Completo(6, 5, 8), listOf(60, 58, 66, 63), 72, 55, 70,
+            "nino-9", "Luciana B.", Completo(6, 4, 6), listOf(60, 58, 66, 63), 72, 55, 70,
             Confusion("los restos de comida", correcta = Organico, elegida = NoAprovechable), 2, 80,
         ),
-        nino("nino-10", "Simón H.", Completo(4, 7, 8), listOf(72, 80, 84, 88), 92, 80, 90, null, 5, 100),
+        nino("nino-10", "Simón H.", Completo(4, 5, 6), listOf(72, 80, 84, 88), 92, 80, 90, null, 5, 100),
     )
 
     @Suppress("LongParameterList")

@@ -48,7 +48,8 @@ enum class ErrorLogin { CredencialesInvalidas, SinConexion }
 
 /**
  * UI-03 Inicio de sesión de adultos. Docentes y acudientes entran por la misma pantalla;
- * la app abre el modo según el rol de la cuenta.
+ * la app abre el modo según el rol de la cuenta. Al volver de crear una cuenta, su correo llega
+ * en [correoInicial].
  */
 @Composable
 fun LoginScreen(
@@ -60,11 +61,14 @@ fun LoginScreen(
     cargando: Boolean = false,
     error: ErrorLogin? = null,
     cuentaRecienCreada: Boolean = false,
+    correoInicial: String = "",
 ) {
-    var correo by rememberSaveable { mutableStateOf("") }
-    // La contraseña no pasa por el estado guardado de la actividad.
+    var correo by rememberSaveable { mutableStateOf(correoInicial) }
+    // La contraseña no pasa por el estado guardado de la actividad. El intento de enviar se olvida
+    // con ella: si no, al volver a esta pantalla quedaría «Completa este campo» sobre un campo que
+    // la persona no ha tocado.
     var contrasena by remember { mutableStateOf("") }
-    var intentoEnviar by rememberSaveable { mutableStateOf(false) }
+    var intentoEnviar by remember { mutableStateOf(false) }
 
     val correoOk = correoValido(correo)
     val enviar = {

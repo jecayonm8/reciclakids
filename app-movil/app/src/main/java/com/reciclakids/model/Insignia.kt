@@ -24,7 +24,8 @@ const val RetosParaGuardian = 20
 
 /**
  * Insignias que el niño acaba de ganar al terminar una partida (RNF-04: se otorgan de forma
- * automática e inmediata). [progreso] ya incluye el reto recién terminado.
+ * automática e inmediata). [progreso] ya incluye el reto recién terminado y sus intentos: las
+ * rachas se miden con la racha entre retos, no con la de esta partida.
  */
 fun insigniasNuevas(
     estado: EstadoPartida,
@@ -37,11 +38,11 @@ fun insigniasNuevas(
     val cumplidas = buildList {
         if (estado.errores == 0) add(Insignia.AmigaTortuga)
         if (dificultad == Dificultad.Dificil && aTiempo) add(Insignia.RapidoComoPez)
-        if (estado.rachaMaxima >= 5) add(Insignia.RachaDeCinco)
+        if (progreso.mejorRachaEntreRetos >= 5) add(Insignia.RachaDeCinco)
         if (diasConReto >= DiasParaCincoRetos) add(Insignia.CincoRetosDiarios)
         if (progreso.retosCompletados >= RetosParaPulpoOrdenado) add(Insignia.PulpoOrdenado)
         if (progreso.porcentajeAcuario >= 100) add(Insignia.AguaCristalina)
-        if (estado.rachaMaxima >= 10) add(Insignia.CoralFeliz)
+        if (progreso.mejorRachaEntreRetos >= 10) add(Insignia.CoralFeliz)
         if (progreso.retosCompletados >= RetosParaGuardian) add(Insignia.GuardianDelMar)
     }
     return cumplidas.filterNot { it in yaGanadas }

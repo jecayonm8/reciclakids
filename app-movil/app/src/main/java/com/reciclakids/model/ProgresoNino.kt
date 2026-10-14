@@ -18,7 +18,20 @@ data class ProgresoNino(
     val retosCompletados: Int = 0,
     /** Código y fecha del último reto terminado, para saber si el del día sigue pendiente. */
     val ultimoReto: RetoCompletado? = null,
+    /**
+     * Residuos seguidos sin error, contados de un reto a otro. A diferencia de la racha que se ve
+     * en el juego, no vuelve a 0 al empezar otra partida: solo un error la corta.
+     */
+    val rachaEntreRetos: Int = 0,
+    /** La [rachaEntreRetos] más larga que ha tenido; da «Racha de 5» y «Coral feliz». */
+    val mejorRachaEntreRetos: Int = 0,
 ) {
+    /** El progreso tras un intento: un acierto alarga la racha entre retos y un error la corta. */
+    fun conIntento(correcto: Boolean): ProgresoNino {
+        val racha = if (correcto) rachaEntreRetos + 1 else 0
+        return copy(rachaEntreRetos = racha, mejorRachaEntreRetos = maxOf(mejorRachaEntreRetos, racha))
+    }
+
     /** 0–100 %, proporcional a los retos completados. */
     val porcentajeAcuario: Int get() = (retosCompletados * 100 / RetosParaAcuarioLimpio).coerceAtMost(100)
 

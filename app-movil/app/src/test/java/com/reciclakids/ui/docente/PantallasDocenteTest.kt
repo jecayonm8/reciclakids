@@ -11,12 +11,20 @@ import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.width
 import com.reciclakids.model.AvisosDocente
 import com.reciclakids.model.BibliotecaDocente
 import com.reciclakids.model.CategoriaResiduo
@@ -81,6 +89,8 @@ class PantallasDocenteTest {
         }
 
         compose.onNodeWithText("Hola, Laura").assertIsDisplayed()
+        // La dificultad ya no habla de canecas: esas las elige la docente.
+        compose.onNodeWithText("Medio · sin tiempo · 6 residuos").assertIsDisplayed()
         // El FAB extendido no expone su texto: TalkBack lee la etiqueta del ícono.
         compose.onNodeWithContentDescription("Crear reto").assertHasClickAction()
         compose.onNodeWithContentDescription("Código del reto: 4 7 2 9").assertIsDisplayed()
@@ -161,6 +171,44 @@ class PantallasDocenteTest {
         compose.onNodeWithText("Siguiente").assertIsNotEnabled()
         compose.onNodeWithText("2. Dificultad").assertIsNotEnabled()
         compose.onNodeWithText("Paso 1 de 5 · elige al menos una caneca").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun laDificultadDiceResiduosYTiempoPeroNoCanecas() {
+        compose.setContent { ReciclaKidsTheme { AsistenteDePrueba(AsistenteReto(martes, paso = 2)) } }
+
+        compose.onNodeWithText("4 residuos, sin tiempo. Ideal para empezar.").assertIsDisplayed()
+        compose.onNodeWithText("6 residuos, sin tiempo. El más usado.").assertIsDisplayed()
+        compose.onNodeWithText("8 residuos, con tiempo.").performScrollTo().assertIsDisplayed()
+        compose.onAllNodes(hasText("canecas", substring = true)).assertCountEquals(0)
+    }
+
+    @Test
+    fun laVistaPreviaMuestraLasCanecasElegidasYNoLasDeLaDificultad() {
+        val elegidas = setOf(CategoriaResiduo.NoAprovechable, CategoriaResiduo.Organico)
+        compose.setContent {
+            ReciclaKidsTheme { AsistenteDePrueba(AsistenteReto(martes, paso = 4, categorias = elegidas, dificultad = Dificultad.Facil)) }
+        }
+
+        compose.onNodeWithContentDescription(
+            "Vista previa del juego con No aprovechables + Orgánicos y un residuo de ejemplo: cáscara de banano",
+        ).assertIsDisplayed()
+        // Sin aprovechables no puede salir la botella: no tendría caneca.
+        compose.onAllNodes(hasContentDescription("botella", substring = true)).assertCountEquals(0)
+        compose.onNodeWithText("Fácil · sin tiempo").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("4 residuos").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun conUnaSolaCanecaLaVistaPreviaMuestraLasTresComoElJuego() {
+        compose.setContent {
+            ReciclaKidsTheme { AsistenteDePrueba(AsistenteReto(martes, paso = 4, categorias = setOf(CategoriaResiduo.Organico))) }
+        }
+
+        compose.onNodeWithContentDescription(
+            "Vista previa del juego con las tres canecas y un residuo de ejemplo: cáscara de banano",
+        ).assertIsDisplayed()
+        compose.onNodeWithText("Orgánicos").performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -251,6 +299,19 @@ class PantallasDocenteTest {
         compose.onNodeWithText("Quitar filtros").performClick()
 
         compose.onNodeWithText("Clasificar la lonchera").assertIsDisplayed()
+    }
+
+    @Test
+    fun alCambiarDeFiltroLaListaEmpiezaDesdeElPrimerReto() {
+        val aprovechables = (1..8).map {
+            RetoDocente("r$it", "Reto $it", setOf(CategoriaResiduo.Aprovechable), Dificultad.Facil, martes, EstadoReto.Publicado)
+        }
+        compose.setContent { ReciclaKidsTheme { BibliotecaDePrueba(listOf(refrigerio) + aprovechables) } }
+        compose.onNode(hasScrollToIndexAction()).performScrollToIndex(aprovechables.size)
+
+        compose.onNodeWithText("Aprovechables").performClick()
+
+        compose.onNodeWithText("Reto 1").assertIsDisplayed()
     }
 
     @Test
@@ -363,6 +424,31 @@ class PantallasDocenteTest {
             .assertIsDisplayed()
         compose.onNodeWithText("Insignias · 1 de 2").performScrollTo().assertIsDisplayed()
         compose.onNodeWithContentDescription("Pulpo ordenado, todavía no").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun lasInsigniasDelDetalleLlenanLaTarjetaEnColumnasIguales() {
+        val insignias = listOf("Amiga tortuga", "Rápido como pez", "Racha de 5", "Pulpo ordenado", "Guardián del mar")
+            .mapIndexed { i, nombre -> InsigniaNino(nombre, ganada = i < 3) }
+        compose.setContent {
+            ReciclaKidsTheme {
+                DetalleNinoScreen(
+                    EstadoUi.Contenido(DetalleNino("n02", "Juan T.", listOf(62, 74), emptyMap(), null, insignias)),
+                    onVolver = {},
+                    onReintentar = {},
+                )
+            }
+        }
+
+        val ancho = compose.onRoot().getUnclippedBoundsInRoot().width
+        val cajas = insignias.map { compose.onNode(hasContentDescription(it.nombre, substring = true)).getUnclippedBoundsInRoot() }
+        val filas = cajas.groupBy { it.top }.values.toList()
+        // A 360 dp caben dos por fila; la última queda sola pero no se estira.
+        assertEquals(listOf(2, 2, 1), filas.map { it.size })
+        cajas.forEach { assertEquals(cajas.first().width.value, it.width.value, 0.5f) }
+        filas.forEach { fila -> fila.forEach { assertEquals(fila.first().height.value, it.height.value, 0.5f) } }
+        // La fila completa llega al borde derecho de la tarjeta: el margen es igual a ambos lados.
+        assertEquals(filas.first().first().left.value, (ancho - filas.first().last().right).value, 0.5f)
     }
 
     // --- UI-28 Cuenta ---

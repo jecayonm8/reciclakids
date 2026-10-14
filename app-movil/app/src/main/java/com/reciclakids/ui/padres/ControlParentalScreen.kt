@@ -44,6 +44,7 @@ import com.reciclakids.model.ControlParental
 import com.reciclakids.model.Dificultad
 import com.reciclakids.model.OpcionesMinutosDiarios
 import com.reciclakids.model.PasoMinutosDiarios
+import com.reciclakids.model.residuosPorReto
 import com.reciclakids.ui.docente.BarraDocente
 import com.reciclakids.ui.docente.BordeOpcion
 import com.reciclakids.ui.docente.EsqueletoCarga
@@ -246,7 +247,8 @@ private fun Dificultad.detallePadres(): String = stringResource(
         Dificultad.Facil -> R.string.control_facil
         Dificultad.Medio -> R.string.control_medio
         Dificultad.Dificil -> R.string.control_dificil
-    }
+    },
+    residuosPorReto,
 )
 
 @Preview(widthDp = 360, heightDp = 1000)

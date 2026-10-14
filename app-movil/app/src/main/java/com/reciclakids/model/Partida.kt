@@ -13,7 +13,7 @@ const val LimiteDificilMs = 90_000L
  * Estado de una partida: el niño clasifica los residuos del reto en orden. Es el componente de
  * evaluación del lado de la app: decide al instante si cada intento es correcto, sin red.
  *
- * Un error nunca resta puntos ni vidas y deja la racha quieta: no la borra.
+ * Un error nunca resta puntos ni vidas, pero corta la racha: vuelve a 0.
  */
 data class EstadoPartida(
     val residuos: List<Residuo>,
@@ -36,7 +36,7 @@ data class EstadoPartida(
             return Intento(
                 residuo = residuo,
                 correcto = false,
-                estado = copy(errores = errores + 1, erroresResiduoActual = erroresResiduoActual + 1),
+                estado = copy(errores = errores + 1, erroresResiduoActual = erroresResiduoActual + 1, racha = 0),
             )
         }
         val nuevaRacha = racha + 1

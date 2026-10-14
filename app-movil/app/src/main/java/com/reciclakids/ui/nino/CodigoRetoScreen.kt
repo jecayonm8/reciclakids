@@ -2,6 +2,7 @@ package com.reciclakids.ui.nino
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,12 +17,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -79,19 +83,7 @@ fun CodigoRetoScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     MarcadorIlustracion("pez\nguía", Modifier.flotar().size(84.dp))
-                    Text(
-                        text = stringResource(estado.mensaje()),
-                        modifier = Modifier
-                            .weight(1f)
-                            .background(ReciclaKidsColors.panelNino, RoundedCornerShape(20.dp))
-                            .padding(horizontal = 14.dp, vertical = 12.dp)
-                            .semantics { liveRegion = LiveRegionMode.Polite },
-                        fontFamily = Nunito,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp,
-                        lineHeight = 22.sp,
-                        color = ReciclaKidsColors.tintaNino,
-                    )
+                    BurbujaPez(estado, Modifier.weight(1f))
                     BotonRepetirVoz(onRepetirVoz)
                 }
                 CasillasCodigo(codigo = codigo, estado = estado)
@@ -111,6 +103,38 @@ fun CodigoRetoScreen(
                 )
             }
         }
+    }
+}
+
+private val EstiloBurbuja = TextStyle(
+    fontFamily = Nunito,
+    fontWeight = FontWeight.Bold,
+    fontSize = 17.sp,
+    lineHeight = 22.sp,
+    color = ReciclaKidsColors.tintaNino,
+)
+
+/**
+ * Lo que dice el pez. La burbuja siempre mide lo que el mensaje más largo: así el teclado no
+ * salta cuando el mensaje cambia y ocupa más líneas.
+ */
+@Composable
+private fun BurbujaPez(estado: EstadoCodigo, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .background(ReciclaKidsColors.panelNino, RoundedCornerShape(20.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        // Invisibles y fuera de la semántica: solo reservan el alto.
+        EstadoCodigo.entries.forEach { otro ->
+            Text(stringResource(otro.mensaje()), Modifier.alpha(0f).clearAndSetSemantics {}, style = EstiloBurbuja)
+        }
+        Text(
+            text = stringResource(estado.mensaje()),
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            style = EstiloBurbuja,
+        )
     }
 }
 
