@@ -1,5 +1,6 @@
 package com.reciclakids.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -18,6 +19,9 @@ data class ProgresoNinoEntity(
     val ultimoRetoCodigo: String?,
     /** Fecha ISO-8601 (aaaa-mm-dd) del último reto completado. */
     val ultimoRetoFecha: String?,
+    // Columnas de la versión 4: las filas que ya existían empiezan sin racha.
+    @ColumnInfo(defaultValue = "0") val rachaEntreRetos: Int = 0,
+    @ColumnInfo(defaultValue = "0") val mejorRachaEntreRetos: Int = 0,
 )
 
 @Dao
@@ -41,6 +45,8 @@ fun ProgresoNinoEntity.aModelo() = ProgresoNino(
     } else {
         null
     },
+    rachaEntreRetos = rachaEntreRetos,
+    mejorRachaEntreRetos = mejorRachaEntreRetos,
 )
 
 fun ProgresoNino.aEntidad() = ProgresoNinoEntity(
@@ -49,4 +55,6 @@ fun ProgresoNino.aEntidad() = ProgresoNinoEntity(
     retosCompletados = retosCompletados,
     ultimoRetoCodigo = ultimoReto?.codigo,
     ultimoRetoFecha = ultimoReto?.fecha?.toString(),
+    rachaEntreRetos = rachaEntreRetos,
+    mejorRachaEntreRetos = mejorRachaEntreRetos,
 )

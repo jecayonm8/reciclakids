@@ -17,7 +17,15 @@ class InsigniaTest {
         retos: Int = 1,
         dias: Int = 1,
         ya: Set<Insignia> = emptySet(),
-    ) = insigniasNuevas(estado, dificultad, aTiempo, ProgresoNino("n", retosCompletados = retos), dias, ya)
+        mejorRacha: Int = 0,
+    ) = insigniasNuevas(
+        estado, dificultad, aTiempo, ProgresoNino("n", retosCompletados = retos, mejorRachaEntreRetos = mejorRacha), dias, ya,
+    )
+
+    private fun rachas(insignias: List<Insignia>) = insignias.filter { it == Insignia.RachaDeCinco || it == Insignia.CoralFeliz }
+
+    /** Lleva [intentos] por la racha entre retos, como lo hace cada intento guardado. */
+    private fun ProgresoNino.tras(vararg intentos: Boolean) = intentos.fold(this) { progreso, correcto -> progreso.conIntento(correcto) }
 
     @Test
     fun sinErroresSeGanaAmigaTortuga() {
@@ -33,11 +41,33 @@ class InsigniaTest {
     }
 
     @Test
-    fun lasRachasDanSusInsignias() {
-        assertEquals(
-            listOf(Insignia.RachaDeCinco, Insignia.CoralFeliz),
-            nuevas(partida(errores = 1, rachaMaxima = 10)).filter { it == Insignia.RachaDeCinco || it == Insignia.CoralFeliz },
-        )
+    fun lasRachasDanSusInsigniasConLaRachaEntreRetos() {
+        assertEquals(listOf(Insignia.RachaDeCinco, Insignia.CoralFeliz), rachas(nuevas(partida(errores = 1), mejorRacha = 10)))
+        assertEquals(listOf(Insignia.RachaDeCinco), rachas(nuevas(mejorRacha = 5)))
+        // La racha de una sola partida ya no cuenta: sin racha entre retos no hay insignia.
+        assertEquals(emptyList<Insignia>(), rachas(nuevas(partida(rachaMaxima = 10), mejorRacha = 4)))
+    }
+
+    @Test
+    fun laRachaEntreRetosSigueDeUnaPartidaAOtraYUnErrorLaCorta() {
+        val dosRetos = ProgresoNino("n").tras(*BooleanArray(6) { true }).tras(*BooleanArray(4) { true })
+
+        assertEquals(10, dosRetos.rachaEntreRetos)
+
+        val trasError = dosRetos.tras(false, true)
+
+        assertEquals(1, trasError.rachaEntreRetos)
+        assertEquals(10, trasError.mejorRachaEntreRetos)
+    }
+
+    @Test
+    fun coralFelizSeAlcanzaUniendoDosRetosMediosSinErrores() {
+        // Un reto medio tiene 6 residuos: sola, ninguna partida llega a 10 seguidos.
+        val primero = ProgresoNino("n").tras(*BooleanArray(6) { true })
+        val segundo = primero.tras(*BooleanArray(6) { true })
+
+        assertFalse(Insignia.CoralFeliz in insigniasNuevas(partida(rachaMaxima = 6), Dificultad.Medio, true, primero, 1, emptySet()))
+        assertTrue(Insignia.CoralFeliz in insigniasNuevas(partida(rachaMaxima = 6), Dificultad.Medio, true, segundo, 2, emptySet()))
     }
 
     @Test
