@@ -301,8 +301,7 @@
     <string name="crear_elige_dia">Elige el día</string>
     <string name="crear_codigo_esa_manana">El código se genera automáticamente esa mañana.</string>
     <string name="crear_vista_titulo">Así lo verá el niño</string>
-    <string name="crear_vista_descripcion">Vista previa del juego con %1$s</string>
-    <string name="crear_vista_residuo">botella</string>
+    <string name="crear_vista_descripcion">Vista previa del juego con %1$s y un residuo de ejemplo: %2$s</string>
     <string name="crear_resumen">Resumen</string>
     <string name="crear_resumen_canecas">Canecas</string>
     <string name="crear_resumen_dificultad">Dificultad</string>

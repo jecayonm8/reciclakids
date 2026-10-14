@@ -190,7 +190,11 @@ class PantallasDocenteTest {
             ReciclaKidsTheme { AsistenteDePrueba(AsistenteReto(martes, paso = 4, categorias = elegidas, dificultad = Dificultad.Facil)) }
         }
 
-        compose.onNodeWithContentDescription("Vista previa del juego con No aprovechables + Orgánicos").assertIsDisplayed()
+        compose.onNodeWithContentDescription(
+            "Vista previa del juego con No aprovechables + Orgánicos y un residuo de ejemplo: cáscara de banano",
+        ).assertIsDisplayed()
+        // Sin aprovechables no puede salir la botella: no tendría caneca.
+        compose.onAllNodes(hasContentDescription("botella", substring = true)).assertCountEquals(0)
         compose.onNodeWithText("Fácil · sin tiempo").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("4 residuos").performScrollTo().assertIsDisplayed()
     }
@@ -201,7 +205,9 @@ class PantallasDocenteTest {
             ReciclaKidsTheme { AsistenteDePrueba(AsistenteReto(martes, paso = 4, categorias = setOf(CategoriaResiduo.Organico))) }
         }
 
-        compose.onNodeWithContentDescription("Vista previa del juego con las tres canecas").assertIsDisplayed()
+        compose.onNodeWithContentDescription(
+            "Vista previa del juego con las tres canecas y un residuo de ejemplo: cáscara de banano",
+        ).assertIsDisplayed()
         compose.onNodeWithText("Orgánicos").performScrollTo().assertIsDisplayed()
     }
 
