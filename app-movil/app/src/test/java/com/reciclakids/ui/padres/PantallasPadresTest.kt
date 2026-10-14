@@ -170,7 +170,7 @@ class PantallasPadresTest {
         }
 
         compose.onNodeWithText("Esta semana").assertIsSelected()
-        compose.onNodeWithText("+11 pts").assertIsDisplayed()
+        compose.onNodeWithText("+11 pts vs. semana pasada").assertIsDisplayed()
         compose.onNodeWithText("No aprovechables").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("1 h 12 min").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Promedio de 14 min al día, por debajo del límite de 20 min que definiste.").performScrollTo().assertIsDisplayed()

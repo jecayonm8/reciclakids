@@ -4,16 +4,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,6 +65,8 @@ private val FondoInsigniaGanada = Color(0xFFFFF8E9)
 private val BordeInsigniaGanada = Color(0xFFE8C877)
 private val FondoInsigniaPendiente = Color(0xFFF0F4F5)
 private val FormaInsignia = RoundedCornerShape(14.dp)
+private val AnchoMinimoInsignia = 100.dp
+private val EspacioInsignias = 14.dp
 
 /**
  * UI-27 Detalle de un niño, a pantalla completa: evolución, aciertos por caneca con una frase
@@ -228,7 +234,6 @@ private fun textoConfusion(confusion: Confusion): String = stringResource(
     confusion.correcta.colorCaneca(),
 )
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TarjetaInsignias(insignias: List<InsigniaNino>) {
     TarjetaDocente(Modifier.fillMaxWidth(), relleno = PaddingValues(20.dp), espacio = 14.dp) {
@@ -236,22 +241,31 @@ private fun TarjetaInsignias(insignias: List<InsigniaNino>) {
             stringResource(R.string.detalle_insignias, insignias.count { it.ganada }, insignias.size),
             style = MaterialTheme.typography.titleMedium,
         )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            insignias.forEach { InsigniaMini(it) }
+        // Columnas de igual ancho que llenan la tarjeta; en cada fila todas las insignias miden
+        // lo que la más alta, aunque un nombre ocupe dos líneas.
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val columnas = ((maxWidth + EspacioInsignias) / (AnchoMinimoInsignia + EspacioInsignias)).toInt().coerceAtLeast(2)
+            Column(verticalArrangement = Arrangement.spacedBy(EspacioInsignias)) {
+                insignias.chunked(columnas).forEach { fila ->
+                    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(EspacioInsignias)) {
+                        fila.forEach { InsigniaMini(it, Modifier.weight(1f).fillMaxHeight()) }
+                        repeat(columnas - fila.size) { Spacer(Modifier.weight(1f)) }
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun InsigniaMini(insignia: InsigniaNino) {
+private fun InsigniaMini(insignia: InsigniaNino, modifier: Modifier = Modifier) {
     val descripcion = stringResource(
         if (insignia.ganada) R.string.detalle_insignia_ganada else R.string.detalle_insignia_pendiente,
         insignia.nombre,
     )
     val estiloMedalla = EstiloMarcador.Insignia
     Column(
-        modifier = Modifier
-            .width(120.dp)
+        modifier = modifier
             .then(
                 if (insignia.ganada) {
                     Modifier.background(FondoInsigniaGanada, FormaInsignia).border(1.dp, BordeInsigniaGanada, FormaInsignia)

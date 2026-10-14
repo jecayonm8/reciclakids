@@ -11,12 +11,19 @@ import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.width
 import com.reciclakids.model.AvisosDocente
 import com.reciclakids.model.BibliotecaDocente
 import com.reciclakids.model.CategoriaResiduo
@@ -254,6 +261,19 @@ class PantallasDocenteTest {
     }
 
     @Test
+    fun alCambiarDeFiltroLaListaEmpiezaDesdeElPrimerReto() {
+        val aprovechables = (1..8).map {
+            RetoDocente("r$it", "Reto $it", setOf(CategoriaResiduo.Aprovechable), Dificultad.Facil, martes, EstadoReto.Publicado)
+        }
+        compose.setContent { ReciclaKidsTheme { BibliotecaDePrueba(listOf(refrigerio) + aprovechables) } }
+        compose.onNode(hasScrollToIndexAction()).performScrollToIndex(aprovechables.size)
+
+        compose.onNodeWithText("Aprovechables").performClick()
+
+        compose.onNodeWithText("Reto 1").assertIsDisplayed()
+    }
+
+    @Test
     fun soloSeEditanProgramadosYBorradoresYUnBorradorNoTieneResultados() {
         var editado: RetoDocente? = null
         compose.setContent { ReciclaKidsTheme { BibliotecaDePrueba(listOf(lonchera, refrigerio, mezcla), onEditar = { editado = it }) } }
@@ -363,6 +383,31 @@ class PantallasDocenteTest {
             .assertIsDisplayed()
         compose.onNodeWithText("Insignias · 1 de 2").performScrollTo().assertIsDisplayed()
         compose.onNodeWithContentDescription("Pulpo ordenado, todavía no").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun lasInsigniasDelDetalleLlenanLaTarjetaEnColumnasIguales() {
+        val insignias = listOf("Amiga tortuga", "Rápido como pez", "Racha de 5", "Pulpo ordenado", "Guardián del mar")
+            .mapIndexed { i, nombre -> InsigniaNino(nombre, ganada = i < 3) }
+        compose.setContent {
+            ReciclaKidsTheme {
+                DetalleNinoScreen(
+                    EstadoUi.Contenido(DetalleNino("n02", "Juan T.", listOf(62, 74), emptyMap(), null, insignias)),
+                    onVolver = {},
+                    onReintentar = {},
+                )
+            }
+        }
+
+        val ancho = compose.onRoot().getUnclippedBoundsInRoot().width
+        val cajas = insignias.map { compose.onNode(hasContentDescription(it.nombre, substring = true)).getUnclippedBoundsInRoot() }
+        val filas = cajas.groupBy { it.top }.values.toList()
+        // A 360 dp caben dos por fila; la última queda sola pero no se estira.
+        assertEquals(listOf(2, 2, 1), filas.map { it.size })
+        cajas.forEach { assertEquals(cajas.first().width.value, it.width.value, 0.5f) }
+        filas.forEach { fila -> fila.forEach { assertEquals(fila.first().height.value, it.height.value, 0.5f) } }
+        // La fila completa llega al borde derecho de la tarjeta: el margen es igual a ambos lados.
+        assertEquals(filas.first().first().left.value, (ancho - filas.first().last().right).value, 0.5f)
     }
 
     // --- UI-28 Cuenta ---

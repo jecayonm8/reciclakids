@@ -7,6 +7,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,6 +62,7 @@ import com.reciclakids.ui.docente.MuestraCaneca
 import com.reciclakids.ui.docente.TarjetaDocente
 import com.reciclakids.ui.docente.TextoCambio
 import com.reciclakids.ui.docente.nombre
+import com.reciclakids.ui.docente.textoCambioPuntos
 import com.reciclakids.ui.theme.Duracion
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.util.duracionMinutos
@@ -172,18 +175,23 @@ private fun TiraSemanas(reporte: ReporteHijo, onSemana: (LocalDate) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TarjetaEvolucion(reporte: ReporteHijo) {
     TarjetaDocente(Modifier.fillMaxWidth(), espacio = 14.dp) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.reporte_evolucion), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+        // El cambio va a la derecha del título; en un teléfono angosto baja a la línea siguiente.
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                stringResource(R.string.reporte_evolucion),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.align(Alignment.CenterVertically),
+            )
             reporte.cambio?.let { cambio ->
-                val texto = when {
-                    cambio > 0 -> stringResource(R.string.reporte_pts_sube, cambio)
-                    cambio < 0 -> stringResource(R.string.reporte_pts_baja, -cambio)
-                    else -> stringResource(R.string.reporte_pts_igual)
-                }
-                TextoCambio(texto, cambio)
+                TextoCambio(textoCambioPuntos(cambio), cambio, Modifier.align(Alignment.CenterVertically))
             }
         }
         val descripcion = stringResource(R.string.reporte_evolucion_descripcion)
