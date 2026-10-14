@@ -76,7 +76,29 @@ class RepositorioJuegoTest {
         assertFalse(otraVez.sumoAlAcuario)
         assertFalse(Insignia.AmigaTortuga in otraVez.insigniasNuevas)
         assertEquals(1, contenedor.progreso.leer("nino-1").retosCompletados)
-        assertEquals(setOf(Insignia.AmigaTortuga, Insignia.RachaDeCinco), juego.insigniasGanadas("nino-1").first())
+        // Las dos partidas sin errores suman 12 residuos seguidos entre retos: también «Coral feliz».
+        assertEquals(setOf(Insignia.AmigaTortuga, Insignia.RachaDeCinco, Insignia.CoralFeliz), juego.insigniasGanadas("nino-1").first())
+    }
+
+    @Test
+    fun laRachaEntreRetosSigueEnLaPartidaSiguienteYUnErrorLaCorta() = runBlocking {
+        val primera = juego.abrirPartida("nino-1", reto)
+        juego.terminarPartida(primera.id, "nino-1", reto, jugar(primera.id, primera.estado, reto.residuos.size), tiempoMs = 0)
+        val otroReto = reto.copy(codigo = "1111", fecha = reto.fecha.plusDays(1))
+
+        val segunda = juego.abrirPartida("nino-1", otroReto)
+        // El contador del juego empieza en 0 en cada partida.
+        assertEquals(0, segunda.estado.racha)
+        val conCuatro = jugar(segunda.id, segunda.estado, cuantos = 4)
+
+        assertEquals(10, contenedor.progreso.leer("nino-1").rachaEntreRetos)
+        assertEquals(4, conCuatro.racha)
+
+        val equivocada = CategoriaResiduo.entries.first { it != conCuatro.residuoActual?.categoria }
+        juego.registrarIntento(segunda.id, conCuatro.intentar(equivocada), equivocada, tiempoMs = 0)
+
+        assertEquals(0, contenedor.progreso.leer("nino-1").rachaEntreRetos)
+        assertEquals(10, contenedor.progreso.leer("nino-1").mejorRachaEntreRetos)
     }
 
     @Test

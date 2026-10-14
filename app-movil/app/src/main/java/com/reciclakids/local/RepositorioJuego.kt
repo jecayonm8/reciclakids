@@ -65,6 +65,9 @@ class RepositorioJuego(
                 )
             )
             guardarAvance(partidaId, intento.estado, tiempoMs)
+            // La racha entre retos vive en el progreso del niño: sigue en su próxima partida.
+            val ninoId = checkNotNull(dao.leerPartida(partidaId)) { "No existe la partida $partidaId" }.ninoId
+            progresoDao.guardar(leerProgreso(ninoId).conIntento(intento.correcto).aEntidad())
         }
     }
 
@@ -82,7 +85,7 @@ class RepositorioJuego(
         guardarAvance(partidaId, estado, tiempoMs)
         dao.terminarPartida(partidaId)
 
-        val anterior = progresoDao.leer(ninoId)?.aModelo() ?: ProgresoNino(ninoId)
+        val anterior = leerProgreso(ninoId)
         val sumoAlAcuario = !anterior.completo(reto)
         val progreso = if (sumoAlAcuario) {
             anterior.copy(
@@ -125,6 +128,8 @@ class RepositorioJuego(
     suspend fun intentosSinSincronizar(limite: Int): List<IntentoEntity> = dao.intentosSinSincronizar(limite)
 
     suspend fun marcarSincronizados(ids: List<Long>) = dao.marcarSincronizados(ids)
+
+    private suspend fun leerProgreso(ninoId: String): ProgresoNino = progresoDao.leer(ninoId)?.aModelo() ?: ProgresoNino(ninoId)
 
     private suspend fun guardarAvance(partidaId: Long, estado: EstadoPartida, tiempoMs: Long) {
         dao.guardarAvance(
