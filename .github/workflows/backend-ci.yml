@@ -1,10 +1,22 @@
+name: Backend CI
+on:
+  pull_request:
+    paths: ["backend/**"]
+  push:
+    branches: [main]
+    paths: ["backend/**"]
 jobs:
   build-test:
     runs-on: ubuntu-latest
     env:
       HAS_TESTRAIL: ${{ secrets.TESTRAIL_URL != '' }}
     steps:
-      # ... checkout, setup-java y "Build y pruebas" como ya los tienes ...
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: "temurin", java-version: "17" }
+      - name: Build y pruebas
+        working-directory: backend
+        run: ./gradlew build test
 
       - name: Instalar TestRail CLI
         if: always() && github.event_name == 'push' && env.HAS_TESTRAIL == 'true'
