@@ -532,9 +532,6 @@
     <string name="reporte_cargando_semana">Cargando la semana</string>
     <string name="reporte_evolucion">Evolución</string>
     <string name="reporte_evolucion_descripcion">Aciertos por semana</string>
-    <string name="reporte_pts_sube">+%1$d pts</string>
-    <string name="reporte_pts_baja">−%1$d pts</string>
-    <string name="reporte_pts_igual">sin cambio</string>
     <string name="reporte_por_tipo">Aciertos por tipo de residuo</string>
     <string name="reporte_no_jugo">Esta semana no jugó. Las semanas con juego aparecen arriba.</string>
     <string name="reporte_tiempo">Tiempo de uso</string>

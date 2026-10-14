@@ -646,6 +646,14 @@ internal fun TextoCambio(texto: String, cambio: Int, modifier: Modifier = Modifi
     }
 }
 
+/** Texto de [TextoCambio] para puntos de porcentaje: dice contra qué semana se compara. */
+@Composable
+internal fun textoCambioPuntos(cambio: Int): String = when {
+    cambio > 0 -> stringResource(R.string.reporte_cambio_sube, cambio)
+    cambio < 0 -> stringResource(R.string.reporte_cambio_baja, -cambio)
+    else -> stringResource(R.string.reporte_cambio_igual)
+}
+
 // ---------- Textos de un reto ----------
 
 @Composable

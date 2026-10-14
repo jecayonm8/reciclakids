@@ -161,13 +161,6 @@ private fun RowScope.TarjetaKpi(titulo: String, valor: String, pie: @Composable 
 }
 
 @Composable
-private fun textoCambioPuntos(cambio: Int): String = when {
-    cambio > 0 -> stringResource(R.string.reporte_cambio_sube, cambio)
-    cambio < 0 -> stringResource(R.string.reporte_cambio_baja, -cambio)
-    else -> stringResource(R.string.reporte_cambio_igual)
-}
-
-@Composable
 private fun textoCambioInsignias(cambio: Int): String = when {
     cambio > 0 -> stringResource(R.string.reporte_cambio_insignias_sube, cambio)
     cambio < 0 -> stringResource(R.string.reporte_cambio_insignias_baja, -cambio)

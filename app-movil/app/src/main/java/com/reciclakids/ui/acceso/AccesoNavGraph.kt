@@ -3,6 +3,7 @@ package com.reciclakids.ui.acceso
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -42,6 +43,7 @@ object RutasAcceso {
 }
 
 private const val ClaveCuentaCreada = "cuentaCreada"
+private const val ClaveCorreoCuentaCreada = "correoCuentaCreada"
 
 /**
  * UI-01 → UI-02 ─┬─ «¡A jugar!» → [onJugar]
@@ -79,27 +81,33 @@ fun NavGraphBuilder.accesoGraph(
             var cargando by remember { mutableStateOf(false) }
             var error by remember { mutableStateOf<ErrorLogin?>(null) }
             val cuentaCreada by entrada.savedStateHandle.getStateFlow(ClaveCuentaCreada, false).collectAsState()
-            LoginScreen(
-                onEntrar = { correo, contrasena ->
-                    cargando = true
-                    error = null
-                    entrada.savedStateHandle[ClaveCuentaCreada] = false
-                    alcance.launch {
-                        when (val resultado = servicio.iniciarSesion(correo, contrasena)) {
-                            is ResultadoSesion.Iniciada -> onSesionIniciada(resultado.cuenta)
-                            ResultadoSesion.CredencialesInvalidas -> error = ErrorLogin.CredencialesInvalidas
-                            ResultadoSesion.SinConexion -> error = ErrorLogin.SinConexion
+            val correoCuentaCreada by entrada.savedStateHandle.getStateFlow<String?>(ClaveCorreoCuentaCreada, null).collectAsState()
+            // Una cuenta nueva cambia la clave: el formulario descarta lo que guardó antes de ir al
+            // registro y arranca con el correo de esa cuenta.
+            key(correoCuentaCreada) {
+                LoginScreen(
+                    onEntrar = { correo, contrasena ->
+                        cargando = true
+                        error = null
+                        entrada.savedStateHandle[ClaveCuentaCreada] = false
+                        alcance.launch {
+                            when (val resultado = servicio.iniciarSesion(correo, contrasena)) {
+                                is ResultadoSesion.Iniciada -> onSesionIniciada(resultado.cuenta)
+                                ResultadoSesion.CredencialesInvalidas -> error = ErrorLogin.CredencialesInvalidas
+                                ResultadoSesion.SinConexion -> error = ErrorLogin.SinConexion
+                            }
+                            cargando = false
                         }
-                        cargando = false
-                    }
-                },
-                onOlvideContrasena = { navController.navigate(RutasAcceso.Recuperar) },
-                onCrearCuenta = { navController.navigate(RutasAcceso.Registro) },
-                onVolverInicio = { navController.popBackStack(RutasAcceso.Selector, inclusive = false) },
-                cargando = cargando,
-                error = error,
-                cuentaRecienCreada = cuentaCreada,
-            )
+                    },
+                    onOlvideContrasena = { navController.navigate(RutasAcceso.Recuperar) },
+                    onCrearCuenta = { navController.navigate(RutasAcceso.Registro) },
+                    onVolverInicio = { navController.popBackStack(RutasAcceso.Selector, inclusive = false) },
+                    cargando = cargando,
+                    error = error,
+                    cuentaRecienCreada = cuentaCreada,
+                    correoInicial = correoCuentaCreada.orEmpty(),
+                )
+            }
         }
 
         navigation(startDestination = RutasAcceso.RegistroDatos, route = RutasAcceso.Registro) {
@@ -121,9 +129,10 @@ fun NavGraphBuilder.accesoGraph(
                         cargando = true
                         error = null
                         alcance.launch {
-                            error = servicio.registrarDocente(registro.docente.aRegistro()).comoError()
+                            val datos = registro.docente.aRegistro()
+                            error = servicio.registrarDocente(datos).comoError()
                             cargando = false
-                            if (error == null) navController.volverALoginConCuentaCreada()
+                            if (error == null) navController.volverALoginConCuentaCreada(datos.correo)
                         }
                     },
                     onContinuarAcudiente = { navController.navigate(RutasAcceso.Autorizacion) },
@@ -144,9 +153,10 @@ fun NavGraphBuilder.accesoGraph(
                         cargando = true
                         error = null
                         alcance.launch {
-                            error = servicio.registrarAcudiente(registro.acudiente.aRegistro()).comoError()
+                            val datos = registro.acudiente.aRegistro()
+                            error = servicio.registrarAcudiente(datos).comoError()
                             cargando = false
-                            if (error == null) navController.volverALoginConCuentaCreada()
+                            if (error == null) navController.volverALoginConCuentaCreada(datos.correo)
                         }
                     },
                     onLeerPolitica = { navController.navigate(RutasAcceso.Politica) },
@@ -200,7 +210,10 @@ private fun ResultadoRegistro.comoError(): ErrorRegistro? = when (this) {
     ResultadoRegistro.SinConexion -> ErrorRegistro.SinConexion
 }
 
-private fun NavController.volverALoginConCuentaCreada() {
-    getBackStackEntry(RutasAcceso.Login).savedStateHandle[ClaveCuentaCreada] = true
+private fun NavController.volverALoginConCuentaCreada(correo: String) {
+    getBackStackEntry(RutasAcceso.Login).savedStateHandle.apply {
+        set(ClaveCuentaCreada, true)
+        set(ClaveCorreoCuentaCreada, correo)
+    }
     popBackStack(RutasAcceso.Login, inclusive = false)
 }

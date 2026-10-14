@@ -7,6 +7,7 @@ import com.reciclakids.model.EstadoNinoHoy
 import com.reciclakids.model.EstadoReto
 import com.reciclakids.model.RetoBorrador
 import com.reciclakids.model.RolAdulto
+import com.reciclakids.model.residuosPorReto
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -55,8 +56,20 @@ class ServicioDocenteEnMemoriaTest {
         assertEquals("4729", tablero.retoHoy?.codigoActivo(martes))
         assertEquals(6, tablero.completaron)
         assertEquals(10, tablero.totalNinos)
-        // 41 aciertos de 48 posibles entre los que terminaron.
-        assertEquals(85, tablero.aciertosPromedio)
+        // El reto de hoy es medio (6 residuos): 31 aciertos de 36 posibles entre los que terminaron.
+        assertEquals(86, tablero.aciertosPromedio)
+    }
+
+    @Test
+    fun quienTerminoElRetoDemoDeHoyClasificoTantosResiduosComoTieneSuDificultad() {
+        val retoHoy = DatosDemoDocente.retos(martes).first { it.id == DatosDemoDocente.IdRetoHoy }
+        val completos = DatosDemoDocente.ninos().map { it.estadoHoy }.filterIsInstance<EstadoNinoHoy.Completo>()
+
+        assertTrue(completos.isNotEmpty())
+        completos.forEach {
+            assertEquals(retoHoy.dificultad.residuosPorReto, it.total)
+            assertTrue("${it.aciertos} de ${it.total}", it.aciertos in 0..it.total)
+        }
     }
 
     @Test
