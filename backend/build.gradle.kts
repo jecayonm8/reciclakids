@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
     alias(ktorLibs.plugins.ktor)
+    alias(libs.plugins.kover)
 }
 
 group = "com.reciclakids"
@@ -64,4 +65,21 @@ dependencies {
 tasks.test {
     // Las pruebas de integración levantan PostgreSQL con Testcontainers: necesitan Docker.
     useJUnitPlatform()
+}
+
+// Cobertura (plan de calidad: al menos 70 % en la lógica de negocio del backend).
+// Informe: ./gradlew koverHtmlReport → build/reports/kover/html/index.html
+kover {
+    reports {
+        filters {
+            includes {
+                classes("com.reciclakids.services.*", "com.reciclakids.models.*", "com.reciclakids.repositories.*")
+            }
+        }
+        verify {
+            rule("Lógica de negocio") {
+                minBound(70)
+            }
+        }
+    }
 }
