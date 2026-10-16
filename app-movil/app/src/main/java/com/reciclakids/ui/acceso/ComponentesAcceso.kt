@@ -75,11 +75,13 @@ internal fun CampoTexto(
     ayuda: String? = null,
     teclado: KeyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
     estiloTexto: TextStyle = MaterialTheme.typography.bodyLarge,
+    habilitado: Boolean = true,
 ) {
     OutlinedTextField(
         value = valor,
         onValueChange = onCambio,
         modifier = modifier.fillMaxWidth(),
+        enabled = habilitado,
         label = { Text(etiqueta) },
         textStyle = estiloTexto,
         isError = error != null,
@@ -97,7 +99,9 @@ internal fun CampoCorreo(
     modifier: Modifier = Modifier,
     etiqueta: String = stringResource(R.string.campo_correo),
     error: String? = null,
+    ayuda: String? = null,
     imeAction: ImeAction = ImeAction.Next,
+    habilitado: Boolean = true,
 ) {
     CampoTexto(
         valor = valor,
@@ -105,7 +109,9 @@ internal fun CampoCorreo(
         etiqueta = etiqueta,
         modifier = modifier,
         error = error,
+        ayuda = ayuda,
         teclado = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = imeAction),
+        habilitado = habilitado,
     )
 }
 

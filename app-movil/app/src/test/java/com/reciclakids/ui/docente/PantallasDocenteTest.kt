@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
@@ -14,6 +15,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -23,6 +25,9 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import com.reciclakids.model.AvisosDocente
@@ -39,12 +44,15 @@ import com.reciclakids.model.NinoHoy
 import com.reciclakids.model.PerfilDocente
 import com.reciclakids.model.RetoDocente
 import com.reciclakids.model.TableroDocente
+import com.reciclakids.network.DatosPerfilDocente
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.ui.theme.Tactil
 import com.reciclakids.viewmodel.AsistenteReto
+import com.reciclakids.viewmodel.EstadoGuardado
 import com.reciclakids.viewmodel.EstadoPublicacion
 import com.reciclakids.viewmodel.EstadoUi
 import com.reciclakids.viewmodel.FiltroReto
+import com.reciclakids.viewmodel.FormularioPerfilDocente
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -499,5 +507,124 @@ class PantallasDocenteTest {
         listOf("Editar perfil", "Compartir", "Regenerar", "Ver política", "Cerrar sesión").forEach {
             compose.onNodeWithText(it).performScrollTo().assertHeightIsAtLeast(Tactil.minimoAdulto)
         }
+    }
+
+    // --- Editar perfil (desde UI-28) ---
+
+    private val laura = DatosPerfilDocente("Laura Restrepo", "laura.r@jardin.edu.co", "Gotitas", "Jardín B")
+
+    private fun campo(etiqueta: String) = compose.onNode(hasSetTextAction() and hasText(etiqueta))
+
+    private fun montarEdicion(
+        formulario: FormularioPerfilDocente = FormularioPerfilDocente(laura),
+        guardado: EstadoGuardado = EstadoGuardado.Editando,
+        onGuardar: () -> Unit = {},
+        onVolver: () -> Unit = {},
+    ) {
+        compose.setContent {
+            ReciclaKidsTheme {
+                EditarPerfilDocenteScreen(
+                    EstadoUi.Contenido(formulario), guardado, onGuardar = onGuardar, onReintentar = {}, onVolver = onVolver,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun guardarElPerfilSoloSeHabilitaConCambiosYSinErrores() {
+        var guardados = 0
+        montarEdicion(onGuardar = { guardados++ })
+        val guardar = compose.onNodeWithText("Guardar cambios")
+
+        guardar.performScrollTo().assertIsNotEnabled()
+        campo("Grupo a cargo").performScrollTo().performTextReplacement("Jardín C")
+        guardar.performScrollTo().assertIsEnabled()
+
+        // Las mismas reglas del registro, a la vista mientras se escribe.
+        campo("Jardín infantil").performScrollTo().performTextClearance()
+        compose.onNodeWithText("Completa este campo").assertIsDisplayed()
+        guardar.performScrollTo().assertIsNotEnabled()
+        campo("Jardín infantil").performTextInput("Gotitas")
+        campo("Correo institucional").performScrollTo().performTextReplacement("laura.r@jardin")
+        compose.onNodeWithText("Escribe un correo válido").assertIsDisplayed()
+        guardar.performScrollTo().assertIsNotEnabled()
+
+        campo("Correo institucional").performTextReplacement("laura.r@jardin.edu.co")
+        guardar.performScrollTo().performClick()
+        assertEquals(1, guardados)
+    }
+
+    @Test
+    fun elCorreoDeOtraCuentaSeMarcaHastaQueSeEscribeOtro() {
+        val formulario = FormularioPerfilDocente(laura).apply { correo = "ana@jardin.edu.co" }
+        montarEdicion(formulario, guardado = EstadoGuardado.CorreoEnUso("ana@jardin.edu.co"))
+
+        compose.onNodeWithText("Ya existe una cuenta con ese correo").assertIsDisplayed()
+        compose.onNodeWithText("Guardar cambios").performScrollTo().assertIsNotEnabled()
+
+        campo("Correo institucional").performTextReplacement("laura.restrepo@jardin.edu.co")
+        compose.onAllNodesWithText("Ya existe una cuenta con ese correo").assertCountEquals(0)
+        compose.onNodeWithText("Guardar cambios").performScrollTo().assertIsEnabled()
+    }
+
+    @Test
+    fun sinConexionAvisaYSePuedeVolverAGuardar() {
+        var guardados = 0
+        val formulario = FormularioPerfilDocente(laura).apply { nombre = "Laura Gómez" }
+        montarEdicion(formulario, guardado = EstadoGuardado.SinConexion, onGuardar = { guardados++ })
+
+        compose.onNodeWithText("No pudimos conectarnos. Revisa tu internet e intenta de nuevo.").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Guardar cambios").performScrollTo().performClick()
+
+        assertEquals(1, guardados)
+    }
+
+    @Test
+    fun mientrasSeGuardaElFormularioNoSeToca() {
+        val formulario = FormularioPerfilDocente(laura).apply { nombre = "Laura Gómez" }
+        montarEdicion(formulario, guardado = EstadoGuardado.Guardando)
+
+        // Deshabilitados ya no aceptan texto, así que se buscan solo por su etiqueta.
+        compose.onNodeWithText("Nombre y apellido").assertIsNotEnabled()
+        compose.onNodeWithText("Grupo a cargo").assertIsNotEnabled()
+        // El botón muestra el progreso en lugar del texto.
+        compose.onAllNodesWithText("Guardar cambios").assertCountEquals(0)
+    }
+
+    @Test
+    fun salirConCambiosSinGuardarPideConfirmacion() {
+        var salidas = 0
+        montarEdicion(onVolver = { salidas++ })
+
+        // Sin cambios sale directo.
+        compose.onNodeWithContentDescription("Volver").performClick()
+        assertEquals(1, salidas)
+
+        campo("Nombre y apellido").performTextReplacement("Laura Gómez")
+        compose.onNodeWithContentDescription("Volver").performClick()
+        compose.onNodeWithText("¿Descartar los cambios?").assertIsDisplayed()
+        compose.onNodeWithText("Seguir editando").performClick()
+        assertEquals(1, salidas)
+        campo("Nombre y apellido").assert(hasText("Laura Gómez"))
+
+        compose.onNodeWithContentDescription("Volver").performClick()
+        compose.onNodeWithText("Descartar").performClick()
+        assertEquals(2, salidas)
+    }
+
+    @Test
+    fun editarPerfilCargaYSiNoHayRedOfreceReintentar() {
+        var reintentos = 0
+        var estado by mutableStateOf<EstadoUi<FormularioPerfilDocente>>(EstadoUi.Cargando)
+        compose.setContent {
+            ReciclaKidsTheme {
+                EditarPerfilDocenteScreen(estado, EstadoGuardado.Editando, onGuardar = {}, onReintentar = { reintentos++ }, onVolver = {})
+            }
+        }
+
+        compose.onNodeWithContentDescription("Cargando…").assertIsDisplayed()
+        estado = EstadoUi.Error
+        compose.onNodeWithText("Reintentar").performScrollTo().performClick()
+        assertEquals(1, reintentos)
     }
 }

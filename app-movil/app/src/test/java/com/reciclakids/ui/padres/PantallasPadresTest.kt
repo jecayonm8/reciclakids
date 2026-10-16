@@ -10,6 +10,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -17,6 +19,8 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
 import com.reciclakids.model.ControlParental
 import com.reciclakids.model.CuentaAdulto
@@ -24,11 +28,14 @@ import com.reciclakids.model.Dificultad
 import com.reciclakids.model.RolAdulto
 import com.reciclakids.network.ControlesParentales
 import com.reciclakids.network.DatosDemoPadres
+import com.reciclakids.network.DatosPerfilAcudiente
 import com.reciclakids.network.Respuesta
 import com.reciclakids.network.ServicioPadresEnMemoria
 import com.reciclakids.ui.theme.ReciclaKidsTheme
+import com.reciclakids.viewmodel.EstadoGuardado
 import com.reciclakids.viewmodel.EstadoUi
 import com.reciclakids.viewmodel.EstadoVinculacion
+import com.reciclakids.viewmodel.FormularioPerfilAcudiente
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -408,5 +415,48 @@ class PantallasPadresTest {
         estado = EstadoVinculacion.CodigoInvalido
         compose.onNodeWithText("Vincular").assertIsEnabled()
         compose.onNodeWithText("Ese código no existe o ya se usó. Pídele uno nuevo a la docente.").assertIsDisplayed()
+    }
+
+    // --- Editar perfil (desde UI-35) ---
+
+    private fun campo(etiqueta: String) = compose.onNode(hasSetTextAction() and hasText(etiqueta))
+
+    @Test
+    fun elAcudienteEditaNombreYCorreoConLasReglasDelRegistro() {
+        var guardados = 0
+        val formulario = FormularioPerfilAcudiente(DatosPerfilAcudiente("Mariana Ríos", "mariana.r@correo.com"))
+        compose.setContent {
+            ReciclaKidsTheme {
+                EditarPerfilAcudienteScreen(
+                    EstadoUi.Contenido(formulario), EstadoGuardado.Editando,
+                    onGuardar = { guardados++ }, onReintentar = {}, onVolver = {},
+                )
+            }
+        }
+        val guardar = compose.onNodeWithText("Guardar cambios")
+
+        compose.onNodeWithText("Con este correo inicias sesión y recibes los logros y el reporte semanal.").assertIsDisplayed()
+        guardar.assertIsNotEnabled()
+        campo("Tu nombre").performTextClearance()
+        compose.onNodeWithText("Completa este campo").assertIsDisplayed()
+        guardar.assertIsNotEnabled()
+
+        campo("Tu nombre").performTextInput("Mariana Ríos Gil")
+        guardar.performScrollTo().performClick()
+
+        assertEquals(1, guardados)
+        assertEquals(DatosPerfilAcudiente("Mariana Ríos Gil", "mariana.r@correo.com"), formulario.datos)
+    }
+
+    @Test
+    fun editarPerfilSinRedUsaLosTextosDePadres() {
+        compose.setContent {
+            ReciclaKidsTheme {
+                EditarPerfilAcudienteScreen(EstadoUi.Error, EstadoGuardado.Editando, onGuardar = {}, onReintentar = {}, onVolver = {})
+            }
+        }
+
+        compose.onNodeWithText("No pudimos cargar la información").assertIsDisplayed()
+        compose.onNodeWithText("Reintentar").performScrollTo().assertIsDisplayed()
     }
 }

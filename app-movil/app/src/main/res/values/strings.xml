@@ -108,6 +108,60 @@
     <string name="autorizacion_crear">Crear cuenta</string>
     <string name="autorizacion_nota">Sin esta autorización no podemos crear la cuenta.</string>
 
+    <!-- Política de tratamiento de datos personales (Ley 1581 de 2012 y Decreto 1377 de 2013)
+
+         BORRADOR: el equipo debe validar este texto antes de publicar la app. El texto legal
+         definitivo reemplaza estos recursos sin tocar PoliticaDatosScreen:
+         - politica_resumen: viñetas del recuadro «En resumen».
+         - politica_secciones_titulos y politica_secciones_textos van en pareja (título N con texto N)
+           y pueden tener más o menos secciones. En los textos, \n\n separa párrafos y una línea que
+           empieza con «• » es una viñeta.
+         - politica_contacto_*: MARCADORES. Los datos del responsable todavía no existen. -->
+    <string name="politica_barra">Política de datos</string>
+    <string name="politica_titulo">Política de tratamiento de datos personales</string>
+    <string name="politica_version">Borrador para revisión del equipo · vigente desde: por definir</string>
+    <string name="politica_intro">ReciclaKids es una app educativa para que niñas y niños de jardín aprendan a separar residuos. Aquí te contamos qué datos personales usa, para qué y cómo puedes decidir sobre ellos, según la Ley 1581 de 2012 y el Decreto 1377 de 2013.</string>
+    <string name="politica_resumen_titulo">En resumen</string>
+    <string-array name="politica_resumen">
+        <item>Del niño o niña solo guardamos su nombre con la inicial del apellido, su avatar y sus resultados del juego.</item>
+        <item>Nunca pedimos documento, dirección, fotos ni ubicación.</item>
+        <item>Solo la docente del grupo y su acudiente ven esos datos.</item>
+        <item>No los compartimos con terceros ni los usamos para publicidad.</item>
+        <item>Puedes conocerlos, corregirlos, pedir que se borren y retirar la autorización cuando quieras.</item>
+    </string-array>
+    <string-array name="politica_secciones_titulos">
+        <item>1. Responsable del tratamiento</item>
+        <item>2. Qué datos tratamos</item>
+        <item>3. Datos de niñas y niños</item>
+        <item>4. Para qué los usamos</item>
+        <item>5. Quién puede verlos</item>
+        <item>6. Tus derechos</item>
+        <item>7. Cómo ejercer tus derechos</item>
+        <item>8. Seguridad de la información</item>
+        <item>9. Vigencia y cambios</item>
+    </string-array>
+    <string-array name="politica_secciones_textos">
+        <item>El responsable del tratamiento de los datos personales que se recogen en ReciclaKids es la entidad que aparece en «Contacto del responsable», al final de esta política. Allí están también el correo y el teléfono para cualquier consulta sobre tus datos.</item>
+        <item>De cada niño o niña:\n• Su nombre y la inicial de su apellido.\n• El avatar que elige para jugar: un personaje, nunca una foto.\n• Sus resultados del juego: retos completados, aciertos por caneca e insignias.\n\nDe las personas adultas (docente y padre, madre o acudiente):\n• Nombre.\n• Correo electrónico, que también es su usuario.\n• Contraseña: nunca se guarda tal cual, sino protegida con una función de hash, así que nadie puede leerla, ni siquiera el equipo de ReciclaKids.\n\nDe la docente, además, el nombre del jardín y del grupo a su cargo. Del acudiente, los ajustes de control parental que elija.\n\nNo pedimos documento de identidad, dirección, fotos, grabaciones de voz ni ubicación.</item>
+        <item>Tratamos los datos de niñas y niños respetando su interés superior y sus derechos fundamentales. Solo lo hacemos con la autorización previa, expresa e informada de su padre, madre o acudiente, que se da al crear la cuenta y nunca viene marcada de antemano.\n\nEl niño o niña no tiene usuario ni contraseña: entra al juego con un código del día que le da su docente.</item>
+        <item>• Que el niño o niña juegue los retos que publica su docente y guardar su avance.\n• Mostrar a la docente el progreso de su grupo y a cada acudiente solo el de su hijo o hija.\n• Enviar al acudiente los correos de logros y el reporte semanal, si los tiene activados.\n• Aplicar el control parental que defina el acudiente, como el tiempo de juego diario.\n• Administrar las cuentas de adultos: inicio de sesión, recuperación de contraseña y avisos del servicio.\n• Mejorar los retos con estadísticas agregadas, que no identifican a ningún niño o niña.\n\nNo usamos los datos para otros fines, no los vendemos ni los compartimos con terceros, y la app no tiene publicidad.</item>
+        <item>• La docente ve los resultados de los niños y niñas de su grupo.\n• Cada acudiente ve solo los de su hijo o hija, después de vincularse con el código que le entrega la docente.\n• Nadie más tiene acceso a esa información dentro de la app.</item>
+        <item>Como titular de tus datos, o como representante de tu hijo o hija, tienes derecho a:\n• Conocer los datos que tenemos y saber cómo los usamos.\n• Actualizarlos y rectificarlos si están incompletos o tienen errores.\n• Pedir prueba de la autorización que diste.\n• Pedir que los suprimamos.\n• Revocar la autorización cuando quieras.\n• Acceder gratis a ellos.\n• Presentar quejas ante la Superintendencia de Industria y Comercio, después de hacer tu consulta o reclamo ante nosotros.</item>
+        <item>Desde la app:\n• Acudiente: en Cuenta → Privacidad y datos del menor ves y descargas los datos de tu hijo o hija, y pides que se eliminen; eso también retira la autorización. En Cuenta → Editar perfil corriges tu nombre y tu correo.\n• Docente: en Cuenta y ajustes → Editar perfil corriges tus datos, y desde ahí mismo puedes eliminar los datos de tu grupo.\n\nPor correo: escribe al correo de «Contacto del responsable» con tu nombre, el de tu hijo o hija si aplica, y lo que solicitas.\n\nRespondemos las consultas en máximo 10 días hábiles y los reclamos en máximo 15 días hábiles. Si necesitamos más tiempo, te avisamos antes de que se cumpla el plazo, como dice la ley.</item>
+        <item>• Las contraseñas se guardan con hash, nunca en texto plano.\n• La información viaja cifrada entre la app y el servidor.\n• Cada cuenta accede solo a lo que le corresponde según su rol: docente o acudiente.\n• En el teléfono se guarda solo lo necesario para jugar sin internet, y se sincroniza al recuperar la conexión.</item>
+        <item>Esta política rige desde la fecha indicada al inicio. Guardamos los datos mientras la cuenta esté activa y el jardín use ReciclaKids, o hasta que pidas eliminarlos.\n\nSi la cambiamos de forma importante, te avisaremos en la app o por correo antes de aplicar los cambios.</item>
+    </string-array>
+    <string name="politica_contacto_titulo">Contacto del responsable</string>
+    <string name="politica_contacto_responsable_etiqueta">Responsable</string>
+    <string name="politica_contacto_domicilio_etiqueta">Domicilio</string>
+    <string name="politica_contacto_correo_etiqueta">Correo</string>
+    <string name="politica_contacto_telefono_etiqueta">Teléfono</string>
+    <!-- MARCADORES: reemplazar por los datos reales del responsable del tratamiento. -->
+    <string name="politica_contacto_responsable">[Por definir: nombre o razón social]</string>
+    <string name="politica_contacto_domicilio">[Por definir: dirección y ciudad]</string>
+    <string name="politica_contacto_correo">[Por definir: correo para datos personales]</string>
+    <string name="politica_contacto_telefono">[Por definir: teléfono]</string>
+
     <!-- P2 · Modo Niño -->
     <string name="nino_repetir_voz">Escuchar otra vez</string>
 
@@ -649,8 +703,15 @@
     <string name="vincular_invalido">Ese código no existe o ya se usó. Pídele uno nuevo a la docente.</string>
     <string name="vincular_privacidad">Solo verás los datos de ese niño o niña: nombre, avatar y resultados.</string>
 
-    <!-- Destinos que todavía no existen -->
-    <string name="pendiente_titulo">En construcción</string>
-    <string name="pendiente_editar_perfil">Editar perfil: la pantalla todavía no está diseñada.</string>
-    <string name="pendiente_politica">Política de tratamiento de datos: el texto legal está pendiente.</string>
+    <!-- Editar perfil: la docente desde UI-28 y el acudiente desde UI-35 -->
+    <string name="editar_perfil_tus_datos">Tus datos</string>
+    <string name="editar_perfil_jardin_grupo">Jardín y grupo</string>
+    <string name="editar_perfil_correo_ayuda">Con este correo inicias sesión.</string>
+    <string name="editar_perfil_correo_ayuda_acudiente">Con este correo inicias sesión y recibes los logros y el reporte semanal.</string>
+    <string name="editar_perfil_guardar">Guardar cambios</string>
+    <string name="editar_perfil_guardado">Perfil actualizado</string>
+    <string name="editar_perfil_descartar_titulo">¿Descartar los cambios?</string>
+    <string name="editar_perfil_descartar_texto">Lo que cambiaste en tu perfil no se guardará.</string>
+    <string name="editar_perfil_descartar">Descartar</string>
+    <string name="editar_perfil_seguir">Seguir editando</string>
 </resources>

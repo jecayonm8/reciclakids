@@ -19,6 +19,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,12 +52,18 @@ import com.reciclakids.model.PerfilDocente
 import com.reciclakids.model.ReporteSemanal
 import com.reciclakids.model.RetoDocente
 import com.reciclakids.model.TableroDocente
+import com.reciclakids.network.DatosPerfilDocente
 import com.reciclakids.network.ServicioDocente
-import com.reciclakids.ui.common.PantallaPendiente
+import com.reciclakids.network.con
+import com.reciclakids.network.datosEditables
+import com.reciclakids.network.map
 import com.reciclakids.ui.theme.Duracion
 import com.reciclakids.viewmodel.CargaViewModel
 import com.reciclakids.viewmodel.CrearRetoViewModel
+import com.reciclakids.viewmodel.EditarPerfilViewModel
+import com.reciclakids.viewmodel.EstadoGuardado
 import com.reciclakids.viewmodel.FiltroReto
+import com.reciclakids.viewmodel.FormularioPerfilDocente
 import com.reciclakids.viewmodel.OrigenAsistente
 import com.reciclakids.viewmodel.datosCargados
 import kotlinx.coroutines.launch
@@ -110,6 +117,9 @@ fun ModoDocente(
     val entrada by navController.currentBackStackEntryAsState()
     val destino = entrada?.destination
     val conBarra = destino == null || PestanaDocente.entries.any { it.ruta == destino.route }
+    // Lo deja la edición del perfil al guardar y lo recoge la cuenta al volver. El grafo se arma
+    // una sola vez, así que el estado viaja como contenedor y no por valor.
+    val perfilEditado = remember { mutableStateOf<DatosPerfilDocente?>(null) }
 
     Column(modifier.fillMaxSize()) {
         NavHost(
@@ -119,8 +129,8 @@ fun ModoDocente(
             enterTransition = { fadeIn(tween(Duracion.estandar)) },
             exitTransition = { fadeOut(tween(Duracion.estandar)) },
         ) {
-            pestanas(navController, servicio, onCerrarSesion, onVerPolitica)
-            pantallasCompletas(navController, servicio)
+            pestanas(navController, servicio, perfilEditado, onCerrarSesion, onVerPolitica)
+            pantallasCompletas(navController, servicio, perfilEditado)
         }
         if (conBarra) BarraNavegacionDocente(destino, onPestana = { navController.irAPestana(it) })
     }
@@ -129,6 +139,7 @@ fun ModoDocente(
 private fun NavGraphBuilder.pestanas(
     navController: NavHostController,
     servicio: ServicioDocente,
+    perfilEditado: MutableState<DatosPerfilDocente?>,
     onCerrarSesion: () -> Unit,
     onVerPolitica: () -> Unit,
 ) {
@@ -206,9 +217,17 @@ private fun NavGraphBuilder.pestanas(
         val textoSinConexion = stringResource(R.string.docente_error_accion)
         val textoErrorAvisos = stringResource(R.string.cuenta_avisos_error)
         val textoEliminado = stringResource(R.string.cuenta_eliminado)
+        val textoPerfilGuardado = stringResource(R.string.editar_perfil_guardado)
         // Plantillas con %1$s: los valores se conocen solo cuando responde el servicio.
         val plantillaRegenerado = stringResource(R.string.cuenta_regenerado)
         val plantillaCompartir = stringResource(R.string.cuenta_compartir_texto)
+        // El perfil recién guardado se ve al instante, sin esperar a que termine la recarga.
+        LaunchedEffect(perfilEditado.value) {
+            val datos = perfilEditado.value ?: return@LaunchedEffect
+            perfilEditado.value = null
+            vm.estado.datosCargados?.let { vm.mostrar(it.con(datos)) }
+            snackbar.showSnackbar(textoPerfilGuardado)
+        }
         CuentaDocenteScreen(
             estado = vm.estado,
             onReintentar = { vm.cargar() },
@@ -253,7 +272,11 @@ private fun NavGraphBuilder.pestanas(
     }
 }
 
-private fun NavGraphBuilder.pantallasCompletas(navController: NavHostController, servicio: ServicioDocente) {
+private fun NavGraphBuilder.pantallasCompletas(
+    navController: NavHostController,
+    servicio: ServicioDocente,
+    perfilEditado: MutableState<DatosPerfilDocente?>,
+) {
     composable(
         RutasDocente.Crear,
         arguments = listOf(
@@ -327,10 +350,24 @@ private fun NavGraphBuilder.pantallasCompletas(navController: NavHostController,
     }
 
     composable(RutasDocente.EditarPerfil) {
-        PantallaPendiente(
-            descripcion = stringResource(R.string.pendiente_editar_perfil),
+        val vm = viewModel {
+            EditarPerfilViewModel(
+                cargarFormulario = { servicio.perfil().map { FormularioPerfilDocente(it.datosEditables) } },
+                guardarFormulario = { servicio.guardarPerfil(it.datos) },
+            )
+        }
+        LaunchedEffect(vm) { vm.cargar() }
+        LaunchedEffect(vm.guardado) {
+            if (vm.guardado != EstadoGuardado.Guardado) return@LaunchedEffect
+            perfilEditado.value = vm.estado.datosCargados?.datos
+            navController.popBackStack()
+        }
+        EditarPerfilDocenteScreen(
+            estado = vm.estado,
+            guardado = vm.guardado,
+            onGuardar = vm::guardar,
+            onReintentar = vm::cargar,
             onVolver = { navController.popBackStack() },
-            etiquetaVolver = stringResource(R.string.comun_atras),
         )
     }
 }

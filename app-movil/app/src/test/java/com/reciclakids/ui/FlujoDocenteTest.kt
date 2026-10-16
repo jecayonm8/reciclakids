@@ -4,11 +4,13 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import com.reciclakids.contenedorDePrueba
 import com.reciclakids.network.RegistroDocente
@@ -28,6 +30,18 @@ class FlujoDocenteTest {
     val compose = createComposeRule()
 
     private fun campo(etiqueta: String) = compose.onNode(hasSetTextAction() and hasText(etiqueta))
+
+    /** El aviso dura unos segundos: el reloj avanza cuadro a cuadro para alcanzar a verlo. */
+    private fun guardarYVerElAviso(aviso: String) {
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithText("Guardar cambios").performScrollTo().performClick()
+        compose.waitUntil {
+            compose.mainClock.advanceTimeByFrame()
+            compose.onAllNodesWithText(aviso).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText(aviso).assertIsDisplayed()
+        compose.mainClock.autoAdvance = true
+    }
 
     @Before
     fun entrarComoDocente() {
@@ -94,5 +108,31 @@ class FlujoDocenteTest {
         compose.onNodeWithText("Cerrar sesión").performScrollTo().performClick()
 
         compose.onNodeWithText("¡A jugar!").assertIsDisplayed()
+    }
+
+    @Test
+    fun elPerfilEditadoSeVeAlVolverALaCuenta() {
+        compose.onNodeWithText("Cuenta").performClick()
+        compose.onNodeWithText("Editar perfil").performScrollTo().performClick()
+
+        campo("Nombre y apellido").performTextReplacement("Laura Gómez")
+        campo("Grupo a cargo").performScrollTo().performTextReplacement("Jardín C")
+        guardarYVerElAviso("Perfil actualizado")
+
+        compose.onNodeWithText("Laura Gómez").assertIsDisplayed()
+        compose.onNodeWithText("Jardín C", substring = true).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Inicio").performClick()
+        compose.onNodeWithText("Hola, Laura").assertIsDisplayed()
+    }
+
+    @Test
+    fun laPoliticaSeAbreDesdeLaCuentaYVuelveAElla() {
+        compose.onNodeWithText("Cuenta").performClick()
+        compose.onNodeWithText("Ver política").performScrollTo().performClick()
+
+        compose.onNodeWithText("Política de tratamiento de datos personales").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Volver").performClick()
+
+        compose.onNodeWithText("Cuenta y ajustes").assertIsDisplayed()
     }
 }
