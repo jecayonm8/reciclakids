@@ -8,20 +8,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.reciclakids.R
 import com.reciclakids.model.CuentaAdulto
 import com.reciclakids.network.ResultadoRegistro
 import com.reciclakids.network.ResultadoSesion
 import com.reciclakids.network.ServicioAcceso
 import com.reciclakids.ui.common.EstadoConexion
-import com.reciclakids.ui.common.PantallaPendiente
 import com.reciclakids.ui.common.rememberHayConexion
 import com.reciclakids.viewmodel.RegistroViewModel
 import kotlinx.coroutines.launch
@@ -189,11 +186,7 @@ fun NavGraphBuilder.accesoGraph(
         }
 
         composable(RutasAcceso.Politica) {
-            PantallaPendiente(
-                descripcion = stringResource(R.string.pendiente_politica),
-                onVolver = { navController.popBackStack() },
-                etiquetaVolver = stringResource(R.string.comun_atras),
-            )
+            PoliticaDatosScreen(onAtras = { navController.popBackStack() })
         }
     }
 }

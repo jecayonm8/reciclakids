@@ -50,6 +50,19 @@ internal object DatosDemoDocente {
     const val InsigniasSemanaPrevia = 31
     val ParticipacionPorDia = listOf(82, 91, 68, 95, 86)
 
+    /**
+     * Final del código de vinculación de cada niño; el principio son las iniciales del grupo. Los
+     * de Salomé y Emilio son los mismos de la demo de padres (JB-2M91 y JB-5H8W).
+     */
+    val SufijosCodigo: Map<String, String> = mapOf(
+        DatosDemoPadres.IdSalome to "2M91", "nino-2" to "4QX7", "nino-3" to "8RT3", DatosDemoPadres.IdEmilio to "5H8W",
+        "nino-5" to "K6P9", "nino-6" to "W2HD", "nino-7" to "3MZB", "nino-8" to "Y7FC", "nino-9" to "5TNA", "nino-10" to "G8WE",
+    )
+
+    /** Niños cuyo acudiente ya se vinculó. El de Emilio no: se vincula en la demo de padres. */
+    val AcudientesVinculados: Set<String> =
+        setOf(DatosDemoPadres.IdSalome, "nino-2", "nino-3", "nino-6", "nino-7", "nino-9", "nino-10")
+
     fun retos(hoy: LocalDate): List<RetoDocente> = listOf(
         RetoDocente(
             IdRetoHoy, "Clasificar la lonchera", setOf(Aprovechable, Organico), Dificultad.Medio,

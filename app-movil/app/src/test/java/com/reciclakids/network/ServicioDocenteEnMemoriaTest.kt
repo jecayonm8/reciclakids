@@ -5,13 +5,13 @@ import com.reciclakids.model.CuentaAdulto
 import com.reciclakids.model.Dificultad
 import com.reciclakids.model.EstadoNinoHoy
 import com.reciclakids.model.EstadoReto
+import com.reciclakids.model.NinoHoy
 import com.reciclakids.model.RetoBorrador
 import com.reciclakids.model.RolAdulto
 import com.reciclakids.model.residuosPorReto
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -132,7 +132,9 @@ class ServicioDocenteEnMemoriaTest {
         assertEquals(Respuesta.SinConexion, servicio.perfil())
         assertEquals(emptyList<Int>(), servicio.ninosQueEntraron(DatosDemoDocente.IdRetoHoy).toList())
         assertEquals(false, servicio.enviarReporteAcudientes())
-        assertNull(servicio.regenerarCodigoVinculacion())
+        assertNull(servicio.regenerarCodigoVinculacion(DatosDemoPadres.IdSalome))
+        assertEquals(Respuesta.SinConexion, servicio.agregarNino("Pedro", "Q"))
+        assertEquals(false, servicio.quitarNino(DatosDemoPadres.IdSalome))
     }
 
     @Test
@@ -178,18 +180,82 @@ class ServicioDocenteEnMemoriaTest {
     }
 
     @Test
-    fun elPerfilUsaLosDatosDelRegistroYElCodigoDeVinculacionLlevaLasInicialesDelGrupo() = runBlocking {
-        val servicio = servicio()
-        val perfil = servicio.perfil().dato()
+    fun elPerfilUsaLosDatosDelRegistro() = runBlocking {
+        val perfil = servicio().perfil().dato()
 
         assertEquals("Gotitas", perfil.jardin)
         assertEquals("Jardín B", perfil.grupo)
-        assertEquals("JB-2M91", perfil.codigoVinculacion)
+        assertEquals(10, perfil.totalNinos)
+    }
 
-        val nuevo = servicio.regenerarCodigoVinculacion()
-        assertTrue("código $nuevo", nuevo != null && Regex("^JB-[A-HJ-NP-Z2-9]{4}$").matches(nuevo))
-        assertNotEquals("JB-2M91", nuevo)
-        assertEquals(nuevo, servicio.perfil().dato().codigoVinculacion)
+    // --- Niños del grupo y su código de vinculación ---
+
+    private val salome = DatosDemoPadres.IdSalome
+    private val emilio = DatosDemoPadres.IdEmilio
+
+    /** Iniciales del grupo, guion y cuatro caracteres sin 0/O ni 1/I. */
+    private val codigoGenerado = Regex("^JB-[A-HJ-NP-Z2-9]{4}$")
+
+    private suspend fun ServicioDocenteEnMemoria.detalle(id: String) = detalleNino(id).dato()!!
+
+    @Test
+    fun cadaNinoTieneSuCodigoYLosDeLaDemoSonLosMismosDePadres() = runBlocking {
+        val servicio = servicio()
+
+        assertEquals("JB-2M91", servicio.detalle(salome).codigoVinculacion)
+        assertTrue(servicio.detalle(salome).acudienteVinculado)
+        // El código de Emilio es el que usa la demo de padres para vincularlo.
+        assertEquals(emilio, DatosDemoPadres.codigos[servicio.detalle(emilio).codigoVinculacion])
+        assertEquals(false, servicio.detalle(emilio).acudienteVinculado)
+        val codigos = servicio.grupoHoy().dato().ninos.map { servicio.detalle(it.id).codigoVinculacion }
+        assertEquals(10, codigos.toSet().size)
+        assertTrue(codigos.all { Regex("^JB-[A-Z0-9]{4}$").matches(it) })
+    }
+
+    @Test
+    fun agregarUnNinoGuardaSoloSuNombreConLaInicialYLeDaSuPropioCodigo() = runBlocking {
+        val servicio = servicio()
+
+        val nuevo = servicio.agregarNino(" Pedro ", "q").dato()
+
+        assertEquals("Pedro Q.", nuevo.nombre)
+        assertTrue("código ${nuevo.codigoVinculacion}", codigoGenerado.matches(nuevo.codigoVinculacion))
+        assertTrue(servicio.grupoHoy().dato().ninos.contains(NinoHoy(nuevo.id, "Pedro Q.", EstadoNinoHoy.SinEmpezar)))
+        val detalle = servicio.detalle(nuevo.id)
+        assertTrue(detalle.sinResultados)
+        assertEquals(nuevo.codigoVinculacion, detalle.codigoVinculacion)
+        assertEquals(false, detalle.acudienteVinculado)
+        assertEquals(11, servicio.tablero().dato().totalNinos)
+        // Todavía no tiene semanas jugadas: no entra al reporte, que sigue saliendo.
+        assertTrue(servicio.reporteSemanal().dato().completadosPorNino.none { it.nombre == "Pedro Q." })
+    }
+
+    @Test
+    fun regenerarCambiaSoloElCodigoDeEseNinoYSuAcudienteSigueVinculado() = runBlocking {
+        val servicio = servicio()
+
+        val nuevo = servicio.regenerarCodigoVinculacion(salome)
+
+        assertTrue("código $nuevo", nuevo != null && codigoGenerado.matches(nuevo))
+        assertEquals(nuevo, servicio.detalle(salome).codigoVinculacion)
+        assertTrue(servicio.detalle(salome).acudienteVinculado)
+        assertEquals("JB-5H8W", servicio.detalle(emilio).codigoVinculacion)
+        assertNull(servicio.regenerarCodigoVinculacion("nino-que-no-existe"))
+    }
+
+    @Test
+    fun quitarUnNinoLoSacaDelGrupoYBorraSusDatos() = runBlocking {
+        val servicio = servicio()
+
+        assertTrue(servicio.quitarNino(salome))
+
+        assertTrue(servicio.grupoHoy().dato().ninos.none { it.id == salome })
+        assertNull(servicio.detalleNino(salome).dato())
+        val tablero = servicio.tablero().dato()
+        assertEquals(9, tablero.totalNinos)
+        // Salomé ya había completado el reto de hoy: su resultado también se borra.
+        assertEquals(5, tablero.completaron)
+        assertTrue(servicio.reporteSemanal().dato().completadosPorNino.none { it.nombre == "Salomé M." })
     }
 
     @Test
@@ -200,5 +266,29 @@ class ServicioDocenteEnMemoriaTest {
         assertTrue(servicio.guardarAvisos(avisos))
 
         assertEquals(avisos, servicio.perfil().dato().avisos)
+    }
+
+    @Test
+    fun elPerfilEditadoSeVeEnLaCuentaYEnElTablero() = runBlocking {
+        val servicio = servicio()
+        val datos = DatosPerfilDocente("Laura Gómez", "laura.gomez@jardin.edu.co", "Gotitas del Saber", "Jardín C")
+
+        assertEquals(ResultadoEdicionPerfil.Guardado, servicio.guardarPerfil(datos))
+
+        assertEquals(datos, servicio.perfil().dato().datosEditables)
+        assertEquals("Laura Gómez", servicio.tablero().dato().nombreDocente)
+        assertEquals("Jardín C", servicio.grupoHoy().dato().nombreGrupo)
+    }
+
+    @Test
+    fun sinConexionElPerfilNoCambia() = runBlocking {
+        val servicio = servicio()
+        servicio.sinConexion = true
+
+        val resultado = servicio.guardarPerfil(DatosPerfilDocente("Otra", "otra@jardin.edu.co", "Otro", "Otro"))
+
+        assertEquals(ResultadoEdicionPerfil.SinConexion, resultado)
+        servicio.sinConexion = false
+        assertEquals("Laura Restrepo", servicio.perfil().dato().nombre)
     }
 }

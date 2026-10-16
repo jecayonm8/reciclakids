@@ -70,11 +70,14 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
 import com.reciclakids.model.CategoriaResiduo
@@ -420,6 +423,26 @@ internal fun TarjetaDocente(
     } else {
         Surface(modifier = modifier, shape = FormaTarjeta, color = Color.White, shadowElevation = 1.dp, content = cuerpo)
     }
+}
+
+/**
+ * Código de vinculación de un niño («JB-2M91») en monoespaciado, para dictarlo o copiarlo sin
+ * confundir caracteres. TalkBack lo lee carácter por carácter.
+ */
+@Composable
+internal fun TextoCodigoVinculacion(codigo: String, modifier: Modifier = Modifier, tamanoTexto: TextUnit = 26.sp) {
+    val descripcion = stringResource(R.string.vinculacion_codigo_descripcion, codigo.toList().joinToString(" "))
+    Text(
+        codigo,
+        fontFamily = FontFamily.Monospace,
+        fontWeight = FontWeight.Medium,
+        fontSize = tamanoTexto,
+        letterSpacing = 0.14.em,
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(12.dp))
+            .padding(horizontal = 20.dp, vertical = 12.dp)
+            .semantics { contentDescription = descripcion },
+    )
 }
 
 /** Estado con color + texto: nunca solo color. */
