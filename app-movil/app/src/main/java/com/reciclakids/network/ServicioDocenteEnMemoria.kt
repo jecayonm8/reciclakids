@@ -48,10 +48,10 @@ class ServicioDocenteEnMemoria(
     var sinConexion = false
 
     private val mutex = Mutex()
-    private val nombre = cuenta.nombre
-    private val correo = cuenta.correo
-    private val jardin = cuenta.jardin.orEmpty()
-    private val grupo = cuenta.grupo.orEmpty()
+    private var nombre = cuenta.nombre
+    private var correo = cuenta.correo
+    private var jardin = cuenta.jardin.orEmpty()
+    private var grupo = cuenta.grupo.orEmpty()
     private val ninos: List<NinoDemo> = if (conDatosDemo) DatosDemoDocente.ninos() else emptyList()
     private val retos: MutableList<RetoDocente> =
         if (conDatosDemo) DatosDemoDocente.retos(hoy()).toMutableList() else mutableListOf()
@@ -182,6 +182,17 @@ class ServicioDocenteEnMemoria(
 
     override suspend fun perfil(): Respuesta<PerfilDocente> = consultar {
         PerfilDocente(nombre, correo, jardin, grupo, ninos.size, codigoVinculacion, avisos)
+    }
+
+    // En memoria no hay otras cuentas contra las cuales chocar: nunca responde CorreoEnUso.
+    override suspend fun guardarPerfil(datos: DatosPerfilDocente): ResultadoEdicionPerfil {
+        val guardado = accion {
+            nombre = datos.nombre
+            correo = datos.correo
+            jardin = datos.jardin
+            grupo = datos.grupo
+        }
+        return if (guardado) ResultadoEdicionPerfil.Guardado else ResultadoEdicionPerfil.SinConexion
     }
 
     override suspend fun guardarAvisos(avisos: AvisosDocente): Boolean = accion { this.avisos = avisos }

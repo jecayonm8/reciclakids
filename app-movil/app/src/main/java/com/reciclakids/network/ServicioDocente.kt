@@ -18,6 +18,11 @@ sealed interface Respuesta<out T> {
     data object SinConexion : Respuesta<Nothing>
 }
 
+fun <T, R> Respuesta<T>.map(transformar: (T) -> R): Respuesta<R> = when (this) {
+    is Respuesta.Ok -> Respuesta.Ok(transformar(dato))
+    Respuesta.SinConexion -> Respuesta.SinConexion
+}
+
 sealed interface ResultadoPublicacion {
     /** Publicado para hoy (con código) o programado para otro día. */
     data class Publicado(val reto: RetoDocente) : ResultadoPublicacion
@@ -60,6 +65,9 @@ interface ServicioDocente {
     suspend fun enviarReporteAcudientes(): Boolean
 
     suspend fun perfil(): Respuesta<PerfilDocente>
+
+    /** Cambia nombre, correo, jardín y grupo. Con el correo cambia también el usuario para iniciar sesión. */
+    suspend fun guardarPerfil(datos: DatosPerfilDocente): ResultadoEdicionPerfil
 
     suspend fun guardarAvisos(avisos: AvisosDocente): Boolean
 

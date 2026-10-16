@@ -201,4 +201,28 @@ class ServicioDocenteEnMemoriaTest {
 
         assertEquals(avisos, servicio.perfil().dato().avisos)
     }
+
+    @Test
+    fun elPerfilEditadoSeVeEnLaCuentaYEnElTablero() = runBlocking {
+        val servicio = servicio()
+        val datos = DatosPerfilDocente("Laura Gómez", "laura.gomez@jardin.edu.co", "Gotitas del Saber", "Jardín C")
+
+        assertEquals(ResultadoEdicionPerfil.Guardado, servicio.guardarPerfil(datos))
+
+        assertEquals(datos, servicio.perfil().dato().datosEditables)
+        assertEquals("Laura Gómez", servicio.tablero().dato().nombreDocente)
+        assertEquals("Jardín C", servicio.grupoHoy().dato().nombreGrupo)
+    }
+
+    @Test
+    fun sinConexionElPerfilNoCambia() = runBlocking {
+        val servicio = servicio()
+        servicio.sinConexion = true
+
+        val resultado = servicio.guardarPerfil(DatosPerfilDocente("Otra", "otra@jardin.edu.co", "Otro", "Otro"))
+
+        assertEquals(ResultadoEdicionPerfil.SinConexion, resultado)
+        servicio.sinConexion = false
+        assertEquals("Laura Restrepo", servicio.perfil().dato().nombre)
+    }
 }

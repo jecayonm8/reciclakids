@@ -41,7 +41,7 @@ private val HoraCorreoLogro = LocalTime.of(18, 10)
  * El control parental se guarda en [controles], el mismo que lee el Modo Niño para cortar el juego.
  */
 class ServicioPadresEnMemoria(
-    private val cuenta: CuentaAdulto,
+    private var cuenta: CuentaAdulto,
     private val controles: ControlesParentales = ControlesParentales(),
     private val latenciaMs: Long = 600,
     private val reloj: Clock = Clock.systemDefaultZone(),
@@ -165,6 +165,12 @@ class ServicioPadresEnMemoria(
 
     override suspend fun perfil(): Respuesta<PerfilAcudiente> = consultar {
         PerfilAcudiente(cuenta.nombre, cuenta.correo, vinculados.toList())
+    }
+
+    // En memoria no hay otras cuentas contra las cuales chocar: nunca responde CorreoEnUso.
+    override suspend fun guardarPerfil(datos: DatosPerfilAcudiente): ResultadoEdicionPerfil {
+        val guardado = accion { cuenta = cuenta.copy(nombre = datos.nombre, correo = datos.correo) }
+        return if (guardado) ResultadoEdicionPerfil.Guardado else ResultadoEdicionPerfil.SinConexion
     }
 
     override suspend fun vincular(codigo: String): ResultadoVinculacion {
