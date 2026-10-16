@@ -20,11 +20,14 @@ fun Application.module() {
     val configuracion = Configuracion.desde(environment.config)
     val bd = BaseDatos.conectar(configuracion.baseDatos)
     monitor.subscribe(ApplicationStopped) { bd.close() }
-    module(Contenedor(configuracion, bd))
+    moduloCon(Contenedor(configuracion, bd))
 }
 
-/** Arma el servidor con un [contenedor] ya construido: las pruebas pasan el suyo. */
-fun Application.module(contenedor: Contenedor) {
+/**
+ * Arma el servidor con un [contenedor] ya construido: las pruebas pasan el suyo. Lleva otro nombre
+ * porque application.yaml carga [module] por nombre y Ktor no sabría qué sobrecarga elegir.
+ */
+fun Application.moduloCon(contenedor: Contenedor) {
     configurarMonitoreo()
     configurarSerializacion()
     configurarErrores()

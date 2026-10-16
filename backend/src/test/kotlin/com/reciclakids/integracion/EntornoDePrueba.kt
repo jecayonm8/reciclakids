@@ -7,7 +7,7 @@ import com.reciclakids.config.ConfiguracionBaseDatos
 import com.reciclakids.config.ConfiguracionCorreos
 import com.reciclakids.config.ConfiguracionJwt
 import com.reciclakids.models.dto.SesionDto
-import com.reciclakids.module
+import com.reciclakids.moduloCon
 import com.reciclakids.plugins.JsonApi
 import com.reciclakids.services.notificaciones.correos.EnviadorCorreoEnMemoria
 import io.ktor.client.HttpClient
@@ -39,7 +39,7 @@ val ZonaPiloto: ZoneId = ZoneId.of("America/Bogota")
 
 /** PostgreSQL real en Docker, uno para toda la corrida. Cada prueba empieza con las tablas vacías. */
 object PostgresDePrueba {
-    private val contenedor: PostgreSQLContainer by lazy {
+    val contenedor: PostgreSQLContainer by lazy {
         PostgreSQLContainer("postgres:17-alpine").apply { start() }
     }
 
@@ -93,7 +93,7 @@ fun probarApi(reloj: RelojDePrueba = RelojDePrueba.martes(), bloque: suspend Api
     PostgresDePrueba.limpiar()
     val enviador = EnviadorCorreoEnMemoria()
     val contenedor = Contenedor(configuracionDePrueba(), PostgresDePrueba.bd, reloj, enviador)
-    application { module(contenedor) }
+    application { moduloCon(contenedor) }
     fun cliente(ip: String) = createClient {
         install(ContentNegotiation) { json(JsonApi) }
         defaultRequest {
