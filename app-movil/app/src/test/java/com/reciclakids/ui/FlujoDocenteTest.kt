@@ -1,5 +1,6 @@
 package com.reciclakids.ui
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -32,9 +33,9 @@ class FlujoDocenteTest {
     private fun campo(etiqueta: String) = compose.onNode(hasSetTextAction() and hasText(etiqueta))
 
     /** El aviso dura unos segundos: el reloj avanza cuadro a cuadro para alcanzar a verlo. */
-    private fun guardarYVerElAviso(aviso: String) {
+    private fun tocarYVerElAviso(aviso: String, tocar: () -> Unit) {
         compose.mainClock.autoAdvance = false
-        compose.onNodeWithText("Guardar cambios").performScrollTo().performClick()
+        tocar()
         compose.waitUntil {
             compose.mainClock.advanceTimeByFrame()
             compose.onAllNodesWithText(aviso).fetchSemanticsNodes().isNotEmpty()
@@ -117,12 +118,34 @@ class FlujoDocenteTest {
 
         campo("Nombre y apellido").performTextReplacement("Laura Gómez")
         campo("Grupo a cargo").performScrollTo().performTextReplacement("Jardín C")
-        guardarYVerElAviso("Perfil actualizado")
+        tocarYVerElAviso("Perfil actualizado") { compose.onNodeWithText("Guardar cambios").performScrollTo().performClick() }
 
         compose.onNodeWithText("Laura Gómez").assertIsDisplayed()
         compose.onNodeWithText("Jardín C", substring = true).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Inicio").performClick()
         compose.onNodeWithText("Hola, Laura").assertIsDisplayed()
+    }
+
+    @Test
+    fun laDocenteAgregaUnNinoComparteSuCodigoYDespuesLoQuita() {
+        compose.onNodeWithText("Grupo").performClick()
+        compose.onNodeWithContentDescription("Agregar niño").performClick()
+
+        campo("Nombre").performTextInput("Pedro")
+        campo("Inicial del apellido").performTextInput("Quintero")
+        compose.onNodeWithText("Agregar al grupo").performScrollTo().performClick()
+        compose.onNodeWithText("Pedro Q. ya está en tu grupo").assertIsDisplayed()
+        compose.onNodeWithText("Listo").performScrollTo().performClick()
+
+        compose.onNodeWithText("Pedro Q.").performScrollTo().performClick()
+        compose.onNodeWithText("Sin vincular").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Quitar del grupo").performScrollTo().performClick()
+        compose.onNodeWithText("¿Quitar a Pedro Q. del grupo?").assertIsDisplayed()
+        tocarYVerElAviso("Quitaste a Pedro Q. del grupo y se borraron sus datos.") {
+            compose.onNodeWithText("Sí, quitar").performClick()
+        }
+
+        compose.onAllNodesWithText("Pedro Q.").assertCountEquals(0)
     }
 
     @Test

@@ -142,12 +142,12 @@
     </string-array>
     <string-array name="politica_secciones_textos">
         <item>El responsable del tratamiento de los datos personales que se recogen en ReciclaKids es la entidad que aparece en «Contacto del responsable», al final de esta política. Allí están también el correo y el teléfono para cualquier consulta sobre tus datos.</item>
-        <item>De cada niño o niña:\n• Su nombre y la inicial de su apellido.\n• El avatar que elige para jugar: un personaje, nunca una foto.\n• Sus resultados del juego: retos completados, aciertos por caneca e insignias.\n\nDe las personas adultas (docente y padre, madre o acudiente):\n• Nombre.\n• Correo electrónico, que también es su usuario.\n• Contraseña: nunca se guarda tal cual, sino protegida con una función de hash, así que nadie puede leerla, ni siquiera el equipo de ReciclaKids.\n\nDe la docente, además, el nombre del jardín y del grupo a su cargo. Del acudiente, los ajustes de control parental que elija.\n\nNo pedimos documento de identidad, dirección, fotos, grabaciones de voz ni ubicación.</item>
+        <item>De cada niño o niña:\n• Su nombre y la inicial de su apellido, que escribe la docente al agregarlo al grupo.\n• El avatar que elige para jugar: un personaje, nunca una foto.\n• Sus resultados del juego: retos completados, aciertos por caneca e insignias.\n\nDe las personas adultas (docente y padre, madre o acudiente):\n• Nombre.\n• Correo electrónico, que también es su usuario.\n• Contraseña: nunca se guarda tal cual, sino protegida con una función de hash, así que nadie puede leerla, ni siquiera el equipo de ReciclaKids.\n\nDe la docente, además, el nombre del jardín y del grupo a su cargo. Del acudiente, los ajustes de control parental que elija.\n\nNo pedimos documento de identidad, dirección, fotos, grabaciones de voz ni ubicación.</item>
         <item>Tratamos los datos de niñas y niños respetando su interés superior y sus derechos fundamentales. Solo lo hacemos con la autorización previa, expresa e informada de su padre, madre o acudiente, que se da al crear la cuenta y nunca viene marcada de antemano.\n\nEl niño o niña no tiene usuario ni contraseña: entra al juego con un código del día que le da su docente.</item>
         <item>• Que el niño o niña juegue los retos que publica su docente y guardar su avance.\n• Mostrar a la docente el progreso de su grupo y a cada acudiente solo el de su hijo o hija.\n• Enviar al acudiente los correos de logros y el reporte semanal, si los tiene activados.\n• Aplicar el control parental que defina el acudiente, como el tiempo de juego diario.\n• Administrar las cuentas de adultos: inicio de sesión, recuperación de contraseña y avisos del servicio.\n• Mejorar los retos con estadísticas agregadas, que no identifican a ningún niño o niña.\n\nNo usamos los datos para otros fines, no los vendemos ni los compartimos con terceros, y la app no tiene publicidad.</item>
-        <item>• La docente ve los resultados de los niños y niñas de su grupo.\n• Cada acudiente ve solo los de su hijo o hija, después de vincularse con el código que le entrega la docente.\n• Nadie más tiene acceso a esa información dentro de la app.</item>
+        <item>• La docente ve los resultados de los niños y niñas de su grupo.\n• Cada acudiente ve solo los de su hijo o hija, después de vincularse con el código de ese niño o niña que le entrega la docente.\n• Nadie más tiene acceso a esa información dentro de la app.</item>
         <item>Como titular de tus datos, o como representante de tu hijo o hija, tienes derecho a:\n• Conocer los datos que tenemos y saber cómo los usamos.\n• Actualizarlos y rectificarlos si están incompletos o tienen errores.\n• Pedir prueba de la autorización que diste.\n• Pedir que los suprimamos.\n• Revocar la autorización cuando quieras.\n• Acceder gratis a ellos.\n• Presentar quejas ante la Superintendencia de Industria y Comercio, después de hacer tu consulta o reclamo ante nosotros.</item>
-        <item>Desde la app:\n• Acudiente: en Cuenta → Privacidad y datos del menor ves y descargas los datos de tu hijo o hija, y pides que se eliminen; eso también retira la autorización. En Cuenta → Editar perfil corriges tu nombre y tu correo.\n• Docente: en Cuenta y ajustes → Editar perfil corriges tus datos, y desde ahí mismo puedes eliminar los datos de tu grupo.\n\nPor correo: escribe al correo de «Contacto del responsable» con tu nombre, el de tu hijo o hija si aplica, y lo que solicitas.\n\nRespondemos las consultas en máximo 10 días hábiles y los reclamos en máximo 15 días hábiles. Si necesitamos más tiempo, te avisamos antes de que se cumpla el plazo, como dice la ley.</item>
+        <item>Desde la app:\n• Acudiente: en Cuenta → Privacidad y datos del menor ves y descargas los datos de tu hijo o hija, y pides que se eliminen; eso también retira la autorización. En Cuenta → Editar perfil corriges tu nombre y tu correo.\n• Docente: en Cuenta y ajustes → Editar perfil corriges tus datos, y desde ahí mismo puedes eliminar los datos de tu grupo. En Mi grupo puedes quitar a un niño y borrar sus datos.\n\nPor correo: escribe al correo de «Contacto del responsable» con tu nombre, el de tu hijo o hija si aplica, y lo que solicitas.\n\nRespondemos las consultas en máximo 10 días hábiles y los reclamos en máximo 15 días hábiles. Si necesitamos más tiempo, te avisamos antes de que se cumpla el plazo, como dice la ley.</item>
         <item>• Las contraseñas se guardan con hash, nunca en texto plano.\n• La información viaja cifrada entre la app y el servidor.\n• Cada cuenta accede solo a lo que le corresponde según su rol: docente o acudiente.\n• En el teléfono se guarda solo lo necesario para jugar sin internet, y se sincroniza al recuperar la conexión.</item>
         <item>Esta política rige desde la fecha indicada al inicio. Guardamos los datos mientras la cuenta esté activa y el jardín use ReciclaKids, o hasta que pidas eliminarlos.\n\nSi la cambiamos de forma importante, te avisaremos en la app o por correo antes de aplicar los cambios.</item>
     </string-array>
@@ -429,8 +429,8 @@
     <string name="nino_en_curso_detalle">Va en el residuo %1$d</string>
     <string name="nino_sin_empezar_detalle">Todavía no entra</string>
     <string name="grupo_vacio_titulo">Aún no hay niños en el grupo</string>
-    <string name="grupo_vacio_texto">Pide a la coordinación que cargue la lista del grupo, o compártela desde Cuenta.</string>
-    <string name="grupo_vacio_cuenta">Ir a Cuenta</string>
+    <string name="grupo_vacio_texto">Agrega a cada niño con su nombre y la inicial del apellido. Cada uno recibe un código para que su acudiente vea su progreso.</string>
+    <string name="grupo_vacio_agregar">Agregar el primer niño</string>
     <string name="grupo_vacio_ilustracion">grupo vacío</string>
 
     <!-- UI-26 Reporte grupal semanal -->
@@ -478,6 +478,41 @@
     <string name="detalle_vacio_titulo">Todavía no hay resultados</string>
     <string name="detalle_vacio_texto">Cuando %1$s juegue su primer reto, aquí verás su evolución y en qué caneca se confunde.</string>
 
+    <!-- Código de vinculación de cada niño (UI-27 y agregar niño). Cada acudiente lo usa una vez. -->
+    <string name="vinculacion_titulo">Código para su acudiente</string>
+    <string name="vinculacion_vinculado">Acudiente vinculado</string>
+    <string name="vinculacion_sin_vincular">Sin vincular</string>
+    <string name="vinculacion_vinculado_texto">Su acudiente ya ve su progreso. Si otro acudiente necesita vincularse, genera un código nuevo.</string>
+    <!-- Sin punto final: el nombre ya termina con el de la inicial del apellido («Salomé M.»). -->
+    <string name="vinculacion_sin_vincular_texto">Compártelo con su acudiente: lo usa una sola vez al crear su cuenta y solo verá el progreso de %1$s</string>
+    <string name="vinculacion_compartir">Compartir</string>
+    <string name="vinculacion_compartir_texto">Tu código de vinculación de ReciclaKids es %2$s. Úsalo una sola vez al crear tu cuenta de acudiente para ver el progreso de %1$s</string>
+    <string name="vinculacion_regenerar">Regenerar</string>
+    <string name="vinculacion_regenerar_titulo">¿Generar un código nuevo para %1$s?</string>
+    <string name="vinculacion_regenerar_texto">El código actual deja de servir para vincular. Si su acudiente ya está vinculado, sigue viendo su progreso.</string>
+    <string name="vinculacion_regenerar_confirmar">Generar código</string>
+    <string name="vinculacion_regenerado">Código nuevo: %1$s</string>
+    <string name="vinculacion_codigo_descripcion">Código de vinculación: %1$s</string>
+    <string name="quitar_nino_texto">Si deja el grupo, quítalo: se borran su progreso, sus insignias y sus reportes, y su acudiente deja de ver su actividad.</string>
+    <string name="quitar_nino">Quitar del grupo</string>
+    <string name="quitar_nino_titulo">¿Quitar a %1$s del grupo?</string>
+    <string name="quitar_nino_dialogo">Es permanente: se borran su progreso, sus insignias y sus reportes. No se puede deshacer.</string>
+    <string name="quitar_nino_confirmar">Sí, quitar</string>
+    <string name="quitar_nino_hecho">Quitaste a %1$s del grupo y se borraron sus datos.</string>
+
+    <!-- Agregar un niño al grupo (desde UI-25). Solo se guarda «Salomé M.» (Ley 1581 de 2012). -->
+    <string name="agregar_nino">Agregar niño</string>
+    <string name="agregar_nino_texto">Escribe su nombre y solo la inicial del apellido: no guardamos el apellido completo (Ley 1581 de 2012).</string>
+    <string name="agregar_nino_nombre">Nombre</string>
+    <string name="agregar_nino_inicial">Inicial del apellido</string>
+    <string name="agregar_nino_inicial_ayuda">Solo una letra</string>
+    <string name="agregar_nino_vista_previa">Así aparecerá en la app: %1$s</string>
+    <string name="agregar_nino_guardar">Agregar al grupo</string>
+    <string name="agregar_nino_listo">%1$s ya está en tu grupo</string>
+    <string name="agregar_nino_compartir">Compartir código</string>
+    <string name="agregar_nino_otro">Agregar otro niño</string>
+    <string name="agregar_nino_terminar">Listo</string>
+
     <!-- UI-28 Cuenta y ajustes -->
     <string name="cuenta_titulo">Cuenta y ajustes</string>
     <string name="cuenta_jardin">Jardín</string>
@@ -492,15 +527,7 @@
     <string name="aviso_sin_jugar">Avisarme de niños sin jugar</string>
     <string name="aviso_sin_jugar_detalle">Después de dos días seguidos</string>
     <string name="cuenta_avisos_error">No se guardó el cambio. Revisa la conexión.</string>
-    <string name="cuenta_vinculacion">Código de vinculación para acudientes</string>
-    <string name="cuenta_vinculacion_texto">Cada acudiente lo usa una vez para ver únicamente a su hijo o hija.</string>
-    <string name="cuenta_compartir">Compartir</string>
-    <string name="cuenta_compartir_texto">Código de vinculación de ReciclaKids para %1$s: %2$s. Úsalo una sola vez al crear tu cuenta de acudiente.</string>
-    <string name="cuenta_regenerar">Regenerar</string>
-    <string name="cuenta_regenerar_titulo">¿Generar un código nuevo?</string>
-    <string name="cuenta_regenerar_texto">El código actual deja de servir para vincular cuentas nuevas. Los acudientes que ya están vinculados no se ven afectados.</string>
-    <string name="cuenta_regenerar_confirmar">Generar código</string>
-    <string name="cuenta_regenerado">Código nuevo: %1$s</string>
+    <string name="cuenta_codigos_en_grupo">Cada niño tiene su propio código de vinculación para su acudiente. Lo encuentras en Mi grupo.</string>
     <string name="cuenta_privacidad">Datos y privacidad</string>
     <string name="cuenta_privacidad_texto">Los datos de los niños se guardan mínimos: nombre, inicial del apellido y resultados. Ley 1581 de 2012.</string>
     <string name="cuenta_ver_politica">Ver política</string>

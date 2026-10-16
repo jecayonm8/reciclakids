@@ -40,6 +40,7 @@ import com.reciclakids.model.EstadoNinoHoy
 import com.reciclakids.model.EstadoReto
 import com.reciclakids.model.GrupoHoy
 import com.reciclakids.model.InsigniaNino
+import com.reciclakids.model.NinoAgregado
 import com.reciclakids.model.NinoHoy
 import com.reciclakids.model.PerfilDocente
 import com.reciclakids.model.RetoDocente
@@ -48,10 +49,12 @@ import com.reciclakids.network.DatosPerfilDocente
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.ui.theme.Tactil
 import com.reciclakids.viewmodel.AsistenteReto
+import com.reciclakids.viewmodel.EstadoAgregarNino
 import com.reciclakids.viewmodel.EstadoGuardado
 import com.reciclakids.viewmodel.EstadoPublicacion
 import com.reciclakids.viewmodel.EstadoUi
 import com.reciclakids.viewmodel.FiltroReto
+import com.reciclakids.viewmodel.FormularioNino
 import com.reciclakids.viewmodel.FormularioPerfilDocente
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -371,6 +374,7 @@ class PantallasDocenteTest {
     @Test
     fun cadaFilaDelGrupoDiceElEstadoYAbreElDetalle() {
         var abierto: String? = null
+        var agregar = 0
         compose.setContent {
             ReciclaKidsTheme {
                 MiGrupoScreen(
@@ -384,7 +388,7 @@ class PantallasDocenteTest {
                             ),
                         )
                     ),
-                    onReintentar = {}, onNino = { abierto = it }, onIrACuenta = {},
+                    onReintentar = {}, onNino = { abierto = it }, onAgregarNino = { agregar++ },
                 )
             }
         }
@@ -394,8 +398,95 @@ class PantallasDocenteTest {
         compose.onNodeWithText("Va en el residuo 4").assertIsDisplayed()
         compose.onNodeWithText("Sin empezar").assertIsDisplayed()
         compose.onNodeWithText("Ana L.").performClick()
+        // El FAB extendido no expone su texto: TalkBack lee la etiqueta del ícono.
+        compose.onNodeWithContentDescription("Agregar niño").performClick()
 
         assertEquals("n03", abierto)
+        assertEquals(1, agregar)
+    }
+
+    @Test
+    fun elGrupoVacioInvitaAAgregarAlPrimerNino() {
+        var agregar = 0
+        compose.setContent {
+            ReciclaKidsTheme {
+                MiGrupoScreen(
+                    EstadoUi.Vacio(GrupoHoy("Jardín B", null, emptyList())),
+                    onReintentar = {}, onNino = {}, onAgregarNino = { agregar++ },
+                )
+            }
+        }
+
+        compose.onNodeWithText("Aún no hay niños en el grupo").assertIsDisplayed()
+        compose.onNodeWithText("Agregar el primer niño").performScrollTo().performClick()
+
+        assertEquals(1, agregar)
+    }
+
+    // --- Agregar un niño (desde UI-25) ---
+
+    @Test
+    fun agregarUnNinoSoloPideSuNombreYUnaLetraDelApellido() {
+        var guardados = 0
+        val formulario = FormularioNino()
+        compose.setContent {
+            ReciclaKidsTheme {
+                AgregarNinoScreen(
+                    formulario, EstadoAgregarNino.Editando,
+                    onGuardar = { guardados++ }, onCompartir = {}, onOtro = {}, onVolver = {},
+                )
+            }
+        }
+        val agregar = compose.onNodeWithText("Agregar al grupo")
+
+        agregar.assertIsNotEnabled()
+        campo("Nombre").performTextInput("Pedro")
+        // Aunque se escriba el apellido completo, solo queda la inicial.
+        campo("Inicial del apellido").performTextInput("quintero")
+
+        assertEquals("Q", formulario.inicial)
+        compose.onNodeWithText("Así aparecerá en la app: Pedro Q.").assertIsDisplayed()
+        agregar.performScrollTo().assertIsEnabled().performClick()
+        assertEquals(1, guardados)
+    }
+
+    @Test
+    fun alAgregarloAparecenSuCodigoYLaOpcionDeCompartirlo() {
+        val pedro = NinoAgregado("nino-11", "Pedro Q.", "JB-7KQ4")
+        var compartido: NinoAgregado? = null
+        var otros = 0
+        compose.setContent {
+            ReciclaKidsTheme {
+                AgregarNinoScreen(
+                    FormularioNino(), EstadoAgregarNino.Agregado(pedro),
+                    onGuardar = {}, onCompartir = { compartido = it }, onOtro = { otros++ }, onVolver = {},
+                )
+            }
+        }
+
+        compose.onNodeWithText("Pedro Q. ya está en tu grupo").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Código de vinculación: J B - 7 K Q 4").assertIsDisplayed()
+        compose.onNodeWithText("Compartir código").performScrollTo().performClick()
+        compose.onNodeWithText("Agregar otro niño").performScrollTo().performClick()
+
+        assertEquals(pedro, compartido)
+        assertEquals(1, otros)
+    }
+
+    @Test
+    fun agregarUnNinoSinConexionAvisaYDejaReintentar() {
+        val formulario = FormularioNino().apply {
+            nombre = "Pedro"
+            escribirInicial("Q")
+        }
+        compose.setContent {
+            ReciclaKidsTheme {
+                AgregarNinoScreen(formulario, EstadoAgregarNino.SinConexion, onGuardar = {}, onCompartir = {}, onOtro = {}, onVolver = {})
+            }
+        }
+
+        compose.onNodeWithText("No pudimos conectarnos. Revisa tu internet e intenta de nuevo.").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Agregar al grupo").performScrollTo().assertIsEnabled()
     }
 
     // --- UI-27 Detalle de un niño ---
@@ -417,10 +508,15 @@ class PantallasDocenteTest {
                             ),
                             confusion = Confusion("el empaque metalizado", CategoriaResiduo.NoAprovechable, CategoriaResiduo.Aprovechable),
                             insignias = listOf(InsigniaNino("Amiga tortuga", true), InsigniaNino("Pulpo ordenado", false)),
+                            codigoVinculacion = "JB-4QX7",
+                            acudienteVinculado = true,
                         )
                     ),
                     onVolver = {},
                     onReintentar = {},
+                    onCompartirCodigo = {},
+                    onRegenerarCodigo = {},
+                    onQuitar = {},
                 )
             }
         }
@@ -432,6 +528,7 @@ class PantallasDocenteTest {
             .assertIsDisplayed()
         compose.onNodeWithText("Insignias · 1 de 2").performScrollTo().assertIsDisplayed()
         compose.onNodeWithContentDescription("Pulpo ordenado, todavía no").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Acudiente vinculado").performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -441,9 +538,12 @@ class PantallasDocenteTest {
         compose.setContent {
             ReciclaKidsTheme {
                 DetalleNinoScreen(
-                    EstadoUi.Contenido(DetalleNino("n02", "Juan T.", listOf(62, 74), emptyMap(), null, insignias)),
+                    EstadoUi.Contenido(DetalleNino("n02", "Juan T.", listOf(62, 74), emptyMap(), null, insignias, "JB-4QX7", true)),
                     onVolver = {},
                     onReintentar = {},
+                    onCompartirCodigo = {},
+                    onRegenerarCodigo = {},
+                    onQuitar = {},
                 )
             }
         }
@@ -459,15 +559,73 @@ class PantallasDocenteTest {
         assertEquals(filas.first().first().left.value, (ancho - filas.first().last().right).value, 0.5f)
     }
 
+    private val pedro = DetalleNino("nino-11", "Pedro Q.", emptyList(), emptyMap(), null, emptyList(), "JB-7KQ4", acudienteVinculado = false)
+
+    private fun montarDetalle(
+        onCompartir: (DetalleNino) -> Unit = {},
+        onRegenerar: () -> Unit = {},
+        onQuitar: () -> Unit = {},
+    ) {
+        compose.setContent {
+            ReciclaKidsTheme {
+                DetalleNinoScreen(
+                    EstadoUi.Vacio(pedro),
+                    onVolver = {},
+                    onReintentar = {},
+                    onCompartirCodigo = onCompartir,
+                    onRegenerarCodigo = onRegenerar,
+                    onQuitar = onQuitar,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun unNinoRecienAgregadoMuestraSuCodigoAunqueNoHayaJugado() {
+        var compartido: DetalleNino? = null
+        var regenerados = 0
+        montarDetalle(onCompartir = { compartido = it }, onRegenerar = { regenerados++ })
+
+        compose.onNodeWithText("Todavía no hay resultados").assertIsDisplayed()
+        compose.onNodeWithText("Sin vincular").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("JB-7KQ4").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Compartir").performScrollTo().performClick()
+        assertEquals(pedro, compartido)
+
+        // Regenerar invalida el código que ya se compartió: pide confirmación.
+        compose.onNodeWithText("Regenerar").performScrollTo().performClick()
+        compose.onNodeWithText("¿Generar un código nuevo para Pedro Q.?").assertIsDisplayed()
+        compose.onNodeWithText("Cancelar").performClick()
+        assertEquals(0, regenerados)
+        compose.onNodeWithText("Regenerar").performScrollTo().performClick()
+        compose.onNodeWithText("Generar código").performClick()
+        assertEquals(1, regenerados)
+    }
+
+    @Test
+    fun quitarUnNinoDelGrupoPideConfirmacion() {
+        var quitados = 0
+        montarDetalle(onQuitar = { quitados++ })
+
+        compose.onNodeWithText("Quitar del grupo").performScrollTo().performClick()
+        compose.onNodeWithText("¿Quitar a Pedro Q. del grupo?").assertIsDisplayed()
+        compose.onNodeWithText("Cancelar").performClick()
+        assertEquals(0, quitados)
+
+        compose.onNodeWithText("Quitar del grupo").performScrollTo().performClick()
+        compose.onNodeWithText("Sí, quitar").performClick()
+        assertEquals(1, quitados)
+    }
+
     // --- UI-28 Cuenta ---
 
     @Composable
-    private fun CuentaDePrueba(onAvisos: (AvisosDocente) -> Unit = {}, onEliminar: () -> Unit = {}, onCompartir: (String) -> Unit = {}) {
+    private fun CuentaDePrueba(onAvisos: (AvisosDocente) -> Unit = {}, onEliminar: () -> Unit = {}, onIrAGrupo: () -> Unit = {}) {
         CuentaDocenteScreen(
             estado = EstadoUi.Contenido(
-                PerfilDocente("Laura Restrepo", "laura.r@jardin.edu.co", "Gotitas", "Jardín B", 22, "JB-2M91", AvisosDocente())
+                PerfilDocente("Laura Restrepo", "laura.r@jardin.edu.co", "Gotitas", "Jardín B", 22, AvisosDocente())
             ),
-            onReintentar = {}, onAvisos = onAvisos, onCompartirCodigo = onCompartir, onRegenerarCodigo = {},
+            onReintentar = {}, onAvisos = onAvisos, onIrAGrupo = onIrAGrupo,
             onEditarPerfil = {}, onVerPolitica = {}, onCerrarSesion = {}, onEliminarDatos = onEliminar,
         )
     }
@@ -488,23 +646,25 @@ class PantallasDocenteTest {
     }
 
     @Test
-    fun cadaAvisoSeCambiaTocandoSuFilaYElCodigoSeComparte() {
+    fun cadaAvisoSeCambiaTocandoSuFilaYLosCodigosEstanEnMiGrupo() {
         var avisos: AvisosDocente? = null
-        var compartido: String? = null
-        compose.setContent { ReciclaKidsTheme { CuentaDePrueba(onAvisos = { avisos = it }, onCompartir = { compartido = it }) } }
+        var irAGrupo = 0
+        compose.setContent { ReciclaKidsTheme { CuentaDePrueba(onAvisos = { avisos = it }, onIrAGrupo = { irAGrupo++ }) } }
 
         compose.onNodeWithText("Avisarme de niños sin jugar").performScrollTo().performClick()
-        compose.onNodeWithText("Compartir").performScrollTo().performClick()
+        // Ya no hay un código único del grupo: cada niño tiene el suyo.
+        compose.onAllNodesWithText("Compartir").assertCountEquals(0)
+        compose.onNodeWithText("Lo encuentras en Mi grupo", substring = true).performScrollTo().performClick()
 
         assertEquals(AvisosDocente(ninosSinJugar = true), avisos)
-        assertEquals("JB-2M91", compartido)
+        assertEquals(1, irAGrupo)
     }
 
     @Test
     fun losBotonesDeLosModosAdultosMidenAlMenos48Dp() {
         compose.setContent { ReciclaKidsTheme { CuentaDePrueba() } }
 
-        listOf("Editar perfil", "Compartir", "Regenerar", "Ver política", "Cerrar sesión").forEach {
+        listOf("Editar perfil", "Ver política", "Cerrar sesión").forEach {
             compose.onNodeWithText(it).performScrollTo().assertHeightIsAtLeast(Tactil.minimoAdulto)
         }
     }

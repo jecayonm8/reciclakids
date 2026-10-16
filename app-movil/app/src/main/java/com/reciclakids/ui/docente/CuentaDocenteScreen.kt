@@ -42,13 +42,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
 import com.reciclakids.model.AvisosDocente
@@ -56,14 +54,16 @@ import com.reciclakids.model.PerfilDocente
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.viewmodel.EstadoUi
 
-/** UI-28 Cuenta y ajustes: perfil, avisos, código de vinculación y privacidad (Ley 1581 de 2012). */
+/**
+ * UI-28 Cuenta y ajustes: perfil, avisos y privacidad (Ley 1581 de 2012). Los códigos de
+ * vinculación son de cada niño y están en Mi grupo.
+ */
 @Composable
 fun CuentaDocenteScreen(
     estado: EstadoUi<PerfilDocente>,
     onReintentar: () -> Unit,
     onAvisos: (AvisosDocente) -> Unit,
-    onCompartirCodigo: (String) -> Unit,
-    onRegenerarCodigo: () -> Unit,
+    onIrAGrupo: () -> Unit,
     onEditarPerfil: () -> Unit,
     onVerPolitica: () -> Unit,
     onCerrarSesion: () -> Unit,
@@ -81,12 +81,10 @@ fun CuentaDocenteScreen(
             EstadoUi.Cargando -> EsqueletoCarga(cuerpo)
             EstadoUi.Error -> EstadoErrorRed(onReintentar, cuerpo)
             is EstadoUi.Vacio -> ContenidoCuenta(
-                estado.datos, onAvisos, onCompartirCodigo, onRegenerarCodigo, onEditarPerfil,
-                onVerPolitica, onCerrarSesion, onEliminarDatos, cuerpo,
+                estado.datos, onAvisos, onIrAGrupo, onEditarPerfil, onVerPolitica, onCerrarSesion, onEliminarDatos, cuerpo,
             )
             is EstadoUi.Contenido -> ContenidoCuenta(
-                estado.datos, onAvisos, onCompartirCodigo, onRegenerarCodigo, onEditarPerfil,
-                onVerPolitica, onCerrarSesion, onEliminarDatos, cuerpo,
+                estado.datos, onAvisos, onIrAGrupo, onEditarPerfil, onVerPolitica, onCerrarSesion, onEliminarDatos, cuerpo,
             )
         }
     }
@@ -97,8 +95,7 @@ fun CuentaDocenteScreen(
 private fun ContenidoCuenta(
     perfil: PerfilDocente,
     onAvisos: (AvisosDocente) -> Unit,
-    onCompartirCodigo: (String) -> Unit,
-    onRegenerarCodigo: () -> Unit,
+    onIrAGrupo: () -> Unit,
     onEditarPerfil: () -> Unit,
     onVerPolitica: () -> Unit,
     onCerrarSesion: () -> Unit,
@@ -106,7 +103,6 @@ private fun ContenidoCuenta(
     modifier: Modifier = Modifier,
 ) {
     // Toda acción sensible pide confirmación antes de llegar al servicio.
-    var confirmarRegenerar by rememberSaveable { mutableStateOf(false) }
     var confirmarEliminar by rememberSaveable { mutableStateOf(false) }
 
     Column(
@@ -118,25 +114,8 @@ private fun ContenidoCuenta(
     ) {
         TarjetaPerfil(perfil, onEditarPerfil)
         TarjetaAvisos(perfil.avisos, onAvisos)
-        TarjetaVinculacion(
-            codigo = perfil.codigoVinculacion,
-            onCompartir = { onCompartirCodigo(perfil.codigoVinculacion) },
-            onRegenerar = { confirmarRegenerar = true },
-        )
+        TarjetaCodigosEnGrupo(onIrAGrupo)
         TarjetaPrivacidad(onVerPolitica, onCerrarSesion, onEliminar = { confirmarEliminar = true })
-    }
-    if (confirmarRegenerar) {
-        DialogoConfirmacion(
-            titulo = stringResource(R.string.cuenta_regenerar_titulo),
-            texto = stringResource(R.string.cuenta_regenerar_texto),
-            confirmar = stringResource(R.string.cuenta_regenerar_confirmar),
-            destructivo = false,
-            onConfirmar = {
-                confirmarRegenerar = false
-                onRegenerarCodigo()
-            },
-            onCancelar = { confirmarRegenerar = false },
-        )
     }
     if (confirmarEliminar) {
         DialogoConfirmacion(
@@ -249,32 +228,19 @@ internal fun FilaInterruptor(titulo: String, detalle: String, activo: Boolean, o
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+/** Los códigos de vinculación son de cada niño: esta línea lleva a Mi grupo, donde están. */
 @Composable
-private fun TarjetaVinculacion(codigo: String, onCompartir: () -> Unit, onRegenerar: () -> Unit) {
-    TarjetaDocente(Modifier.fillMaxWidth(), relleno = PaddingValues(20.dp), espacio = 12.dp) {
-        Text(stringResource(R.string.cuenta_vinculacion), style = MaterialTheme.typography.titleMedium)
-        Text(
-            stringResource(R.string.cuenta_vinculacion_texto),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+private fun TarjetaCodigosEnGrupo(onIrAGrupo: () -> Unit) {
+    TarjetaDocente(Modifier.fillMaxWidth(), onClick = onIrAGrupo, relleno = PaddingValues(horizontal = 20.dp, vertical = 16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Icon(painterResource(R.drawable.ic_grupo), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Text(
-                codigo,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Medium,
-                fontSize = 26.sp,
-                letterSpacing = 0.14.em,
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(12.dp))
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                stringResource(R.string.cuenta_codigos_en_grupo),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
             )
-            Row(Modifier.align(Alignment.CenterVertically), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                BotonContorno(stringResource(R.string.cuenta_compartir), onClick = onCompartir)
-                BotonTexto(stringResource(R.string.cuenta_regenerar), onClick = onRegenerar)
-            }
+            Icon(painterResource(R.drawable.ic_siguiente), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -315,7 +281,7 @@ private fun TarjetaPrivacidad(onVerPolitica: () -> Unit, onCerrarSesion: () -> U
 }
 
 @Composable
-private fun DialogoConfirmacion(
+internal fun DialogoConfirmacion(
     titulo: String,
     texto: String,
     confirmar: String,
@@ -353,9 +319,9 @@ private fun CuentaDocentePreview() {
     ReciclaKidsTheme {
         CuentaDocenteScreen(
             estado = EstadoUi.Contenido(
-                PerfilDocente("Laura Restrepo", "laura.r@jardin.edu.co", "Gotitas", "Jardín B", 22, "JB-2M91", AvisosDocente())
+                PerfilDocente("Laura Restrepo", "laura.r@jardin.edu.co", "Gotitas", "Jardín B", 22, AvisosDocente())
             ),
-            onReintentar = {}, onAvisos = {}, onCompartirCodigo = {}, onRegenerarCodigo = {}, onEditarPerfil = {},
+            onReintentar = {}, onAvisos = {}, onIrAGrupo = {}, onEditarPerfil = {},
             onVerPolitica = {}, onCerrarSesion = {}, onEliminarDatos = {},
         )
     }

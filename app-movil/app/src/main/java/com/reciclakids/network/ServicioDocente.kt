@@ -4,6 +4,7 @@ import com.reciclakids.model.AvisosDocente
 import com.reciclakids.model.BibliotecaDocente
 import com.reciclakids.model.DetalleNino
 import com.reciclakids.model.GrupoHoy
+import com.reciclakids.model.NinoAgregado
 import com.reciclakids.model.PerfilDocente
 import com.reciclakids.model.ReporteSemanal
 import com.reciclakids.model.RetoDocente
@@ -59,6 +60,22 @@ interface ServicioDocente {
     /** `null` si el niño no es del grupo de esta docente. */
     suspend fun detalleNino(id: String): Respuesta<DetalleNino?>
 
+    /**
+     * Agrega un niño al grupo. Solo viajan su nombre y la inicial del apellido (una letra): se
+     * guarda «Salomé M.», nunca el apellido completo (Ley 1581 de 2012). Cada niño recibe su
+     * propio código de vinculación para su acudiente.
+     */
+    suspend fun agregarNino(nombre: String, inicialApellido: String): Respuesta<NinoAgregado>
+
+    /**
+     * El código anterior de ese niño deja de servir para vincular; si su acudiente ya estaba
+     * vinculado, sigue vinculado. Devuelve el nuevo, o `null` sin conexión.
+     */
+    suspend fun regenerarCodigoVinculacion(ninoId: String): String?
+
+    /** Quita al niño del grupo y borra sus resultados, insignias y reportes. No se puede deshacer. */
+    suspend fun quitarNino(ninoId: String): Boolean
+
     suspend fun reporteSemanal(): Respuesta<ReporteSemanal>
 
     /** Envía el reporte de la semana a los acudientes, cada uno con los datos de su hijo o hija. */
@@ -70,9 +87,6 @@ interface ServicioDocente {
     suspend fun guardarPerfil(datos: DatosPerfilDocente): ResultadoEdicionPerfil
 
     suspend fun guardarAvisos(avisos: AvisosDocente): Boolean
-
-    /** El código anterior deja de servir para vincular; devuelve el nuevo o `null` sin conexión. */
-    suspend fun regenerarCodigoVinculacion(): String?
 
     /** Borra resultados, insignias y reportes del grupo. No se puede deshacer. */
     suspend fun eliminarDatosGrupo(): Boolean

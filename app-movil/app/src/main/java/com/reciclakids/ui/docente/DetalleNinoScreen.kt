@@ -1,5 +1,6 @@
 package com.reciclakids.ui.docente
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -16,16 +17,25 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,18 +81,26 @@ private val EspacioInsignias = 14.dp
 /**
  * UI-27 Detalle de un niño, a pantalla completa: evolución, aciertos por caneca con una frase
  * que dice dónde se confunde, e insignias. Solo la docente y su acudiente ven esta información.
+ * Al final, el código de vinculación para su acudiente y la opción de quitarlo del grupo.
  */
 @Composable
 fun DetalleNinoScreen(
     estado: EstadoUi<DetalleNino?>,
     onVolver: () -> Unit,
     onReintentar: () -> Unit,
+    onCompartirCodigo: (DetalleNino) -> Unit,
+    onRegenerarCodigo: () -> Unit,
+    onQuitar: () -> Unit,
     modifier: Modifier = Modifier,
+    quitando: Boolean = false,
+    snackbar: SnackbarHostState? = null,
 ) {
     val detalle = estado.datosCargados
+    val acciones = AccionesNino(onCompartirCodigo, onRegenerarCodigo, onQuitar, quitando)
     MarcoDocente(
         modifier = modifier,
         pantallaCompleta = true,
+        snackbar = snackbar,
         barra = {
             BarraDocente(
                 titulo = detalle?.nombre.orEmpty(),
@@ -99,21 +117,27 @@ fun DetalleNinoScreen(
                 if (nino == null) {
                     EstadoErrorRed(onReintentar, Modifier.padding(relleno))
                 } else {
-                    EstadoVacioDocente(
-                        ilustracion = null,
-                        titulo = stringResource(R.string.detalle_vacio_titulo),
-                        texto = stringResource(R.string.detalle_vacio_texto, nino.nombre),
-                        modifier = Modifier.padding(relleno),
-                    )
+                    ContenidoDetalle(nino, acciones, Modifier.padding(relleno))
                 }
             }
-            is EstadoUi.Contenido -> estado.datos?.let { ContenidoDetalle(it, Modifier.padding(relleno)) }
+            is EstadoUi.Contenido -> estado.datos?.let { ContenidoDetalle(it, acciones, Modifier.padding(relleno)) }
         }
     }
 }
 
+/** Lo que la docente puede hacer con un niño desde su detalle. */
+private class AccionesNino(
+    val onCompartirCodigo: (DetalleNino) -> Unit,
+    val onRegenerarCodigo: () -> Unit,
+    val onQuitar: () -> Unit,
+    val quitando: Boolean,
+)
+
 @Composable
-private fun ContenidoDetalle(detalle: DetalleNino, modifier: Modifier = Modifier) {
+private fun ContenidoDetalle(detalle: DetalleNino, acciones: AccionesNino, modifier: Modifier = Modifier) {
+    // Toda acción sensible pide confirmación antes de llegar al servicio.
+    var confirmarRegenerar by rememberSaveable { mutableStateOf(false) }
+    var confirmarQuitar by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -134,9 +158,125 @@ private fun ContenidoDetalle(detalle: DetalleNino, modifier: Modifier = Modifier
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        TarjetaEvolucion(detalle)
-        TarjetaPorCaneca(detalle)
-        TarjetaInsignias(detalle.insignias)
+        if (detalle.sinResultados) {
+            TarjetaSinResultados(detalle.nombre)
+        } else {
+            TarjetaEvolucion(detalle)
+            TarjetaPorCaneca(detalle)
+            TarjetaInsignias(detalle.insignias)
+        }
+        TarjetaVinculacionNino(
+            detalle,
+            onCompartir = { acciones.onCompartirCodigo(detalle) },
+            onRegenerar = { confirmarRegenerar = true },
+        )
+        TarjetaQuitar(acciones.quitando, onQuitar = { confirmarQuitar = true })
+    }
+    if (confirmarRegenerar) {
+        DialogoConfirmacion(
+            titulo = stringResource(R.string.vinculacion_regenerar_titulo, detalle.nombre),
+            texto = stringResource(R.string.vinculacion_regenerar_texto),
+            confirmar = stringResource(R.string.vinculacion_regenerar_confirmar),
+            destructivo = false,
+            onConfirmar = {
+                confirmarRegenerar = false
+                acciones.onRegenerarCodigo()
+            },
+            onCancelar = { confirmarRegenerar = false },
+        )
+    }
+    if (confirmarQuitar) {
+        DialogoConfirmacion(
+            titulo = stringResource(R.string.quitar_nino_titulo, detalle.nombre),
+            texto = stringResource(R.string.quitar_nino_dialogo),
+            confirmar = stringResource(R.string.quitar_nino_confirmar),
+            destructivo = true,
+            onConfirmar = {
+                confirmarQuitar = false
+                acciones.onQuitar()
+            },
+            onCancelar = { confirmarQuitar = false },
+        )
+    }
+}
+
+/** Un niño recién agregado todavía no ha jugado: lo primero es compartir su código. */
+@Composable
+private fun TarjetaSinResultados(nombre: String) {
+    TarjetaDocente(Modifier.fillMaxWidth(), relleno = PaddingValues(20.dp), espacio = 8.dp) {
+        Text(stringResource(R.string.detalle_vacio_titulo), style = MaterialTheme.typography.titleMedium)
+        Text(
+            stringResource(R.string.detalle_vacio_texto, nombre),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TarjetaVinculacionNino(detalle: DetalleNino, onCompartir: () -> Unit, onRegenerar: () -> Unit) {
+    val esquema = MaterialTheme.colorScheme
+    TarjetaDocente(Modifier.fillMaxWidth(), relleno = PaddingValues(20.dp), espacio = 12.dp) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                stringResource(R.string.vinculacion_titulo),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.align(Alignment.CenterVertically),
+            )
+            // Pendiente es ámbar, como todo lo que está en espera: nunca un error.
+            if (detalle.acudienteVinculado) {
+                ChipEstado(stringResource(R.string.vinculacion_vinculado), esquema.tertiaryContainer, esquema.onTertiaryContainer)
+            } else {
+                ChipEstado(stringResource(R.string.vinculacion_sin_vincular), FondoAviso, TextoAviso)
+            }
+        }
+        Text(
+            if (detalle.acudienteVinculado) {
+                stringResource(R.string.vinculacion_vinculado_texto)
+            } else {
+                stringResource(R.string.vinculacion_sin_vincular_texto, detalle.nombre)
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = esquema.onSurfaceVariant,
+        )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            TextoCodigoVinculacion(detalle.codigoVinculacion, Modifier.align(Alignment.CenterVertically))
+            Row(Modifier.align(Alignment.CenterVertically), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                BotonContorno(stringResource(R.string.vinculacion_compartir), onClick = onCompartir)
+                BotonTexto(stringResource(R.string.vinculacion_regenerar), onClick = onRegenerar)
+            }
+        }
+    }
+}
+
+/** Acción destructiva: el único rojo de esta pantalla. */
+@Composable
+private fun TarjetaQuitar(quitando: Boolean, onQuitar: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = FormaTarjeta,
+        color = Color.White,
+        border = BorderStroke(1.dp, BordeOpcion),
+    ) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(
+                stringResource(R.string.quitar_nino_texto),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            FilledTonalButton(
+                onClick = onQuitar,
+                enabled = !quitando,
+                modifier = Modifier.heightIn(min = AltoMinimoBoton),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
+            ) {
+                Text(stringResource(R.string.quitar_nino), style = MaterialTheme.typography.labelLarge)
+            }
+        }
     }
 }
 
@@ -330,10 +470,15 @@ private fun DetalleNinoPreview() {
                     insignias = listOf("Amiga tortuga", "Rápido como pez", "Racha de 5", "Pulpo ordenado").mapIndexed { i, n ->
                         InsigniaNino(n, ganada = i < 3)
                     },
+                    codigoVinculacion = "JB-4QX7",
+                    acudienteVinculado = true,
                 )
             ),
             onVolver = {},
             onReintentar = {},
+            onCompartirCodigo = {},
+            onRegenerarCodigo = {},
+            onQuitar = {},
         )
     }
 }

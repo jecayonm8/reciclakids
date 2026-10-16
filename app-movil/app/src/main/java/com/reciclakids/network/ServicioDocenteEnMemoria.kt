@@ -9,6 +9,7 @@ import com.reciclakids.model.EstadoNinoHoy
 import com.reciclakids.model.EstadoReto
 import com.reciclakids.model.GrupoHoy
 import com.reciclakids.model.InsigniaNino
+import com.reciclakids.model.NinoAgregado
 import com.reciclakids.model.NinoHoy
 import com.reciclakids.model.PerfilDocente
 import com.reciclakids.model.ReporteSemanal
@@ -17,6 +18,7 @@ import com.reciclakids.model.RetoBorrador
 import com.reciclakids.model.TableroDocente
 import com.reciclakids.model.ValorDia
 import com.reciclakids.model.ValorNino
+import com.reciclakids.model.nombreConInicial
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -52,7 +54,7 @@ class ServicioDocenteEnMemoria(
     private var correo = cuenta.correo
     private var jardin = cuenta.jardin.orEmpty()
     private var grupo = cuenta.grupo.orEmpty()
-    private val ninos: List<NinoDemo> = if (conDatosDemo) DatosDemoDocente.ninos() else emptyList()
+    private val ninos: MutableList<NinoDemo> = if (conDatosDemo) DatosDemoDocente.ninos().toMutableList() else mutableListOf()
     private val retos: MutableList<RetoDocente> =
         if (conDatosDemo) DatosDemoDocente.retos(hoy()).toMutableList() else mutableListOf()
 
@@ -61,7 +63,12 @@ class ServicioDocenteEnMemoria(
         if (conDatosDemo) mutableMapOf(DatosDemoDocente.IdRetoHoy to ninos.associate { it.id to it.estadoHoy }) else mutableMapOf()
     private var hayResultados = conDatosDemo
     private var avisos = AvisosDocente()
-    private var codigoVinculacion = "${iniciales(grupo)}-2M91"
+
+    /** Código de vinculación de cada niño: id del niño → código. */
+    private val codigos: MutableMap<String, String> =
+        if (conDatosDemo) DatosDemoDocente.SufijosCodigo.mapValues { "${iniciales(grupo)}-${it.value}" }.toMutableMap() else mutableMapOf()
+    private val vinculados: MutableSet<String> =
+        if (conDatosDemo) DatosDemoDocente.AcudientesVinculados.toMutableSet() else mutableSetOf()
     private var siguienteId = 1
 
     override fun hoy(): LocalDate = LocalDate.now(reloj)
@@ -146,19 +153,54 @@ class ServicioDocenteEnMemoria(
                 insignias = DatosDemoDocente.Insignias.mapIndexed { i, insignia ->
                     InsigniaNino(insignia, ganada = hayResultados && i < nino.insigniasGanadas)
                 },
+                codigoVinculacion = codigos.getValue(nino.id),
+                acudienteVinculado = nino.id in vinculados,
             )
         }
+    }
+
+    override suspend fun agregarNino(nombre: String, inicialApellido: String): Respuesta<NinoAgregado> = consultar {
+        val nino = NinoDemo(
+            id = "nino-nuevo-${siguienteId++}",
+            nombre = nombreConInicial(nombre, inicialApellido),
+            estadoHoy = EstadoNinoHoy.SinEmpezar,
+            aciertosPorSemana = emptyList(),
+            aciertosPorCategoria = emptyMap(),
+            confusion = null,
+            insigniasGanadas = 0,
+            completadosSemana = 0,
+        )
+        ninos += nino
+        codigos[nino.id] = nuevoCodigoVinculacion()
+        NinoAgregado(nino.id, nino.nombre, codigos.getValue(nino.id))
+    }
+
+    override suspend fun regenerarCodigoVinculacion(ninoId: String): String? {
+        delay(latenciaMs)
+        if (sinConexion) return null
+        return mutex.withLock {
+            if (ninoId in codigos) nuevoCodigoVinculacion().also { codigos[ninoId] = it } else null
+        }
+    }
+
+    override suspend fun quitarNino(ninoId: String): Boolean = accion {
+        ninos.removeAll { it.id == ninoId }
+        progreso.replaceAll { _, estados -> estados - ninoId }
+        codigos.remove(ninoId)
+        vinculados.remove(ninoId)
     }
 
     override suspend fun reporteSemanal(): Respuesta<ReporteSemanal> = consultar {
         val inicio = hoy().with(DayOfWeek.MONDAY).minusWeeks(1)
         val fin = inicio.plusDays(4)
-        if (!hayResultados || ninos.isEmpty()) {
+        // Un niño recién agregado todavía no tiene semanas jugadas: no entra al reporte.
+        val jugaron = ninos.filter { it.aciertosPorSemana.size >= 2 }
+        if (!hayResultados || jugaron.isEmpty()) {
             ReporteSemanal(inicio, fin, 0, 0, 0, 0, 0, 0, 0, 0, emptyList(), emptyList())
         } else {
-            val completados = ninos.map { it.completadosSemana }.average().roundToInt()
-            val aciertos = ninos.map { it.aciertosPorSemana.last() }.average().roundToInt()
-            val aciertosPrevios = ninos.map { it.aciertosPorSemana[it.aciertosPorSemana.size - 2] }.average().roundToInt()
+            val completados = jugaron.map { it.completadosSemana }.average().roundToInt()
+            val aciertos = jugaron.map { it.aciertosPorSemana.last() }.average().roundToInt()
+            val aciertosPrevios = jugaron.map { it.aciertosPorSemana[it.aciertosPorSemana.size - 2] }.average().roundToInt()
             ReporteSemanal(
                 inicio = inicio,
                 fin = fin,
@@ -173,7 +215,7 @@ class ServicioDocenteEnMemoria(
                 participacionPorDia = DatosDemoDocente.ParticipacionPorDia.mapIndexed { i, valor ->
                     ValorDia(inicio.plusDays(i.toLong()), valor)
                 },
-                completadosPorNino = ninos.map { ValorNino(it.nombre, it.completadosSemana) },
+                completadosPorNino = jugaron.map { ValorNino(it.nombre, it.completadosSemana) },
             )
         }
     }
@@ -181,7 +223,7 @@ class ServicioDocenteEnMemoria(
     override suspend fun enviarReporteAcudientes(): Boolean = accion {}
 
     override suspend fun perfil(): Respuesta<PerfilDocente> = consultar {
-        PerfilDocente(nombre, correo, jardin, grupo, ninos.size, codigoVinculacion, avisos)
+        PerfilDocente(nombre, correo, jardin, grupo, ninos.size, avisos)
     }
 
     // En memoria no hay otras cuentas contra las cuales chocar: nunca responde CorreoEnUso.
@@ -196,15 +238,6 @@ class ServicioDocenteEnMemoria(
     }
 
     override suspend fun guardarAvisos(avisos: AvisosDocente): Boolean = accion { this.avisos = avisos }
-
-    override suspend fun regenerarCodigoVinculacion(): String? {
-        delay(latenciaMs)
-        if (sinConexion) return null
-        return mutex.withLock {
-            val sufijo = (1..4).map { CaracteresCodigo[azar.nextInt(CaracteresCodigo.length)] }.joinToString("")
-            "${iniciales(grupo)}-$sufijo".also { codigoVinculacion = it }
-        }
-    }
 
     override suspend fun eliminarDatosGrupo(): Boolean = accion {
         hayResultados = false
@@ -252,6 +285,14 @@ class ServicioDocenteEnMemoria(
             retos.removeAt(i)
         }
         retos.add(0, reto)
+    }
+
+    /** Iniciales del grupo, guion y cuatro caracteres que no choquen con el código de otro niño. */
+    private fun nuevoCodigoVinculacion(): String {
+        val usados = codigos.values.toSet()
+        return generateSequence {
+            "${iniciales(grupo)}-" + (1..4).map { CaracteresCodigo[azar.nextInt(CaracteresCodigo.length)] }.joinToString("")
+        }.first { it !in usados }
     }
 
     /** Cuatro dígitos que no choquen con otro código activo hoy. */
