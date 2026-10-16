@@ -1,12 +1,40 @@
 ktor:
   deployment:
-    port: 8080
+    # Cloud Run entrega el puerto en PORT.
+    port: "$PORT:8080"
   application:
     modules:
-      - com.example.com.reciclakids.plugins.RoutingKt.configureRouting
+      - com.reciclakids.AplicacionKt.module
 
 reciclakids:
+  # «desarrollo» o «produccion». En producción el servidor no arranca con secretos de ejemplo.
+  entorno: "$RECICLAKIDS_ENTORNO:desarrollo"
+  # Día escolar del piloto: los códigos de reto vencen a la medianoche de esta zona (RNF-05).
+  zonaHoraria: "America/Bogota"
+  # Dirección pública del backend: se usa en los enlaces de los correos.
+  urlPublica: "$RECICLAKIDS_URL_PUBLICA:http://localhost:8080"
+
+  baseDatos:
+    url: "$DATABASE_URL:jdbc:postgresql://localhost:5432/reciclakids"
+    usuario: "$DATABASE_USER:reciclakids"
+    contrasena: "$DATABASE_PASSWORD:reciclakids"
+    maxConexiones: "$DATABASE_MAX_POOL:5"
+
+  jwt:
+    secreto: "$JWT_SECRET:solo-para-desarrollo-no-usar-en-produccion"
+    emisor: "reciclakids-backend"
+    audiencia: "reciclakids-app"
+
   correos:
-    # Vista previa de las plantillas de correo con datos ficticios en /correos/vista-previa/...
+    # «memoria» no envía nada (desarrollo y pruebas); «ses» usa Amazon SES (ADR-10).
+    proveedor: "$CORREO_PROVEEDOR:memoria"
+    remitente: "$CORREO_REMITENTE:ReciclaKids <no-responder@reciclakids.app>"
+    regionSes: "$AWS_REGION:us-east-1"
+    # Vista previa de las plantillas con datos ficticios en /correos/vista-previa/...
     # Encendida para desarrollo; en producción se apaga con RECICLAKIDS_VISTA_PREVIA_CORREOS=false.
     vistaPrevia: "$RECICLAKIDS_VISTA_PREVIA_CORREOS:true"
+
+  tareas:
+    # Clave que deben mandar las tareas programadas (Cloud Scheduler) en X-Tareas-Clave.
+    # Vacía = rutas de tareas apagadas.
+    clave: "$TAREAS_CLAVE:"
