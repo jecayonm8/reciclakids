@@ -5,11 +5,13 @@ on:
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
+      - ".github/testrail/**"
   push:
     branches: [main]
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
+      - ".github/testrail/**"
 
 jobs:
   build-test:
@@ -44,14 +46,17 @@ jobs:
           TESTRAIL_URL: ${{ secrets.TESTRAIL_URL }}
           TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
           TESTRAIL_API_KEY: ${{ secrets.TESTRAIL_API_KEY }}
-        # trcli busca con glob sin modo recursivo: «**» no entra en subcarpetas y los XML
-        # están directamente en la carpeta de resultados. Si falla, deja un aviso en la corrida
-        # (continue-on-error la mantiene en verde y antes el error pasaba inadvertido).
+        # Un resultado por caso legible (CP-001…): el guion resume las pruebas automáticas de
+        # cada caso según .github/testrail/casos-automatizados.json y trcli lo asocia al caso que
+        # ya existe por su ID [C123], sin crear casos técnicos. Si falla, deja un aviso en la
+        # corrida (continue-on-error la mantiene en verde).
         run: |
-          if ! trcli -y -h "$TESTRAIL_URL" --project "ReciclaKids" \
-            -u "$TESTRAIL_USER" -k "$TESTRAIL_API_KEY" \
-            parse_junit --title "CI backend #${{ github.run_number }}" \
-            -f "backend/build/test-results/test/*.xml"; then
+          if ! python3 .github/testrail/resultados_por_caso.py --proyecto backend \
+               --resultados backend/build/test-results/test --salida resultados-testrail.xml \
+             || ! trcli -y -h "$TESTRAIL_URL" --project "ReciclaKids" \
+               -u "$TESTRAIL_USER" -k "$TESTRAIL_API_KEY" \
+               parse_junit --case-matcher name --title "CI backend #${{ github.run_number }}" \
+               -f resultados-testrail.xml; then
             echo "::warning title=TestRail::No se pudieron subir los resultados a TestRail. Revisa el registro del paso «Subir resultados a TestRail»."
             exit 1
           fi
