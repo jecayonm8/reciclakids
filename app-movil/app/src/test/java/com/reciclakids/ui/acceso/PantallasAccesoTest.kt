@@ -14,15 +14,18 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
+import com.reciclakids.R
 import com.reciclakids.model.RolAdulto
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.viewmodel.FormularioAcudiente
 import com.reciclakids.viewmodel.FormularioDocente
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 
 @RunWith(RobolectricTestRunner::class)
 class PantallasAccesoTest {
@@ -275,5 +278,35 @@ class PantallasAccesoTest {
         compose.onNodeWithText("Enviar enlace").performScrollTo().performClick()
 
         assertEquals(listOf("mariana.r@correo.com"), enviados)
+    }
+
+    // --- Política de tratamiento de datos ---
+
+    @Test
+    fun laPoliticaMuestraCadaSeccionYElContactoPorDefinir() {
+        var atras = 0
+        compose.setContent { ReciclaKidsTheme { PoliticaDatosScreen(onAtras = { atras++ }) } }
+
+        compose.onNodeWithText("Política de tratamiento de datos personales").assertIsDisplayed()
+        RuntimeEnvironment.getApplication().resources.getStringArray(R.array.politica_secciones_titulos).forEach {
+            compose.onNodeWithText(it).performScrollTo().assertIsDisplayed()
+        }
+        // La viñeta se dibuja aparte: el texto llega sin «• ».
+        compose.onNodeWithText("Revocar la autorización cuando quieras.").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("[Por definir: correo para datos personales]").performScrollTo().assertIsDisplayed()
+
+        compose.onNodeWithContentDescription("Volver").performClick()
+        assertEquals(1, atras)
+    }
+
+    @Test
+    fun cadaTituloDeLaPoliticaTieneSuTexto() {
+        val recursos = RuntimeEnvironment.getApplication().resources
+        val titulos = recursos.getStringArray(R.array.politica_secciones_titulos)
+        val textos = recursos.getStringArray(R.array.politica_secciones_textos)
+
+        // La pantalla los empareja por posición: si el texto legal cambia, deben seguir en pareja.
+        assertEquals(titulos.size, textos.size)
+        assertTrue(textos.none { it.isBlank() })
     }
 }

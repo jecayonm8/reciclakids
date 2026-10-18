@@ -48,8 +48,11 @@ import com.reciclakids.model.InicioPadres
 import com.reciclakids.model.LogrosHijo
 import com.reciclakids.model.PerfilAcudiente
 import com.reciclakids.model.PrivacidadHijo
+import com.reciclakids.network.DatosPerfilAcudiente
 import com.reciclakids.network.ServicioPadres
-import com.reciclakids.ui.common.PantallaPendiente
+import com.reciclakids.network.con
+import com.reciclakids.network.datosEditables
+import com.reciclakids.network.map
 import com.reciclakids.ui.docente.BarraDocente
 import com.reciclakids.ui.docente.EsqueletoCarga
 import com.reciclakids.ui.docente.EstadoErrorRed
@@ -60,8 +63,11 @@ import com.reciclakids.util.fechaLarga
 import com.reciclakids.viewmodel.AvisoControl
 import com.reciclakids.viewmodel.CargaViewModel
 import com.reciclakids.viewmodel.ControlParentalViewModel
+import com.reciclakids.viewmodel.EditarPerfilViewModel
+import com.reciclakids.viewmodel.EstadoGuardado
 import com.reciclakids.viewmodel.EstadoUi
 import com.reciclakids.viewmodel.EstadoVinculacion
+import com.reciclakids.viewmodel.FormularioPerfilAcudiente
 import com.reciclakids.viewmodel.ReporteHijoViewModel
 import com.reciclakids.viewmodel.VincularHijoViewModel
 import com.reciclakids.viewmodel.datosCargados
@@ -126,6 +132,7 @@ fun ModoPadres(
     // no puede guardar el hijo elegido por valor.
     val elegido = rememberSaveable { mutableStateOf<String?>(null) }
     val avisoCuenta = remember { mutableStateOf<String?>(null) }
+    val perfilEditado = remember { mutableStateOf<DatosPerfilAcudiente?>(null) }
     val entrada by navController.currentBackStackEntryAsState()
 
     Column(modifier.fillMaxSize()) {
@@ -148,8 +155,8 @@ fun ModoPadres(
                     enterTransition = { fadeIn(tween(Duracion.estandar)) },
                     exitTransition = { fadeOut(tween(Duracion.estandar)) },
                 ) {
-                    pestanas(navController, servicio, hijos, elegido, avisoCuenta, onCerrarSesion, onCambiarContrasena)
-                    subpantallas(navController, servicio, hijos, elegido, avisoCuenta, onVerPolitica)
+                    pestanas(navController, servicio, hijos, elegido, avisoCuenta, perfilEditado, onCerrarSesion, onCambiarContrasena)
+                    subpantallas(navController, servicio, hijos, elegido, avisoCuenta, perfilEditado, onVerPolitica)
                 }
             }
         }
@@ -171,6 +178,7 @@ private fun NavGraphBuilder.pestanas(
     hijos: CargaViewModel<List<HijoVinculado>>,
     elegido: MutableState<String?>,
     avisoCuenta: MutableState<String?>,
+    perfilEditado: MutableState<DatosPerfilAcudiente?>,
     onCerrarSesion: () -> Unit,
     onCambiarContrasena: () -> Unit,
 ) {
@@ -230,6 +238,14 @@ private fun NavGraphBuilder.pestanas(
             avisoCuenta.value = null
             snackbar.showSnackbar(aviso)
         }
+        // Lo deja la edición del perfil al guardar: el perfil nuevo se ve al instante, sin esperar la recarga.
+        val textoPerfilGuardado = stringResource(R.string.editar_perfil_guardado)
+        LaunchedEffect(perfilEditado.value) {
+            val datos = perfilEditado.value ?: return@LaunchedEffect
+            perfilEditado.value = null
+            vm.estado.datosCargados?.let { vm.mostrar(it.con(datos)) }
+            snackbar.showSnackbar(textoPerfilGuardado)
+        }
         CuentaPadresScreen(
             estado = vm.estado,
             onReintentar = { vm.cargar() },
@@ -250,6 +266,7 @@ private fun NavGraphBuilder.subpantallas(
     hijos: CargaViewModel<List<HijoVinculado>>,
     elegido: MutableState<String?>,
     avisoCuenta: MutableState<String?>,
+    perfilEditado: MutableState<DatosPerfilAcudiente?>,
     onVerPolitica: () -> Unit,
 ) {
     composable(RutasPadres.Logros) {
@@ -377,10 +394,24 @@ private fun NavGraphBuilder.subpantallas(
     }
 
     composable(RutasPadres.EditarPerfil) {
-        PantallaPendiente(
-            descripcion = stringResource(R.string.pendiente_editar_perfil),
+        val vm = viewModel {
+            EditarPerfilViewModel(
+                cargarFormulario = { servicio.perfil().map { FormularioPerfilAcudiente(it.datosEditables) } },
+                guardarFormulario = { servicio.guardarPerfil(it.datos) },
+            )
+        }
+        LaunchedEffect(vm) { vm.cargar() }
+        LaunchedEffect(vm.guardado) {
+            if (vm.guardado != EstadoGuardado.Guardado) return@LaunchedEffect
+            perfilEditado.value = vm.estado.datosCargados?.datos
+            navController.popBackStack()
+        }
+        EditarPerfilAcudienteScreen(
+            estado = vm.estado,
+            guardado = vm.guardado,
+            onGuardar = vm::guardar,
+            onReintentar = vm::cargar,
             onVolver = { navController.popBackStack() },
-            etiquetaVolver = stringResource(R.string.comun_atras),
         )
     }
 }

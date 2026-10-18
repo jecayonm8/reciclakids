@@ -19,6 +19,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,12 +52,19 @@ import com.reciclakids.model.PerfilDocente
 import com.reciclakids.model.ReporteSemanal
 import com.reciclakids.model.RetoDocente
 import com.reciclakids.model.TableroDocente
+import com.reciclakids.network.DatosPerfilDocente
 import com.reciclakids.network.ServicioDocente
-import com.reciclakids.ui.common.PantallaPendiente
+import com.reciclakids.network.con
+import com.reciclakids.network.datosEditables
+import com.reciclakids.network.map
 import com.reciclakids.ui.theme.Duracion
+import com.reciclakids.viewmodel.AgregarNinoViewModel
 import com.reciclakids.viewmodel.CargaViewModel
 import com.reciclakids.viewmodel.CrearRetoViewModel
+import com.reciclakids.viewmodel.EditarPerfilViewModel
+import com.reciclakids.viewmodel.EstadoGuardado
 import com.reciclakids.viewmodel.FiltroReto
+import com.reciclakids.viewmodel.FormularioPerfilDocente
 import com.reciclakids.viewmodel.OrigenAsistente
 import com.reciclakids.viewmodel.datosCargados
 import kotlinx.coroutines.launch
@@ -76,6 +84,7 @@ object RutasDocente {
     const val Codigo = "docente/codigo/{$ArgReto}"
     const val Nino = "docente/nino/{$ArgNino}"
     const val EditarPerfil = "docente/editar-perfil"
+    const val AgregarNino = "docente/agregar-nino"
 
     fun crear(origen: OrigenAsistente = OrigenAsistente.Nuevo, retoId: String? = null): String =
         "docente/crear?$ArgOrigen=${origen.name}" + (retoId?.let { "&$ArgReto=${Uri.encode(it)}" } ?: "")
@@ -97,7 +106,7 @@ enum class PestanaDocente(val ruta: String, @param:StringRes val etiqueta: Int, 
 /**
  * Modo Docente: su propio NavHost con la NavigationBar inferior de cinco destinos.
  *
- * UI-21 → UI-22 → UI-24 ; UI-23 → UI-22 (duplicar / editar) ; UI-25 → UI-27 ; UI-26 ; UI-28
+ * UI-21 → UI-22 → UI-24 ; UI-23 → UI-22 (duplicar / editar) ; UI-25 → UI-27, agregar niño ; UI-26 ; UI-28
  */
 @Composable
 fun ModoDocente(
@@ -110,6 +119,11 @@ fun ModoDocente(
     val entrada by navController.currentBackStackEntryAsState()
     val destino = entrada?.destination
     val conBarra = destino == null || PestanaDocente.entries.any { it.ruta == destino.route }
+    // Lo deja la edición del perfil al guardar y lo recoge la cuenta al volver. El grafo se arma
+    // una sola vez, así que el estado viaja como contenedor y no por valor.
+    val perfilEditado = remember { mutableStateOf<DatosPerfilDocente?>(null) }
+    // Lo deja el detalle de un niño al quitarlo del grupo y lo muestra Mi grupo al volver.
+    val avisoGrupo = remember { mutableStateOf<String?>(null) }
 
     Column(modifier.fillMaxSize()) {
         NavHost(
@@ -119,8 +133,8 @@ fun ModoDocente(
             enterTransition = { fadeIn(tween(Duracion.estandar)) },
             exitTransition = { fadeOut(tween(Duracion.estandar)) },
         ) {
-            pestanas(navController, servicio, onCerrarSesion, onVerPolitica)
-            pantallasCompletas(navController, servicio)
+            pestanas(navController, servicio, perfilEditado, avisoGrupo, onCerrarSesion, onVerPolitica)
+            pantallasCompletas(navController, servicio, perfilEditado, avisoGrupo)
         }
         if (conBarra) BarraNavegacionDocente(destino, onPestana = { navController.irAPestana(it) })
     }
@@ -129,6 +143,8 @@ fun ModoDocente(
 private fun NavGraphBuilder.pestanas(
     navController: NavHostController,
     servicio: ServicioDocente,
+    perfilEditado: MutableState<DatosPerfilDocente?>,
+    avisoGrupo: MutableState<String?>,
     onCerrarSesion: () -> Unit,
     onVerPolitica: () -> Unit,
 ) {
@@ -164,11 +180,18 @@ private fun NavGraphBuilder.pestanas(
     composable(RutasDocente.Grupo) {
         val vm = viewModel { CargaViewModel<GrupoHoy>(fuente = { servicio.grupoHoy() }, esVacio = { it.ninos.isEmpty() }) }
         LaunchedEffect(vm) { vm.cargar() }
+        val snackbar = remember { SnackbarHostState() }
+        LaunchedEffect(avisoGrupo.value) {
+            val aviso = avisoGrupo.value ?: return@LaunchedEffect
+            avisoGrupo.value = null
+            snackbar.showSnackbar(aviso)
+        }
         MiGrupoScreen(
             estado = vm.estado,
             onReintentar = { vm.cargar() },
             onNino = { navController.navigate(RutasDocente.nino(it)) },
-            onIrACuenta = { navController.irAPestana(PestanaDocente.Cuenta) },
+            onAgregarNino = { navController.navigate(RutasDocente.AgregarNino) },
+            snackbar = snackbar,
         )
     }
 
@@ -202,13 +225,17 @@ private fun NavGraphBuilder.pestanas(
         LaunchedEffect(vm) { vm.cargar() }
         val snackbar = remember { SnackbarHostState() }
         val alcance = rememberCoroutineScope()
-        val contexto = LocalContext.current
         val textoSinConexion = stringResource(R.string.docente_error_accion)
         val textoErrorAvisos = stringResource(R.string.cuenta_avisos_error)
         val textoEliminado = stringResource(R.string.cuenta_eliminado)
-        // Plantillas con %1$s: los valores se conocen solo cuando responde el servicio.
-        val plantillaRegenerado = stringResource(R.string.cuenta_regenerado)
-        val plantillaCompartir = stringResource(R.string.cuenta_compartir_texto)
+        val textoPerfilGuardado = stringResource(R.string.editar_perfil_guardado)
+        // El perfil recién guardado se ve al instante, sin esperar a que termine la recarga.
+        LaunchedEffect(perfilEditado.value) {
+            val datos = perfilEditado.value ?: return@LaunchedEffect
+            perfilEditado.value = null
+            vm.estado.datosCargados?.let { vm.mostrar(it.con(datos)) }
+            snackbar.showSnackbar(textoPerfilGuardado)
+        }
         CuentaDocenteScreen(
             estado = vm.estado,
             onReintentar = { vm.cargar() },
@@ -224,21 +251,7 @@ private fun NavGraphBuilder.pestanas(
                     }
                 }
             },
-            onCompartirCodigo = { codigo ->
-                val grupo = vm.estado.datosCargados?.grupo.orEmpty()
-                compartirTexto(contexto, plantillaCompartir.format(grupo, codigo))
-            },
-            onRegenerarCodigo = {
-                alcance.launch {
-                    val nuevo = servicio.regenerarCodigoVinculacion()
-                    if (nuevo != null) {
-                        vm.estado.datosCargados?.let { vm.mostrar(it.copy(codigoVinculacion = nuevo)) }
-                        snackbar.showSnackbar(plantillaRegenerado.format(nuevo))
-                    } else {
-                        snackbar.showSnackbar(textoSinConexion)
-                    }
-                }
-            },
+            onIrAGrupo = { navController.irAPestana(PestanaDocente.Grupo) },
             onEditarPerfil = { navController.navigate(RutasDocente.EditarPerfil) },
             onVerPolitica = onVerPolitica,
             onCerrarSesion = onCerrarSesion,
@@ -253,7 +266,12 @@ private fun NavGraphBuilder.pestanas(
     }
 }
 
-private fun NavGraphBuilder.pantallasCompletas(navController: NavHostController, servicio: ServicioDocente) {
+private fun NavGraphBuilder.pantallasCompletas(
+    navController: NavHostController,
+    servicio: ServicioDocente,
+    perfilEditado: MutableState<DatosPerfilDocente?>,
+    avisoGrupo: MutableState<String?>,
+) {
     composable(
         RutasDocente.Crear,
         arguments = listOf(
@@ -319,18 +337,83 @@ private fun NavGraphBuilder.pantallasCompletas(navController: NavHostController,
             CargaViewModel<DetalleNino?>(fuente = { servicio.detalleNino(id) }, esVacio = { it == null || it.sinResultados })
         }
         LaunchedEffect(vm) { vm.cargar() }
+        val snackbar = remember { SnackbarHostState() }
+        val alcance = rememberCoroutineScope()
+        val contexto = LocalContext.current
+        var quitando by remember { mutableStateOf(false) }
+        val textoSinConexion = stringResource(R.string.docente_error_accion)
+        // Plantillas con %1$s: los valores se conocen solo cuando responde el servicio.
+        val plantillaCompartir = stringResource(R.string.vinculacion_compartir_texto)
+        val plantillaRegenerado = stringResource(R.string.vinculacion_regenerado)
+        val plantillaQuitado = stringResource(R.string.quitar_nino_hecho)
         DetalleNinoScreen(
             estado = vm.estado,
             onVolver = { navController.popBackStack() },
             onReintentar = { vm.cargar() },
+            onCompartirCodigo = { compartirTexto(contexto, plantillaCompartir.format(it.nombre, it.codigoVinculacion)) },
+            onRegenerarCodigo = {
+                alcance.launch {
+                    val nuevo = servicio.regenerarCodigoVinculacion(id)
+                    if (nuevo != null) {
+                        vm.estado.datosCargados?.let { vm.mostrar(it.copy(codigoVinculacion = nuevo)) }
+                        snackbar.showSnackbar(plantillaRegenerado.format(nuevo))
+                    } else {
+                        snackbar.showSnackbar(textoSinConexion)
+                    }
+                }
+            },
+            onQuitar = {
+                val nombre = vm.estado.datosCargados?.nombre.orEmpty()
+                quitando = true
+                alcance.launch {
+                    if (servicio.quitarNino(id)) {
+                        avisoGrupo.value = plantillaQuitado.format(nombre)
+                        navController.popBackStack()
+                    } else {
+                        quitando = false
+                        snackbar.showSnackbar(textoSinConexion)
+                    }
+                }
+            },
+            quitando = quitando,
+            snackbar = snackbar,
+        )
+    }
+
+    composable(RutasDocente.AgregarNino) {
+        val vm = viewModel { AgregarNinoViewModel(servicio::agregarNino) }
+        val contexto = LocalContext.current
+        val plantillaCompartir = stringResource(R.string.vinculacion_compartir_texto)
+        AgregarNinoScreen(
+            formulario = vm.formulario,
+            estado = vm.estado,
+            onGuardar = vm::guardar,
+            onCompartir = { compartirTexto(contexto, plantillaCompartir.format(it.nombre, it.codigoVinculacion)) },
+            onOtro = vm::otro,
+            // Mi grupo recarga al volver: el niño nuevo ya aparece en la lista.
+            onVolver = { navController.popBackStack() },
         )
     }
 
     composable(RutasDocente.EditarPerfil) {
-        PantallaPendiente(
-            descripcion = stringResource(R.string.pendiente_editar_perfil),
+        val vm = viewModel {
+            EditarPerfilViewModel(
+                cargarFormulario = { servicio.perfil().map { FormularioPerfilDocente(it.datosEditables) } },
+                guardarFormulario = { servicio.guardarPerfil(it.datos) },
+            )
+        }
+        LaunchedEffect(vm) { vm.cargar() }
+        LaunchedEffect(vm.guardado) {
+            if (vm.guardado != EstadoGuardado.Guardado) return@LaunchedEffect
+            perfilEditado.value = vm.estado.datosCargados?.datos
+            navController.popBackStack()
+        }
+        EditarPerfilDocenteScreen(
+            estado = vm.estado,
+            guardado = vm.guardado,
+            onGuardar = vm::guardar,
+            onReintentar = vm::cargar,
             onVolver = { navController.popBackStack() },
-            etiquetaVolver = stringResource(R.string.comun_atras),
         )
     }
 }

@@ -51,7 +51,7 @@ class FiltrosYMensajesTest {
             CategoriaResiduo.Organico to 88,
         ),
         confusion: Confusion? = null,
-    ) = DetalleNino("n02", "Juan T.", semanas, porCategoria, confusion, emptyList())
+    ) = DetalleNino("n02", "Juan T.", semanas, porCategoria, confusion, emptyList(), "JB-4QX7", acudienteVinculado = true)
 
     @Test
     fun laConfusionConcretaVaPrimero() {

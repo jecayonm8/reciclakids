@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.reciclakids.R
 import com.reciclakids.model.EstadoNinoHoy
 import com.reciclakids.model.GrupoHoy
@@ -33,18 +36,35 @@ import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.viewmodel.EstadoUi
 import com.reciclakids.viewmodel.datosCargados
 
-/** UI-25 Mi grupo: de un vistazo, quién ya jugó el reto de hoy. Cada fila abre el detalle del niño. */
+/**
+ * UI-25 Mi grupo: de un vistazo, quién ya jugó el reto de hoy. Cada fila abre el detalle del
+ * niño, con su código de vinculación; «Agregar niño» suma uno nuevo al grupo.
+ */
 @Composable
 fun MiGrupoScreen(
     estado: EstadoUi<GrupoHoy>,
     onReintentar: () -> Unit,
     onNino: (ninoId: String) -> Unit,
-    onIrACuenta: () -> Unit,
+    onAgregarNino: () -> Unit,
     modifier: Modifier = Modifier,
+    snackbar: SnackbarHostState? = null,
 ) {
     val datos = estado.datosCargados
     MarcoDocente(
         modifier = modifier,
+        snackbar = snackbar,
+        botonFlotante = {
+            if (estado is EstadoUi.Contenido) {
+                // El FAB extendido oculta su texto a TalkBack: la etiqueta va en el ícono.
+                ExtendedFloatingActionButton(
+                    onClick = onAgregarNino,
+                    icon = { Icon(painterResource(R.drawable.ic_mas), contentDescription = stringResource(R.string.agregar_nino)) },
+                    text = { Text(stringResource(R.string.agregar_nino), style = MaterialTheme.typography.labelLarge.copy(fontSize = 15.sp)) },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+        },
         barra = {
             BarraDocente(
                 titulo = if (datos != null) {
@@ -74,7 +94,7 @@ fun MiGrupoScreen(
                 texto = stringResource(R.string.grupo_vacio_texto),
                 modifier = Modifier.padding(relleno),
             ) {
-                BotonLleno(stringResource(R.string.grupo_vacio_cuenta), onClick = onIrACuenta)
+                BotonLleno(stringResource(R.string.grupo_vacio_agregar), onClick = onAgregarNino, icono = R.drawable.ic_mas)
             }
             is EstadoUi.Contenido -> ListaGrupo(estado.datos, onNino, Modifier.padding(relleno))
         }
@@ -87,7 +107,8 @@ private fun ListaGrupo(grupo: GrupoHoy, onNino: (String) -> Unit, modifier: Modi
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
+            // Abajo queda espacio para que el botón flotante no tape al último niño.
+            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
@@ -168,7 +189,7 @@ private fun MiGrupoPreview() {
                     ),
                 )
             ),
-            onReintentar = {}, onNino = {}, onIrACuenta = {},
+            onReintentar = {}, onNino = {}, onAgregarNino = {},
         )
     }
 }

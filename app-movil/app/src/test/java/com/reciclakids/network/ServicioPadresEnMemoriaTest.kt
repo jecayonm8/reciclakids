@@ -191,6 +191,20 @@ class ServicioPadresEnMemoriaTest {
     }
 
     @Test
+    fun elPerfilEditadoSeVeEnLaCuentaYLosAvisosLleganAlCorreoNuevo() = runBlocking {
+        val servicio = servicio()
+
+        val resultado = servicio.guardarPerfil(DatosPerfilAcudiente("Mariana Ríos Gil", "mariana.rios@correo.com"))
+
+        assertEquals(ResultadoEdicionPerfil.Guardado, resultado)
+        val perfil = servicio.perfil().dato()
+        assertEquals("Mariana Ríos Gil", perfil.nombre)
+        assertEquals("mariana.rios@correo.com", perfil.correo)
+        assertEquals(2, perfil.hijos.size)
+        assertTrue(servicio.correos(salome).dato().correos.all { it.destinatario == "mariana.rios@correo.com" })
+    }
+
+    @Test
     fun sinConexionNadaSeGuardaNiSeConsulta() = runBlocking {
         val servicio = servicio()
         servicio.sinConexion = true
@@ -200,6 +214,7 @@ class ServicioPadresEnMemoriaTest {
         assertFalse(servicio.guardarControlParental(salome, ControlParental(limiteMinutosDiarios = 5)))
         assertNull(servicio.solicitarEliminacion(salome))
         assertEquals(ResultadoVinculacion.SinConexion, servicio.vincular("JB-5H8W"))
+        assertEquals(ResultadoEdicionPerfil.SinConexion, servicio.guardarPerfil(DatosPerfilAcudiente("Otra", "otra@correo.com")))
     }
 
     @Test(expected = IllegalArgumentException::class)

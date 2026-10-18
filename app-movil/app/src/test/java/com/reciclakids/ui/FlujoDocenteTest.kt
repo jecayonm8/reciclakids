@@ -1,14 +1,17 @@
 package com.reciclakids.ui
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import com.reciclakids.contenedorDePrueba
 import com.reciclakids.network.RegistroDocente
@@ -28,6 +31,18 @@ class FlujoDocenteTest {
     val compose = createComposeRule()
 
     private fun campo(etiqueta: String) = compose.onNode(hasSetTextAction() and hasText(etiqueta))
+
+    /** El aviso dura unos segundos: el reloj avanza cuadro a cuadro para alcanzar a verlo. */
+    private fun tocarYVerElAviso(aviso: String, tocar: () -> Unit) {
+        compose.mainClock.autoAdvance = false
+        tocar()
+        compose.waitUntil {
+            compose.mainClock.advanceTimeByFrame()
+            compose.onAllNodesWithText(aviso).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText(aviso).assertIsDisplayed()
+        compose.mainClock.autoAdvance = true
+    }
 
     @Before
     fun entrarComoDocente() {
@@ -94,5 +109,53 @@ class FlujoDocenteTest {
         compose.onNodeWithText("Cerrar sesión").performScrollTo().performClick()
 
         compose.onNodeWithText("¡A jugar!").assertIsDisplayed()
+    }
+
+    @Test
+    fun elPerfilEditadoSeVeAlVolverALaCuenta() {
+        compose.onNodeWithText("Cuenta").performClick()
+        compose.onNodeWithText("Editar perfil").performScrollTo().performClick()
+
+        campo("Nombre y apellido").performTextReplacement("Laura Gómez")
+        campo("Grupo a cargo").performScrollTo().performTextReplacement("Jardín C")
+        tocarYVerElAviso("Perfil actualizado") { compose.onNodeWithText("Guardar cambios").performScrollTo().performClick() }
+
+        compose.onNodeWithText("Laura Gómez").assertIsDisplayed()
+        compose.onNodeWithText("Jardín C", substring = true).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Inicio").performClick()
+        compose.onNodeWithText("Hola, Laura").assertIsDisplayed()
+    }
+
+    @Test
+    fun laDocenteAgregaUnNinoComparteSuCodigoYDespuesLoQuita() {
+        compose.onNodeWithText("Grupo").performClick()
+        compose.onNodeWithContentDescription("Agregar niño").performClick()
+
+        campo("Nombre").performTextInput("Pedro")
+        campo("Inicial del apellido").performTextInput("Quintero")
+        compose.onNodeWithText("Agregar al grupo").performScrollTo().performClick()
+        compose.onNodeWithText("Pedro Q. ya está en tu grupo").assertIsDisplayed()
+        compose.onNodeWithText("Listo").performScrollTo().performClick()
+
+        compose.onNodeWithText("Pedro Q.").performScrollTo().performClick()
+        compose.onNodeWithText("Sin vincular").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Quitar del grupo").performScrollTo().performClick()
+        compose.onNodeWithText("¿Quitar a Pedro Q. del grupo?").assertIsDisplayed()
+        tocarYVerElAviso("Quitaste a Pedro Q. del grupo y se borraron sus datos.") {
+            compose.onNodeWithText("Sí, quitar").performClick()
+        }
+
+        compose.onAllNodesWithText("Pedro Q.").assertCountEquals(0)
+    }
+
+    @Test
+    fun laPoliticaSeAbreDesdeLaCuentaYVuelveAElla() {
+        compose.onNodeWithText("Cuenta").performClick()
+        compose.onNodeWithText("Ver política").performScrollTo().performClick()
+
+        compose.onNodeWithText("Política de tratamiento de datos personales").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Volver").performClick()
+
+        compose.onNodeWithText("Cuenta y ajustes").assertIsDisplayed()
     }
 }

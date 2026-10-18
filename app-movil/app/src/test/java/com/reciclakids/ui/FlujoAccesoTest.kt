@@ -154,4 +154,24 @@ class FlujoAccesoTest {
         compose.onNodeWithText("Salomé M.").assertIsDisplayed()
         compose.onNodeWithText("Ver el reporte completo").performScrollTo().assertIsDisplayed()
     }
+
+    @Test
+    fun laPoliticaSeLeeDesdeLaAutorizacionSinPerderElPaso() {
+        saltarBienvenida()
+        pasarPuertaDeAdultos()
+        compose.onNodeWithText("Crear cuenta").performScrollTo().performClick()
+        compose.onNodeWithText("Acudiente").performClick()
+        campo("Tu nombre").performTextInput("Mariana Ríos")
+        campo("Correo").performTextInput("mariana.r@correo.com")
+        campo("Contraseña").performTextInput("clave-de-prueba")
+        campo("Código de vinculación").performTextInput("JB-2M91")
+        compose.onNodeWithText("Continuar").performScrollTo().performClick()
+
+        compose.onNodeWithText("Leer la política completa (Ley 1581 de 2012)").performScrollTo().performClick()
+        compose.onNodeWithText("Política de tratamiento de datos personales").assertIsDisplayed()
+        compose.onNodeWithText("6. Tus derechos").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithContentDescription("Volver").performClick()
+
+        compose.onNodeWithText("Datos de tu hijo o hija").assertIsDisplayed()
+    }
 }

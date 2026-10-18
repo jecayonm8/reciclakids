@@ -53,6 +53,9 @@ interface ServicioPadres {
 
     suspend fun perfil(): Respuesta<PerfilAcudiente>
 
+    /** Cambia nombre y correo. Con el correo cambia también el usuario y la dirección de los avisos. */
+    suspend fun guardarPerfil(datos: DatosPerfilAcudiente): ResultadoEdicionPerfil
+
     /** Vincula otro hijo o hija con el código que entrega su docente. */
     suspend fun vincular(codigo: String): ResultadoVinculacion
 }

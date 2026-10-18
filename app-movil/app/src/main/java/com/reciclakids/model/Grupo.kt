@@ -14,6 +14,16 @@ sealed interface EstadoNinoHoy {
 /** [nombre] ya viene como «Salomé M.»: nunca el apellido completo. */
 data class NinoHoy(val id: String, val nombre: String, val estado: EstadoNinoHoy)
 
+/** «Salomé» y «m» → «Salomé M.»: es lo único que se guarda del nombre de un niño. */
+fun nombreConInicial(nombre: String, inicialApellido: String): String =
+    "${nombre.trim()} ${inicialApellido.trim().uppercase()}."
+
+/** Lo que se escribe en el campo de la inicial del apellido: solo su primera letra, en mayúscula. */
+fun inicialDe(texto: String): String = texto.firstOrNull { it.isLetter() }?.uppercase().orEmpty()
+
+/** Un niño recién agregado al grupo, con su propio código para que su acudiente se vincule. */
+data class NinoAgregado(val id: String, val nombre: String, val codigoVinculacion: String)
+
 data class GrupoHoy(val nombreGrupo: String, val retoHoy: String?, val ninos: List<NinoHoy>)
 
 data class InsigniaNino(val nombre: String, val ganada: Boolean)
@@ -29,6 +39,9 @@ data class DetalleNino(
     val aciertosPorCategoria: Map<CategoriaResiduo, Int>,
     val confusion: Confusion?,
     val insignias: List<InsigniaNino>,
+    /** Lo usa su acudiente una vez para quedar vinculado solo a este niño («JB-2M91»). */
+    val codigoVinculacion: String,
+    val acudienteVinculado: Boolean,
 ) {
     val sinResultados: Boolean get() = aciertosPorSemana.isEmpty()
 }
@@ -81,7 +94,5 @@ data class PerfilDocente(
     val jardin: String,
     val grupo: String,
     val totalNinos: Int,
-    /** Lo usa cada acudiente una vez para quedar vinculado solo a su hijo o hija. */
-    val codigoVinculacion: String,
     val avisos: AvisosDocente,
 )
