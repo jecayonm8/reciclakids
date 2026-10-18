@@ -56,7 +56,11 @@ class JuegoViewModel(
     var pausado by mutableStateOf(false)
         private set
 
-    /** Tiempo jugado sin contar las pausas. Solo corre en dificultad difícil. */
+    /**
+     * Tiempo jugado sin contar las pausas ni las celebraciones de acierto. Corre en toda dificultad:
+     * de él salen los minutos que ven la docente y el acudiente. El temporizador visual
+     * ([fraccionTiempoRestante]) solo existe en difícil.
+     */
     var tiempoMs by mutableLongStateOf(0L)
         private set
 
@@ -118,11 +122,7 @@ class JuegoViewModel(
         estado = partida.estado
         residuoEnPantalla = partida.estado.residuoActual
         tiempoMs = partida.tiempoMs
-        if (partida.estado.terminada) {
-            terminar(partida.estado)
-        } else if (reto.dificultad.conTiempo) {
-            arrancarCronometro()
-        }
+        if (partida.estado.terminada) terminar(partida.estado) else arrancarCronometro()
     }
 
     private fun arrancarCronometro() {
