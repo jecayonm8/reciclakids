@@ -52,6 +52,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.parameters
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -209,6 +210,11 @@ class ApiTest {
         // El control parental llega al niño.
         assertEquals(HttpStatusCode.NoContent, put("/api/v1/acudiente/hijos/${salome.id}/control-parental", ControlParentalDto(limiteMinutosDiarios = 25), acudiente).status)
         assertEquals(25, get("/api/v1/nino/progreso", sesionNino.token).body<ProgresoNinoDto>().limiteMinutosDiarios)
+        // El recordatorio si no juega (UI-33) se guarda con lo demás.
+        assertFalse(get("/api/v1/acudiente/hijos/${salome.id}/control-parental", acudiente).body<ControlParentalDto>().recordatorioSinJugar)
+        val conRecordatorio = ControlParentalDto(limiteMinutosDiarios = 25, correosLogro = false, recordatorioSinJugar = true)
+        assertEquals(HttpStatusCode.NoContent, put("/api/v1/acudiente/hijos/${salome.id}/control-parental", conRecordatorio, acudiente).status)
+        assertEquals(conRecordatorio, get("/api/v1/acudiente/hijos/${salome.id}/control-parental", acudiente).body<ControlParentalDto>())
         assertEquals(HttpStatusCode.UnprocessableEntity, put("/api/v1/acudiente/hijos/${salome.id}/control-parental", ControlParentalDto(limiteMinutosDiarios = 7), acudiente).status)
     }
 

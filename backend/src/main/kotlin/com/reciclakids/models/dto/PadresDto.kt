@@ -95,12 +95,14 @@ data class CorreoEnviadoDto(
 @Serializable
 data class HistorialCorreosDto(val hijo: HijoDto, val hoy: String, val correos: List<CorreoEnviadoDto>)
 
+/** [recordatorioSinJugar]: aviso si lleva tres días seguidos sin jugar (se guarda; el correo aún no sale). */
 @Serializable
 data class ControlParentalDto(
     val limiteMinutosDiarios: Int = 20,
     val dificultadSugerida: Dificultad = Dificultad.Medio,
     val correosLogro: Boolean = true,
     val reporteSemanal: Boolean = true,
+    val recordatorioSinJugar: Boolean = false,
 )
 
 @Serializable

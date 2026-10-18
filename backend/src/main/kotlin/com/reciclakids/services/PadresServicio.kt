@@ -130,7 +130,7 @@ class PadresServicio(
             val hijo = hijoDe(acudienteId, hijoId)
             ninos.guardarControl(
                 hijo.nino.id,
-                ControlGuardado(limite, control.dificultadSugerida, control.correosLogro, control.reporteSemanal),
+                ControlGuardado(limite, control.dificultadSugerida, control.correosLogro, control.reporteSemanal, control.recordatorioSinJugar),
                 reloj.ahora(),
             )
         }
@@ -223,7 +223,7 @@ class PadresServicio(
         vinculadoEl = vinculadoEn.toLocalDate().toString(),
     )
 
-    private fun ControlGuardado.aDto() = ControlParentalDto(limiteMinutos, dificultadSugerida, correosLogro, reporteSemanal)
+    private fun ControlGuardado.aDto() = ControlParentalDto(limiteMinutos, dificultadSugerida, correosLogro, reporteSemanal, recordatorioSinJugar)
 
     companion object {
         private const val SemanasReporte = 4L

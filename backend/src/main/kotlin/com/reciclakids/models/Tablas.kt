@@ -76,6 +76,7 @@ object ControlesParentales : Table("controles_parentales") {
     val dificultadSugerida = varchar("dificultad_sugerida", 10)
     val correosLogro = bool("correos_logro")
     val reporteSemanal = bool("reporte_semanal")
+    val recordatorioSinJugar = bool("recordatorio_sin_jugar")
     val actualizadoEn = timestampWithTimeZone("actualizado_en")
     override val primaryKey = PrimaryKey(ninoId)
 }

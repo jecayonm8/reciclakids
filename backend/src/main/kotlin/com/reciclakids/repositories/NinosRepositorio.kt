@@ -35,7 +35,13 @@ data class NinoGuardado(
 /** Un hijo visto desde la cuenta de un acudiente. */
 data class HijoGuardado(val nino: NinoGuardado, val grupo: String, val jardin: String, val vinculadoEn: OffsetDateTime, val autorizadaEn: OffsetDateTime)
 
-data class ControlGuardado(val limiteMinutos: Int, val dificultadSugerida: Dificultad, val correosLogro: Boolean, val reporteSemanal: Boolean)
+data class ControlGuardado(
+    val limiteMinutos: Int,
+    val dificultadSugerida: Dificultad,
+    val correosLogro: Boolean,
+    val reporteSemanal: Boolean,
+    val recordatorioSinJugar: Boolean = false,
+)
 
 data class AcudienteDeNino(val id: String, val nombre: String, val correo: String)
 
@@ -70,6 +76,7 @@ class NinosRepositorio {
             it[dificultadSugerida] = Dificultad.Medio.aColumna()
             it[correosLogro] = true
             it[reporteSemanal] = true
+            it[recordatorioSinJugar] = false
             it[actualizadoEn] = ahora
         }
     }
@@ -128,6 +135,7 @@ class NinosRepositorio {
                 dificultadSugerida = dificultadDeColumna(it[ControlesParentales.dificultadSugerida]),
                 correosLogro = it[ControlesParentales.correosLogro],
                 reporteSemanal = it[ControlesParentales.reporteSemanal],
+                recordatorioSinJugar = it[ControlesParentales.recordatorioSinJugar],
             )
         } ?: ControlGuardado(20, Dificultad.Medio, correosLogro = true, reporteSemanal = true)
 
@@ -137,6 +145,7 @@ class NinosRepositorio {
             it[dificultadSugerida] = control.dificultadSugerida.aColumna()
             it[correosLogro] = control.correosLogro
             it[reporteSemanal] = control.reporteSemanal
+            it[recordatorioSinJugar] = control.recordatorioSinJugar
             it[actualizadoEn] = ahora
         }
     }
