@@ -1,10 +1,34 @@
 [versions]
 kotlin = "2.4.0"
 logback = "1.5.37"
+exposed = "1.6.0"
+flyway = "13.10.3"
+postgresql = "42.7.14"
+hikari = "7.1.0"
+bcrypt = "0.10.2"
+testcontainers = "2.0.5"
+cloudSqlSocketFactory = "1.30.1"
+awsSdk = "2.56.0"
+kover = "0.9.11"
 
 [libraries]
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+exposed-javaTime = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
+cloudSql-postgresSocketFactory = { module = "com.google.cloud.sql:postgres-socket-factory", version.ref = "cloudSqlSocketFactory" }
+aws-bom = { module = "software.amazon.awssdk:bom", version.ref = "awsSdk" }
+aws-sesv2 = { module = "software.amazon.awssdk:sesv2" }
+aws-urlConnectionClient = { module = "software.amazon.awssdk:url-connection-client" }
+testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

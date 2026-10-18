@@ -1,13 +1,12 @@
 package com.reciclakids.routes
 
-import com.example.com.reciclakids.plugins.configureRouting
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.server.config.MapApplicationConfig
 import io.ktor.server.testing.ApplicationTestBuilder
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,21 +14,14 @@ import kotlin.test.assertTrue
 
 class VistaPreviaCorreosRoutesTest {
 
-    private fun ApplicationTestBuilder.conVistaPrevia(activa: Boolean) {
-        environment { config = MapApplicationConfig("reciclakids.correos.vistaPrevia" to activa.toString()) }
-        application { configureRouting() }
-    }
-
-    @Test
-    fun laConfiguracionPorDefectoEnciendeLaVistaPrevia() = testApplication {
-        configure()
-        assertEquals(HttpStatusCode.OK, client.get("/correos/vista-previa/logro").status)
-        assertEquals(HttpStatusCode.OK, client.get("/").status)
+    // Que la vista previa se apague con la configuración lo prueba AplicacionTest con el servidor completo.
+    private fun ApplicationTestBuilder.conVistaPrevia() {
+        application { routing { rutasVistaPreviaCorreos() } }
     }
 
     @Test
     fun vistaPreviaDelCorreoDeLogro() = testApplication {
-        conVistaPrevia(activa = true)
+        conVistaPrevia()
         val respuesta = client.get("/correos/vista-previa/logro")
         assertEquals(HttpStatusCode.OK, respuesta.status)
         assertEquals(ContentType.Text.Html, respuesta.contentType()?.withoutParameters())
@@ -40,7 +32,7 @@ class VistaPreviaCorreosRoutesTest {
 
     @Test
     fun vistaPreviaDelReporteSemanal() = testApplication {
-        conVistaPrevia(activa = true)
+        conVistaPrevia()
         val respuesta = client.get("/correos/vista-previa/reporte-semanal")
         assertEquals(HttpStatusCode.OK, respuesta.status)
         assertEquals(ContentType.Text.Html, respuesta.contentType()?.withoutParameters())
@@ -49,7 +41,7 @@ class VistaPreviaCorreosRoutesTest {
 
     @Test
     fun vistaPreviaEnTextoPlano() = testApplication {
-        conVistaPrevia(activa = true)
+        conVistaPrevia()
         val respuesta = client.get("/correos/vista-previa/reporte-semanal?formato=texto")
         assertEquals(ContentType.Text.Plain, respuesta.contentType()?.withoutParameters())
         val texto = respuesta.bodyAsText()
@@ -57,11 +49,4 @@ class VistaPreviaCorreosRoutesTest {
         assertTrue("Retos: 4 de 5" in texto)
     }
 
-    @Test
-    fun apagadaNoExponeLasRutas() = testApplication {
-        conVistaPrevia(activa = false)
-        assertEquals(HttpStatusCode.NotFound, client.get("/correos/vista-previa/logro").status)
-        assertEquals(HttpStatusCode.NotFound, client.get("/correos/vista-previa/reporte-semanal").status)
-        assertEquals(HttpStatusCode.OK, client.get("/").status)
-    }
 }

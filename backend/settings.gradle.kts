@@ -17,5 +17,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ktor-sample"
+rootProject.name = "reciclakids-backend"
 
