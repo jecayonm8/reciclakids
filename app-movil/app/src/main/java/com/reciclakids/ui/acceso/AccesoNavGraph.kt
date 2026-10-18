@@ -1,12 +1,14 @@
 package com.reciclakids.ui.acceso
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -79,6 +81,17 @@ fun NavGraphBuilder.accesoGraph(
             var error by remember { mutableStateOf<ErrorLogin?>(null) }
             val cuentaCreada by entrada.savedStateHandle.getStateFlow(ClaveCuentaCreada, false).collectAsState()
             val correoCuentaCreada by entrada.savedStateHandle.getStateFlow<String?>(ClaveCorreoCuentaCreada, null).collectAsState()
+            // La sesión que quedó abierta en el teléfono entra directo a su modo: la puerta para
+            // adultos ya se pasó para llegar aquí (ADR-08). Se revisa una vez por visita al login.
+            var revisarSesion by rememberSaveable { mutableStateOf(true) }
+            LaunchedEffect(Unit) {
+                if (!revisarSesion) return@LaunchedEffect
+                cargando = true
+                val cuenta = servicio.sesionGuardada()
+                revisarSesion = false
+                cargando = false
+                if (cuenta != null) onSesionIniciada(cuenta)
+            }
             // Una cuenta nueva cambia la clave: el formulario descarta lo que guardó antes de ir al
             // registro y arranca con el correo de esa cuenta.
             key(correoCuentaCreada) {
@@ -121,6 +134,8 @@ fun NavGraphBuilder.accesoGraph(
                     },
                     docente = registro.docente,
                     acudiente = registro.acudiente,
+                    codigoInvalido = registro.codigoRechazado != null &&
+                        registro.codigoRechazado == registro.acudiente.codigoVinculacion.trim(),
                     onAtras = { navController.popBackStack() },
                     onCrearDocente = {
                         cargando = true
@@ -151,8 +166,15 @@ fun NavGraphBuilder.accesoGraph(
                         error = null
                         alcance.launch {
                             val datos = registro.acudiente.aRegistro()
-                            error = servicio.registrarAcudiente(datos).comoError()
+                            val resultado = servicio.registrarAcudiente(datos)
                             cargando = false
+                            if (resultado == ResultadoRegistro.CodigoInvalido) {
+                                // El código se corrige en UI-05, donde se escribió.
+                                registro.codigoRechazado = datos.codigoVinculacion
+                                navController.popBackStack(RutasAcceso.RegistroDatos, inclusive = false)
+                                return@launch
+                            }
+                            error = resultado.comoError()
                             if (error == null) navController.volverALoginConCuentaCreada(datos.correo)
                         }
                     },
@@ -200,6 +222,7 @@ private fun registroViewModel(navController: NavController, entrada: NavBackStac
 private fun ResultadoRegistro.comoError(): ErrorRegistro? = when (this) {
     ResultadoRegistro.Creada -> null
     ResultadoRegistro.CorreoEnUso -> ErrorRegistro.CorreoEnUso
+    ResultadoRegistro.CodigoInvalido -> ErrorRegistro.CodigoInvalido
     ResultadoRegistro.SinConexion -> ErrorRegistro.SinConexion
 }
 

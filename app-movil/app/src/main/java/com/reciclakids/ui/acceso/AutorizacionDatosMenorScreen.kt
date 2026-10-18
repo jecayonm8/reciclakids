@@ -91,6 +91,7 @@ fun AutorizacionDatosMenorScreen(
             when (error) {
                 ErrorRegistro.SinConexion -> AvisoError(stringResource(R.string.error_sin_conexion))
                 ErrorRegistro.CorreoEnUso -> AvisoError(stringResource(R.string.error_correo_en_uso))
+                ErrorRegistro.CodigoInvalido -> AvisoError(stringResource(R.string.error_codigo_vinculacion))
                 null -> Unit
             }
             BotonPrincipal(

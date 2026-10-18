@@ -71,6 +71,11 @@ fun ReciclaKidsApp(
             },
         )
         val volverAlSelector = { navController.popBackStack(RutasAcceso.Selector, inclusive = false) }
+        val cerrarSesion = {
+            contenedor.servicioAcceso.cerrarSesion()
+            sesionAdulta.cerrar()
+            volverAlSelector()
+        }
         ninoGraph(navController, contenedor, onSalir = { volverAlSelector() })
         composable(Rutas.Docente) {
             // Se toma al entrar: así la pantalla no se vacía mientras se anima la salida al cerrar sesión.
@@ -78,10 +83,7 @@ fun ReciclaKidsApp(
             if (servicio != null) {
                 ModoDocente(
                     servicio = servicio,
-                    onCerrarSesion = {
-                        sesionAdulta.cerrar()
-                        volverAlSelector()
-                    },
+                    onCerrarSesion = { cerrarSesion() },
                     onVerPolitica = { navController.navigate(RutasAcceso.Politica) },
                 )
             } else {
@@ -94,10 +96,7 @@ fun ReciclaKidsApp(
             if (servicio != null) {
                 ModoPadres(
                     servicio = servicio,
-                    onCerrarSesion = {
-                        sesionAdulta.cerrar()
-                        volverAlSelector()
-                    },
+                    onCerrarSesion = { cerrarSesion() },
                     onVerPolitica = { navController.navigate(RutasAcceso.Politica) },
                     onCambiarContrasena = { navController.navigate(RutasAcceso.Recuperar) },
                 )
@@ -107,18 +106,27 @@ fun ReciclaKidsApp(
         }
     }
 
+    // La sesión del adulto venció y no se pudo refrescar: de vuelta al inicio de sesión.
+    LaunchedEffect(contenedor) {
+        contenedor.sesionVencida.collect {
+            if (sesionAdulta.cuenta == null) return@collect
+            sesionAdulta.cerrar()
+            navController.navigate(RutasAcceso.Login) { popUpTo(RutasAcceso.Selector) }
+        }
+    }
+
     // UI-19 intercepta cualquier ruta del niño cuando se acaba el tiempo del control parental.
     if (ruta != null && ruta.esDelNino() && ruta !in RutasNino.SinReloj) {
         val grafo = remember(entradaActual) { runCatching { navController.getBackStackEntry(RutasNino.Grafo) }.getOrNull() }
         if (grafo != null) {
             val sesion: SesionNinoViewModel = viewModel(grafo)
             sesion.nino?.let { nino ->
-                val controles = contenedor.controlesParentales
-                val control by remember(nino.id) { controles.observar(nino.id) }.collectAsState(controles.de(nino.id))
+                val control by remember(nino.id) { contenedor.limitesJuego.observar(nino.id) }.collectAsState(null)
+                val limite = control ?: return@let
                 VigilanteTiempoJuego(
                     nino = nino,
                     tiempo = contenedor.tiempo,
-                    control = control,
+                    control = limite,
                     onAgotado = { navController.irATiempoTerminado() },
                 )
             }

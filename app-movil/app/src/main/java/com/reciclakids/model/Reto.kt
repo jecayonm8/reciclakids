@@ -41,6 +41,8 @@ data class Reto(
     val residuos: List<Residuo>,
     /** Las canecas que eligió la docente: de ellas salen los [residuos]. */
     val categorias: Set<CategoriaResiduo> = residuos.mapTo(mutableSetOf()) { it.categoria },
+    /** Id del reto en el backend: con él se sincronizan las partidas (el código se repite otros días). */
+    val id: String = codigo,
 ) {
     /** Las canecas que ve el niño mientras juega este reto. */
     val canecas: List<CategoriaResiduo> get() = canecasDelJuego(categorias)

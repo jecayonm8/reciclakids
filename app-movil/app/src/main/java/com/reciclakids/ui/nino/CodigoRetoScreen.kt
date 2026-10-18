@@ -51,6 +51,7 @@ fun EstadoCodigo.mensaje(): Int = when (this) {
     EstadoCodigo.Correcto -> R.string.codigo_mensaje_correcto
     EstadoCodigo.Invalido -> R.string.codigo_mensaje_invalido
     EstadoCodigo.Vencido -> R.string.codigo_mensaje_vencido
+    EstadoCodigo.SinConexion -> R.string.codigo_mensaje_sin_conexion
 }
 
 /**

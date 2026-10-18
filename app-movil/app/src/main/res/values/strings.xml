@@ -42,6 +42,7 @@
     <string name="error_correo">Escribe un correo válido</string>
     <string name="error_contrasena_corta">Debe tener al menos 8 caracteres</string>
     <string name="error_correo_en_uso">Ya existe una cuenta con ese correo</string>
+    <string name="error_codigo_vinculacion">Ese código no existe. Revísalo o pídeselo a la docente</string>
     <string name="paso_de">Paso %1$d de %2$d</string>
 
     <!-- UI-01 Bienvenida -->
@@ -170,6 +171,7 @@
     <string name="codigo_mensaje_correcto">¡Ese es! Vamos a jugar</string>
     <string name="codigo_mensaje_invalido">Ese código no es. ¡Probemos otra vez!</string>
     <string name="codigo_mensaje_vencido">Ese código ya descansó. Pídele uno nuevo a la profe</string>
+    <string name="codigo_mensaje_sin_conexion">No pude abrir el reto. Pídele ayuda a la profe</string>
     <string name="codigo_pista">Los colores y las formas son los mismos que ves en el salón</string>
 
     <!-- UI-09 ¿Quién eres? -->

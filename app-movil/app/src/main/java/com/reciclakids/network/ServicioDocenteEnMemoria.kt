@@ -2,7 +2,6 @@ package com.reciclakids.network
 
 import com.reciclakids.model.AvisosDocente
 import com.reciclakids.model.BibliotecaDocente
-import com.reciclakids.model.CategoriaResiduo
 import com.reciclakids.model.CuentaAdulto
 import com.reciclakids.model.DetalleNino
 import com.reciclakids.model.EstadoNinoHoy
@@ -18,6 +17,7 @@ import com.reciclakids.model.RetoBorrador
 import com.reciclakids.model.TableroDocente
 import com.reciclakids.model.ValorDia
 import com.reciclakids.model.ValorNino
+import com.reciclakids.model.nombrePorDefecto
 import com.reciclakids.model.nombreConInicial
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -300,19 +300,6 @@ class ServicioDocenteEnMemoria(
         val activos = retos.mapNotNull { it.codigoActivo(hoy) }.toSet()
         return generateSequence { azar.nextInt(10_000).toString().padStart(4, '0') }.first { it !in activos }
     }
-
-    private fun nombrePorDefecto(categorias: Set<CategoriaResiduo>): String =
-        if (categorias.size == CategoriaResiduo.entries.size) {
-            "Las tres canecas"
-        } else {
-            "Reto de " + categorias.sorted().joinToString(" y ") {
-                when (it) {
-                    CategoriaResiduo.Aprovechable -> "aprovechables"
-                    CategoriaResiduo.NoAprovechable -> "no aprovechables"
-                    CategoriaResiduo.Organico -> "orgánicos"
-                }
-            }
-        }
 
     private companion object {
         /** Sin 0/O ni 1/I para que el acudiente no los confunda al escribirlos. */

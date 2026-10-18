@@ -49,7 +49,7 @@ import com.reciclakids.viewmodel.FormularioAcudiente
 import com.reciclakids.viewmodel.FormularioDocente
 
 /** Por qué no se pudo crear la cuenta. */
-enum class ErrorRegistro { CorreoEnUso, SinConexion }
+enum class ErrorRegistro { CorreoEnUso, CodigoInvalido, SinConexion }
 
 /**
  * UI-04 Registro de docente y UI-05 Registro de acudiente (paso 1 de 2), con pestañas de rol
@@ -68,6 +68,8 @@ fun RegistroScreen(
     modifier: Modifier = Modifier,
     cargando: Boolean = false,
     error: ErrorRegistro? = null,
+    /** El backend no reconoció el código de vinculación del acudiente. */
+    codigoInvalido: Boolean = false,
 ) {
     Scaffold(
         modifier = modifier,
@@ -87,7 +89,12 @@ fun RegistroScreen(
             val correoEnUso = if (error == ErrorRegistro.CorreoEnUso) stringResource(R.string.error_correo_en_uso) else null
             when (rol) {
                 RolAdulto.Docente -> CamposDocente(docente, correoEnUso, cargando, onCrearDocente, onLeerPolitica)
-                RolAdulto.Acudiente -> CamposAcudiente(acudiente, correoEnUso, onContinuarAcudiente)
+                RolAdulto.Acudiente -> CamposAcudiente(
+                    acudiente,
+                    correoEnUso,
+                    codigoInvalido || error == ErrorRegistro.CodigoInvalido,
+                    onContinuarAcudiente,
+                )
             }
         }
     }
@@ -177,7 +184,7 @@ private fun CamposDocente(
 }
 
 @Composable
-private fun CamposAcudiente(formulario: FormularioAcudiente, correoEnUso: String?, onContinuar: () -> Unit) {
+private fun CamposAcudiente(formulario: FormularioAcudiente, correoEnUso: String?, codigoInvalido: Boolean, onContinuar: () -> Unit) {
     var intentoEnviar by remember { mutableStateOf(false) }
     val obligatorio = stringResource(R.string.error_campo_obligatorio)
     fun falta(valor: String) = if (intentoEnviar && valor.isBlank()) obligatorio else null
@@ -200,7 +207,7 @@ private fun CamposAcudiente(formulario: FormularioAcudiente, correoEnUso: String
     CampoTexto(
         formulario.codigoVinculacion, { formulario.codigoVinculacion = it.uppercase() },
         stringResource(R.string.registro_codigo_vinculacion),
-        error = falta(formulario.codigoVinculacion),
+        error = if (codigoInvalido) stringResource(R.string.error_codigo_vinculacion) else falta(formulario.codigoVinculacion),
         ayuda = stringResource(R.string.registro_codigo_ayuda),
         teclado = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false, imeAction = ImeAction.Done),
         estiloTexto = MaterialTheme.typography.bodyLarge.copy(letterSpacing = 2.2.sp),

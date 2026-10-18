@@ -64,6 +64,7 @@ enum class EstadoCodigo(val borde: Color) {
     Correcto(ReciclaKidsColors.botonConfirmar),
     Invalido(Color(0xFFE8A33D)),
     Vencido(Color(0xFF7A57C9)),
+    SinConexion(Color(0xFF7FB3D5)),
 }
 
 /**

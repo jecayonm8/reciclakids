@@ -32,7 +32,7 @@ class RepositorioJuego(
     suspend fun abrirPartida(ninoId: String, reto: Reto): PartidaAbierta {
         val fecha = reto.fecha.toString()
         val partida = dao.partidaEnCurso(ninoId, reto.codigo, fecha)
-            ?: PartidaEntity(ninoId = ninoId, codigoReto = reto.codigo, fecha = fecha).let { nueva ->
+            ?: PartidaEntity(ninoId = ninoId, codigoReto = reto.codigo, fecha = fecha, retoId = reto.id).let { nueva ->
                 nueva.copy(id = dao.crearPartida(nueva))
             }
         val estado = EstadoPartida(

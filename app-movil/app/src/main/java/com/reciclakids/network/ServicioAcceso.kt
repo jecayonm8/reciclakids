@@ -24,7 +24,8 @@ sealed interface ResultadoSesion {
     data object SinConexion : ResultadoSesion
 }
 
-enum class ResultadoRegistro { Creada, CorreoEnUso, SinConexion }
+/** [CodigoInvalido]: ningún niño tiene ese código de vinculación (solo en el registro del acudiente). */
+enum class ResultadoRegistro { Creada, CorreoEnUso, CodigoInvalido, SinConexion }
 
 /** Acceso de los modos adultos. La app abre Docente o Padres según el rol de la cuenta. */
 interface ServicioAcceso {
@@ -40,4 +41,14 @@ interface ServicioAcceso {
      * si el correo tiene cuenta.
      */
     suspend fun enviarEnlaceRecuperacion(correo: String): Boolean
+
+    /**
+     * La sesión que quedó abierta en el teléfono, para entrar al modo sin volver a escribir la
+     * contraseña (ADR-08). `null` si no hay o ya venció. Se consulta después de la puerta para
+     * adultos: el niño nunca llega a un modo adulto sin pasarla.
+     */
+    suspend fun sesionGuardada(): CuentaAdulto? = null
+
+    /** Cierra la sesión en el backend y la borra del teléfono. */
+    fun cerrarSesion() {}
 }

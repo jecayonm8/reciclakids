@@ -62,6 +62,7 @@ class CodigoRetoViewModel(
                 }
                 ResultadoCodigo.Invalido -> estado = EstadoCodigo.Invalido
                 ResultadoCodigo.Vencido -> estado = EstadoCodigo.Vencido
+                ResultadoCodigo.SinConexion -> estado = EstadoCodigo.SinConexion
             }
             verificando = false
         }

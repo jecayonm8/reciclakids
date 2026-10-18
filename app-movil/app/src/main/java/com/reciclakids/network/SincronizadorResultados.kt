@@ -1,6 +1,7 @@
 package com.reciclakids.network
 
 import android.content.Context
+import androidx.room.withTransaction
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -11,42 +12,66 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.reciclakids.ReciclaKidsApplication
 import com.reciclakids.local.BaseDatosReciclaKids
+import com.reciclakids.local.InsigniaGanadaEntity
+import com.reciclakids.local.IntentoEntity
+import com.reciclakids.local.PartidaEntity
+import com.reciclakids.model.CategoriaResiduo
+import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 
-/** Intentos que se envían por lote. */
-private const val TamanoLote = 50
+/** Partidas que se leen por vuelta; el backend acepta hasta 100 por lote. */
+private const val TamanoLote = 20
 
 /**
- * Lleva al backend los intentos guardados en el teléfono (ADR-04). Nunca borra nada: solo marca
- * como sincronizado lo que el backend confirmó.
+ * Lleva al backend las partidas guardadas en el teléfono (ADR-04): completas, con todos sus
+ * intentos y por niño, cada uno con su token (un teléfono puede ser de varios niños). Nunca borra
+ * nada: solo marca como sincronizado lo que el backend confirmó.
  */
 class SincronizadorResultados(
     private val baseDatos: BaseDatosReciclaKids,
     private val servicio: ServicioResultados,
+    private val hoy: () -> LocalDate = LocalDate::now,
 ) {
-    /** `true` si ya no queda nada pendiente; `false` si el envío falló y hay que reintentar. */
+    /**
+     * `false` si falló la red o el servidor y hay que reintentar. `true` si ya no queda nada que se
+     * pueda enviar ahora: lo de los niños sin sesión espera a que vuelvan a entrar con un código.
+     */
     suspend fun sincronizar(): Boolean {
         val dao = baseDatos.juegoDao()
+        val enEspera = mutableSetOf<String>()
         while (true) {
-            val lote = dao.intentosSinSincronizar(TamanoLote)
-            if (lote.isEmpty()) return true
-            val partidas = lote.map { it.partidaId }.toSet().associateWith { id -> dao.leerPartida(id) }
-            val enviados = lote.mapNotNull { intento ->
-                val partida = partidas[intento.partidaId] ?: return@mapNotNull null
-                IntentoEnviado(
-                    ninoId = partida.ninoId,
-                    codigoReto = partida.codigoReto,
-                    residuoId = intento.residuoId,
-                    categoriaElegida = intento.categoriaElegida,
-                    correcto = intento.correcto,
-                    momentoMs = intento.momentoMs,
-                )
+            val pendientes = dao.partidasPorSincronizar(enEspera.toList(), TamanoLote)
+            if (pendientes.isEmpty()) return true
+            val ninoId = pendientes.first().ninoId
+            val partidas = pendientes.filter { it.ninoId == ninoId }.map { it to dao.intentosDePartida(it.id) }
+            val codigoHoy = partidas.firstOrNull { (partida, _) -> partida.fecha == hoy().toString() }?.first?.codigoReto
+            when (val resultado = servicio.enviar(ninoId, partidas.map { (partida, intentos) -> partida.aEnviada(intentos) }, codigoHoy)) {
+                is ResultadoEnvio.Recibido -> baseDatos.withTransaction {
+                    // Solo lo que iba en el lote: lo que se jugó mientras tanto queda para la próxima vuelta.
+                    dao.marcarSincronizados(partidas.flatMap { (_, intentos) -> intentos.map { it.id } })
+                    dao.marcarTerminadasEnviadas(partidas.filter { (partida, _) -> partida.terminada }.map { it.first.id })
+                    dao.otorgarInsignias(resultado.insigniasNuevas.map { InsigniaGanadaEntity(ninoId, it.name, hoy().toString()) })
+                }
+                ResultadoEnvio.SinSesion, ResultadoEnvio.Rechazado -> enEspera += ninoId
+                ResultadoEnvio.SinConexion -> return false
             }
-            if (!servicio.enviar(enviados)) return false
-            dao.marcarSincronizados(lote.map { it.id })
         }
     }
 }
+
+private fun PartidaEntity.aEnviada(intentos: List<IntentoEntity>) = PartidaEnviada(
+    idLocal = idLocal,
+    retoId = checkNotNull(retoId) { "La partida $id no tiene reto" },
+    terminada = terminada,
+    aciertos = aciertos,
+    errores = errores,
+    rachaMaxima = rachaMaxima,
+    tiempoMs = tiempoMs,
+    intentos = intentos.mapNotNull { intento ->
+        val elegida = CategoriaResiduo.entries.firstOrNull { it.name == intento.categoriaElegida } ?: return@mapNotNull null
+        IntentoEnviado(intento.residuoId, elegida, intento.correcto, intento.momentoMs)
+    },
+)
 
 /** Corre el sincronizador en segundo plano cuando hay red, con reintentos. */
 class SincronizacionWorker(contexto: Context, parametros: WorkerParameters) : CoroutineWorker(contexto, parametros) {
