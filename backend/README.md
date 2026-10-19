@@ -2,7 +2,7 @@
 
 API REST en **Kotlin + Ktor** con **PostgreSQL** (ADR-02, ADR-03, ADR-07). Atiende los tres modos
 de la app: el niño entra con el código del reto, la docente maneja su grupo y sus retos, y el
-acudiente sigue el progreso de su hijo o hija. Los correos a acudientes salen por **Amazon SES**
+acudiente sigue el progreso de su hijo o hija. Los correos a acudientes salen por **SendGrid** o por **Amazon SES**
 (ADR-10). El despliegue en Google Cloud está en [docs/despliegue.md](../docs/despliegue.md).
 
 ## Correr en local
@@ -37,14 +37,15 @@ vencimiento de códigos, la rotación de sesiones, la recuperación de contrase�
 | `DATABASE_USER` / `DATABASE_PASSWORD` | Credenciales de la base | `reciclakids` / `reciclakids` |
 | `DATABASE_MAX_POOL` | Conexiones máximas del pool | `5` |
 | `JWT_SECRET` | Firma de los tokens. Al menos 32 caracteres en producción | valor de ejemplo |
-| `CORREO_PROVEEDOR` | `ses` envía por Amazon SES; `memoria` no envía nada | `memoria` |
-| `CORREO_REMITENTE` | Remitente verificado en SES | `ReciclaKids <no-responder@reciclakids.app>` |
-| `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | Credenciales de SES | `us-east-1` |
+| `CORREO_PROVEEDOR` | `sendgrid`, `ses` o `memoria` (no envía nada). Cualquier otro valor impide arrancar | `memoria` |
+| `CORREO_REMITENTE` | Remitente verificado en el proveedor, como `Nombre <correo@dominio>` | `ReciclaKids <no-responder@reciclakids.app>` |
+| `SENDGRID_API_KEY` | Clave de API de SendGrid con el permiso «Mail Send» (solo con `sendgrid`) | vacía |
+| `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | Credenciales de Amazon SES (solo con `ses`) | `us-east-1` |
 | `TAREAS_CLAVE` | Clave que manda Cloud Scheduler en `X-Tareas-Clave`. Vacía apaga las tareas | vacía |
 | `RECICLAKIDS_VISTA_PREVIA_CORREOS` | Vista previa de las plantillas en `/correos/vista-previa/...`. Apagada en producción | `true` |
 
 En producción el servidor **no arranca** si el secreto JWT es el de ejemplo, si la URL pública no
-es HTTPS, si la vista previa de correos está encendida o si los correos no salen por SES.
+es HTTPS, si la vista previa de correos está encendida o si los correos no salen por `ses` o `sendgrid` (con `sendgrid` también exige `SENDGRID_API_KEY`).
 
 ## La API (`/api/v1`)
 

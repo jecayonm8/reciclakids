@@ -16,7 +16,7 @@ conectada al backend) fusionados.
 2. [Antes de empezar](#2-antes-de-empezar)
 3. [Google Cloud: proyecto, servicios y cuentas de servicio](#3-google-cloud-proyecto-servicios-y-cuentas-de-servicio)
 4. [Base de datos: Cloud SQL para PostgreSQL](#4-base-de-datos-cloud-sql-para-postgresql)
-5. [Correo: Amazon SES](#5-correo-amazon-ses)
+5. [Correo: SendGrid o Amazon SES](#5-correo-sendgrid-o-amazon-ses)
 6. [Secret Manager: crear y dar acceso a los secretos](#6-secret-manager-crear-y-dar-acceso-a-los-secretos)
 7. [Conectar todo en Cloud Run](#7-conectar-todo-en-cloud-run)
 8. [Tarea de los viernes: Cloud Scheduler](#8-tarea-de-los-viernes-cloud-scheduler)
@@ -36,8 +36,9 @@ conectada al backend) fusionados.
 | Contraseña de la base (`DATABASE_PASSWORD`) | La generas tú (§4) | Secret Manager: `database-password` | Backend |
 | Secreto de los tokens (`JWT_SECRET`) | Lo generas tú (§6) | Secret Manager: `jwt-secret` | Backend |
 | Clave de tareas (`TAREAS_CLAVE`) | La generas tú (§6) | Secret Manager: `tareas-clave` | Backend y Cloud Scheduler |
-| Llaves de AWS (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) | Usuario de IAM de AWS (§5) | Secret Manager: `aws-access-key-id`, `aws-secret-access-key` | Backend (Amazon SES) |
-| Remitente de los correos (`CORREO_REMITENTE`) | Tu dominio verificado en SES (§5) | Variable de entorno de Cloud Run | Backend |
+| Clave de SendGrid (`SENDGRID_API_KEY`) | SendGrid → Settings → API Keys (§5.A) | Secret Manager: `sendgrid-api-key` | Backend, si se usa SendGrid |
+| Llaves de AWS (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) | Usuario de IAM de AWS (§5.B) | Secret Manager: `aws-access-key-id`, `aws-secret-access-key` | Backend, si se usa Amazon SES |
+| Remitente de los correos (`CORREO_REMITENTE`) | Remitente verificado en SendGrid, o tu dominio verificado en SES (§5) | Variable de entorno de Cloud Run | Backend |
 | URL pública del backend (`RECICLAKIDS_URL_PUBLICA`) | Cloud Run al desplegar (§7) | Variable de entorno de Cloud Run | Backend (enlaces de los correos) |
 | URL de la API para la app (`RECICLAKIDS_API_URL`) | La misma URL + `/api/v1/` | No es secreto: variable de GitHub o de quien compila | Compilación de la release (§9) |
 | Keystore de la app y sus 2 contraseñas + alias | Los generas tú con `keytool` (§9) | Gestor de contraseñas del equipo y, si la CI compila la release, secretos de GitHub | Firma de la release |
@@ -46,7 +47,7 @@ conectada al backend) fusionados.
 
 Fíjate en que **Google Cloud no necesita una "API key"** para que el backend use la base de datos ni
 Secret Manager: Cloud Run corre con una **cuenta de servicio** que tiene permisos, y Google le entrega
-sus credenciales sola. Las únicas llaves que se copian a mano son las de AWS (SES), las de TestRail y
+sus credenciales sola. Las únicas llaves que se copian a mano son las del proveedor de correo (SendGrid o AWS), las de TestRail y
 el keystore de la app.
 
 ## 2. Antes de empezar
@@ -55,8 +56,8 @@ el keystore de la app.
 
 - **Google Cloud** con una cuenta de facturación activa (la prueba gratuita sirve). Sin facturación no
   se pueden crear Cloud SQL ni Cloud Run.
-- **AWS**, para Amazon SES (ADR-10).
-- **Un dominio propio** (por ejemplo `reciclakids.co`) para el remitente de los correos. Se compra en
+- **SendGrid** (lo más rápido) **o AWS**, para el correo (ADR-10).
+- **Solo con Amazon SES: un dominio propio** (por ejemplo `reciclakids.co`) para el remitente de los correos. SendGrid no lo necesita: basta una dirección de correo verificada. Se compra en
   cualquier registrador o en Cloud Domains; la universidad también puede dar un subdominio. Sin dominio,
   SES solo envía a correos verificados uno por uno (sirve para probar, no para el piloto).
 - **Administrador del repositorio** `jecayonm8/reciclakids` en GitHub, para crear secretos.
@@ -186,12 +187,48 @@ jdbc:postgresql:///reciclakids?cloudSqlInstance=<PROYECTO>:<REGION>:<INSTANCIA>&
 El conector de Cloud SQL (ya incluido en el backend) cifra la conexión y la autentica con la cuenta de
 servicio: la base no queda expuesta a Internet.
 
-## 5. Correo: Amazon SES
+## 5. Correo: SendGrid o Amazon SES
 
-El backend envía tres correos con Amazon SES: logro, reporte semanal y recuperación de contraseña.
+El backend envía tres correos: logro, reporte semanal y recuperación de contraseña. El proveedor se elige
+con `CORREO_PROVEEDOR`:
+
+| Proveedor | Cuándo conviene | Qué necesita |
+|---|---|---|
+| `sendgrid` | Piloto rápido, sin dominio propio | Un remitente verificado y una clave de API (§5.A) |
+| `ses` | Producción con dominio propio y mejor entregabilidad | Dominio con DKIM, SPF y DMARC y llaves de AWS (§5.B) |
+
+En producción el servidor **no arranca** con otro valor, ni con `sendgrid` sin `SENDGRID_API_KEY`.
+
+### 5.A SendGrid (recomendado para el piloto)
+
+**Remitente.** En SendGrid: **Settings → Sender Authentication → Single Sender Verification → Create New
+Sender**. Escribe una dirección tuya y confirma el correo que SendGrid envía. Esa dirección exacta es el
+`CORREO_REMITENTE` (por ejemplo `ReciclaKids <no-responder@tu-dominio>`).
+
+- **No uses una dirección `@gmail.com`, `@yahoo.com` ni `@hotmail.com`:** esos proveedores rechazan o
+  mandan a spam los correos enviados en su nombre por terceros. Usa una de tu institución o de tu dominio.
+- Sin autenticar un dominio, algunos correos pueden caer en spam con más frecuencia que con SES. Para el
+  piloto basta; si crece, autentica un dominio en **Sender Authentication → Authenticate Your Domain**.
+
+**Clave de API.** **Settings → API Keys → Create API Key → Custom Access**. Deja todo en «No Access» salvo
+**Mail Send**, que va en «Full Access». Pulsa **Create & View** y copia la clave (empieza por `SG.`):
+SendGrid la muestra **una sola vez**.
+
+**Guardarla en Secret Manager** (pide el valor sin mostrarlo):
+
+```bash
+read -rsp "SENDGRID_API_KEY: " V; echo; printf '%s' "$V" | gcloud secrets create sendgrid-api-key --replication-policy=automatic --data-file=-; unset V
+```
+
+**Plan.** El plan gratuito permanente de SendGrid se retiró y ahora es una prueba de 60 días. Revisa el
+estado de tu cuenta: cuando venza, los correos dejan de salir (y los registros de Cloud Run mostrarán el
+estado HTTP que devuelve SendGrid).
+
+### 5.B Amazon SES
+
 Usa la región `us-east-1` (`AWS_REGION`).
 
-### 5.1 Verificar el dominio
+#### 5.B.1 Verificar el dominio
 
 1. Entra a la consola de AWS, servicio **Amazon SES**, región **N. Virginia (us-east-1)**.
 2. **Configuration → Identities → Create identity → Domain**. Escribe tu dominio y deja activado
@@ -205,13 +242,13 @@ Usa la región `us-east-1` (`AWS_REGION`).
    `v=spf1 include:amazonses.com ~all` que SES indica.
 6. Espera a que la identidad quede **Verified** (minutos u horas, según el DNS).
 
-### 5.2 Salir del sandbox
+#### 5.B.2 Salir del sandbox
 
 Mientras la cuenta esté en el *sandbox*, SES solo envía a correos verificados. En **Account dashboard →
 Request production access** describe el uso: correos transaccionales a acudientes que se registran en
 la app (logros, reporte semanal, recuperación), con baja en cada correo. AWS suele responder en un día.
 
-### 5.3 Usuario de IAM con permiso solo para enviar
+#### 5.B.3 Usuario de IAM con permiso solo para enviar
 
 1. Consola de AWS → **IAM → Users → Create user**: nombre `reciclakids-ses`, **sin** acceso a la consola.
 2. **Add permissions → Create inline policy → JSON**, con tu número de cuenta y tu dominio:
@@ -233,7 +270,7 @@ la app (logros, reporte semanal, recuperación), con baja en cada correo. AWS su
 4. AWS muestra el **Access key ID** y el **Secret access key una sola vez**. Guárdalos de inmediato en
    Secret Manager (§6.1) y cierra la ventana; no los pegues en ningún otro lado.
 
-### 5.4 Remitente
+#### 5.B.4 Remitente
 
 `CORREO_REMITENTE` usa una dirección de tu dominio verificado, por ejemplo
 `ReciclaKids <no-responder@tu-dominio>`.
@@ -255,23 +292,35 @@ openssl rand -base64 48 | tr -d '\n' | gcloud secrets create jwt-secret --replic
 # Clave que manda Cloud Scheduler: al menos 24 caracteres
 openssl rand -base64 32 | tr -d '\n/+=' | gcloud secrets create tareas-clave --replication-policy=automatic --data-file=-
 
-# Llaves de AWS (§5.3): read -s pide el valor sin mostrarlo
+unset CLAVE_BD
+```
+
+El secreto del proveedor de correo se crea en §5: `sendgrid-api-key` (§5.A) o, con Amazon SES,
+`aws-access-key-id` y `aws-secret-access-key` (§5.B.3):
+
+```bash
 read -rsp "AWS_ACCESS_KEY_ID: " V; echo; printf '%s' "$V" | gcloud secrets create aws-access-key-id --replication-policy=automatic --data-file=-
 read -rsp "AWS_SECRET_ACCESS_KEY: " V; echo; printf '%s' "$V" | gcloud secrets create aws-secret-access-key --replication-policy=automatic --data-file=-
-unset V CLAVE_BD
+unset V
 ```
+
+(Solo con SES; con SendGrid no hacen falta.)
 
 Desde la consola web también se puede: **Security → Secret Manager → Create secret**, con el mismo
 nombre y el valor pegado sin espacios ni saltos de línea al final.
 
 ### 6.2 Dar acceso a la cuenta del backend
 
+Con SendGrid:
+
 ```bash
-for s in database-password jwt-secret tareas-clave aws-access-key-id aws-secret-access-key; do
+for s in database-password jwt-secret tareas-clave sendgrid-api-key; do
   gcloud secrets add-iam-policy-binding $s \
     --member="serviceAccount:$CUENTA_RUN" --role="roles/secretmanager.secretAccessor"
 done
 ```
+
+Con Amazon SES, cambia `sendgrid-api-key` por `aws-access-key-id aws-secret-access-key`.
 
 ### 6.3 Comprobar
 
@@ -303,14 +352,17 @@ cat > ~/reciclakids-env.yaml <<EOF
 RECICLAKIDS_ENTORNO: "produccion"
 RECICLAKIDS_VISTA_PREVIA_CORREOS: "false"
 RECICLAKIDS_URL_PUBLICA: "https://pendiente.invalid"
-CORREO_PROVEEDOR: "ses"
-CORREO_REMITENTE: "ReciclaKids <no-responder@tu-dominio>"
-AWS_REGION: "us-east-1"
+CORREO_PROVEEDOR: "sendgrid"
+CORREO_REMITENTE: "ReciclaKids <direccion-verificada-en-sendgrid>"
 DATABASE_USER: "reciclakids"
 DATABASE_URL: "jdbc:postgresql:///reciclakids?cloudSqlInstance=$PROYECTO:$REGION:$INSTANCIA&socketFactory=com.google.cloud.sql.postgres.SocketFactory"
 DATABASE_MAX_POOL: "5"
 EOF
 ```
+
+Cambia `direccion-verificada-en-sendgrid` por el remitente que verificaste en §5.A. Con Amazon SES,
+`CORREO_PROVEEDOR` es `"ses"`, el remitente es una dirección de tu dominio y se agrega
+`AWS_REGION: "us-east-1"`.
 
 `RECICLAKIDS_URL_PUBLICA` se corrige en §7.4, cuando ya se conoce la URL. El backend exige HTTPS en
 producción, así que el valor provisional también lo es.
@@ -322,11 +374,13 @@ gcloud run deploy reciclakids-backend --image $IMAGEN:v1 --region $REGION \
   --service-account $CUENTA_RUN \
   --add-cloudsql-instances $PROYECTO:$REGION:$INSTANCIA \
   --env-vars-file ~/reciclakids-env.yaml \
-  --set-secrets "DATABASE_PASSWORD=database-password:latest,JWT_SECRET=jwt-secret:latest,TAREAS_CLAVE=tareas-clave:latest,AWS_ACCESS_KEY_ID=aws-access-key-id:latest,AWS_SECRET_ACCESS_KEY=aws-secret-access-key:latest" \
+  --set-secrets "DATABASE_PASSWORD=database-password:latest,JWT_SECRET=jwt-secret:latest,TAREAS_CLAVE=tareas-clave:latest,SENDGRID_API_KEY=sendgrid-api-key:latest" \
   --allow-unauthenticated --min-instances=0 --max-instances=3 --memory=512Mi
 ```
 
 - `--set-secrets` conecta cada variable con su secreto: Cloud Run lo lee al arrancar cada instancia.
+  Con Amazon SES, en lugar de `SENDGRID_API_KEY=…` van `AWS_ACCESS_KEY_ID=aws-access-key-id:latest` y
+  `AWS_SECRET_ACCESS_KEY=aws-secret-access-key:latest`.
 - `--allow-unauthenticated` es correcto: la app llama la API sin cuenta de Google. La seguridad la
   ponen los tokens del backend.
 - Con 3 instancias de 5 conexiones cada una se usan como máximo 15 conexiones, por debajo del límite de
@@ -532,7 +586,7 @@ jobs:
 | `GCP_PROVEEDOR_WIF`, `GCP_CUENTA_DESPLIEGUE` | Secretos | Solo para desplegar desde GitHub |
 | `GCP_PROYECTO`, `GCP_REGION` | Variables | Solo para desplegar desde GitHub |
 
-Los secretos de base de datos, JWT, tareas y AWS **no van en GitHub**: viven solo en Secret Manager y
+Los secretos de base de datos, JWT, tareas y correo (SendGrid o AWS) **no van en GitHub**: viven solo en Secret Manager y
 Cloud Run los lee de ahí.
 
 ## 11. Comprobar que todo quedó bien
@@ -543,8 +597,8 @@ Cloud Run los lee de ahí.
       `gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="reciclakids-backend"' --limit=50`.
 - [ ] Desde la app release: registrar una docente, agregar un niño, publicar un reto y entrar con el
       código en otro teléfono.
-- [ ] Llega el correo de recuperación de contraseña y no cae en spam (revisa SPF/DKIM/DMARC en los
-      encabezados del correo).
+- [ ] Llega el correo de recuperación de contraseña y no cae en spam (con SES, revisa SPF/DKIM/DMARC en los
+      encabezados; con SendGrid, que el remitente sea el verificado).
 - [ ] `gcloud scheduler jobs run reporte-semanal --location=$REGION` y en los registros de Cloud Run la
       tarea responde 200.
 - [ ] Un push a `main` sube los resultados a TestRail sin avisos.
@@ -556,7 +610,8 @@ Cloud Run los lee de ahí.
 | Contraseña de la base | `gcloud sql users set-password reciclakids --instance=$INSTANCIA --password=…`, luego nueva versión de `database-password` y nueva revisión de Cloud Run | Sin efecto para los usuarios |
 | `jwt-secret` | Nueva versión del secreto y nueva revisión de Cloud Run | **Cierra todas las sesiones**: docentes y acudientes vuelven a iniciar sesión; los niños vuelven a escribir el código |
 | `tareas-clave` | Nueva versión, nueva revisión y actualizar el encabezado de Cloud Scheduler (§8) | Ninguno si se hace todo junto |
-| Llaves de AWS | Crear una llave nueva en IAM, nueva versión de los dos secretos, nueva revisión, y **después** desactivar la vieja | Ninguno |
+| Clave de SendGrid | Crear otra clave en **Settings → API Keys**, nueva versión de `sendgrid-api-key`, nueva revisión de Cloud Run y **después** borrar la vieja | Ninguno |
+| Llaves de AWS (si usas SES) | Crear una llave nueva en IAM, nueva versión de los dos secretos, nueva revisión, y **después** desactivar la vieja | Ninguno |
 | Clave de TestRail | Crear otra en **My Settings → API Keys**, actualizar `TESTRAIL_API_KEY` y borrar la vieja | Ninguno |
 
 Una versión nueva de un secreto:
@@ -577,8 +632,12 @@ revisión: `gcloud run services update reciclakids-backend --region $REGION --up
 | `Permission denied on secret` en los registros | La cuenta del backend no tiene acceso | §6.2 |
 | `Connection refused` o tiempo de espera con la base | Falta `roles/cloudsql.client` o el nombre de conexión está mal | §3.4 y §4.3 |
 | Al crear la instancia, un error de que el tier no es válido para la edición | Falta `--edition=ENTERPRISE` | §4.1 |
-| `MessageRejected: Email address is not verified` | SES sigue en el sandbox o el dominio no está verificado | §5.1 y §5.2 |
-| `AccessDenied ... ses:SendEmail` | La política de IAM apunta a otro dominio o región | §5.3 |
+| En los registros: `SendGrid rechazó el envío (estado 403)` | La clave no tiene «Mail Send» o el remitente no está verificado en SendGrid | §5.A |
+| En los registros: `SendGrid rechazó el envío (estado 401)` | La clave de API es incorrecta o se borró | §5.A y §12 |
+| El servidor no arranca: `Con CORREO_PROVEEDOR=sendgrid hace falta SENDGRID_API_KEY` | Falta el secreto en `--set-secrets` | §6 y §7.3 |
+| Los correos caen en spam | Remitente sin dominio autenticado (o `@gmail.com`) | §5.A |
+| `MessageRejected: Email address is not verified` | SES sigue en el sandbox o el dominio no está verificado | §5.B.1 y §5.B.2 |
+| `AccessDenied ... ses:SendEmail` | La política de IAM apunta a otro dominio o región | §5.B.3 |
 | La tarea del viernes responde 401 | El encabezado de Cloud Scheduler no coincide con `tareas-clave` | §8 |
 | La app release no conecta | Se compiló sin `RECICLAKIDS_API_URL` o con HTTP | §9.1 |
 | GitHub: `Unable to acquire impersonated credentials` | Falta `roles/iam.workloadIdentityUser` o la condición del repositorio no coincide | §10.3 |

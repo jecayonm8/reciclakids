@@ -16,6 +16,7 @@ import com.reciclakids.services.PadresServicio
 import com.reciclakids.services.Reloj
 import com.reciclakids.services.notificaciones.correos.EnviadorCorreo
 import com.reciclakids.services.notificaciones.correos.EnviadorCorreoEnMemoria
+import com.reciclakids.services.notificaciones.correos.EnviadorCorreoSendGrid
 import com.reciclakids.services.notificaciones.correos.EnviadorCorreoSes
 import java.time.Clock
 
@@ -53,6 +54,7 @@ class Contenedor(
     companion object {
         fun enviadorPara(configuracion: Configuracion): EnviadorCorreo = when (configuracion.correos.proveedor) {
             "ses" -> EnviadorCorreoSes(configuracion.correos.remitente, configuracion.correos.regionSes)
+            "sendgrid" -> EnviadorCorreoSendGrid(configuracion.correos.claveSendGrid, configuracion.correos.remitente)
             else -> EnviadorCorreoEnMemoria()
         }
     }
