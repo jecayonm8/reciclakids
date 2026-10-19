@@ -26,14 +26,16 @@ gcloud artifacts repositories create reciclakids --repository-format=docker --lo
 ## 2. Base de datos (Cloud SQL)
 
 ```bash
-gcloud sql instances create $INSTANCIA --database-version=POSTGRES_17 --region=$REGION \
-  --tier=db-f1-micro --storage-auto-increase --backup-start-time=03:00
+gcloud sql instances create $INSTANCIA --database-version=POSTGRES_17 --edition=ENTERPRISE \
+  --region=$REGION --tier=db-f1-micro --storage-auto-increase --backup-start-time=08:00
 gcloud sql databases create reciclakids --instance=$INSTANCIA
 gcloud sql users create reciclakids --instance=$INSTANCIA --password="<contraseña larga>"
 ```
 
-`db-f1-micro` alcanza para el piloto de una institución. Las copias de respaldo diarias quedan
-activadas; la réplica de respaldo en AWS RDS del ADR-06 se configura aparte cuando el piloto crezca.
+`db-f1-micro` alcanza para el piloto de una institución. Necesita `--edition=ENTERPRISE`: desde
+PostgreSQL 16, Cloud SQL crea por defecto instancias Enterprise Plus, que no aceptan esa máquina.
+Las copias de respaldo diarias quedan activadas (`--backup-start-time` va en UTC: `08:00` son las
+3 a. m. en Bogotá); la réplica de respaldo en AWS RDS del ADR-06 se configura aparte cuando el piloto crezca.
 Las tablas las crea el backend al arrancar (migraciones de Flyway en `backend/src/main/resources/db/migration`).
 
 ## 3. Secretos
