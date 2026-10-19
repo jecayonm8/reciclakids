@@ -2,7 +2,7 @@
 
 Sigue los ADR del documento de arquitectura: el backend corre en **Cloud Run** (GCP, ADR-05) con
 **Cloud SQL para PostgreSQL** (ADR-03), habla HTTPS con la app (ADR-07) y envía los correos por
-**Amazon SES** (ADR-10). Los pasos usan `gcloud`; cada uno se hace una sola vez salvo el 6, que se
+**SendGrid** o **Amazon SES** (ADR-10; ver la sección 4). Los pasos usan `gcloud`; cada uno se hace una sola vez salvo el 6, que se
 repite en cada versión.
 
 Variables que se usan abajo (cámbialas por las del equipo):
@@ -46,6 +46,9 @@ Ningún secreto va en el código ni en la imagen: viven en Secret Manager.
 printf '%s' "<contraseña de la base>"            | gcloud secrets create database-password --data-file=-
 openssl rand -base64 48 | tr -d '\n'             | gcloud secrets create jwt-secret --data-file=-
 openssl rand -base64 32 | tr -d '\n'             | gcloud secrets create tareas-clave --data-file=-
+# Con SendGrid (sección 4):
+printf '%s' "<SENDGRID_API_KEY>"                 | gcloud secrets create sendgrid-api-key --data-file=-
+# Con Amazon SES, en su lugar:
 printf '%s' "<AWS_ACCESS_KEY_ID de SES>"         | gcloud secrets create aws-access-key-id --data-file=-
 printf '%s' "<AWS_SECRET_ACCESS_KEY de SES>"     | gcloud secrets create aws-secret-access-key --data-file=-
 ```
@@ -54,13 +57,30 @@ La cuenta de servicio de Cloud Run necesita leerlos y conectarse a Cloud SQL:
 
 ```bash
 CUENTA=$(gcloud iam service-accounts list --filter="displayName:Compute Engine default" --format='value(email)')
-for s in database-password jwt-secret tareas-clave aws-access-key-id aws-secret-access-key; do
+for s in database-password jwt-secret tareas-clave sendgrid-api-key; do   # con SES: aws-access-key-id aws-secret-access-key
   gcloud secrets add-iam-policy-binding $s --member="serviceAccount:$CUENTA" --role=roles/secretmanager.secretAccessor
 done
 gcloud projects add-iam-policy-binding $PROYECTO --member="serviceAccount:$CUENTA" --role=roles/cloudsql.client
 ```
 
-## 4. Correo con Amazon SES
+## 4. Correo
+
+Hay dos proveedores; se elige con `CORREO_PROVEEDOR`.
+
+### Opción A: SendGrid (la más rápida, sin dominio propio)
+
+1. En SendGrid, **Settings → Sender Authentication → Single Sender Verification → Create New Sender**
+   con una dirección que no sea `@gmail.com` (Gmail y Yahoo rechazan o mandan a spam lo que se envía
+   en su nombre por terceros). Confirma el correo que SendGrid envía. Esa dirección es `CORREO_REMITENTE`.
+2. **Settings → API Keys → Create API Key → Custom Access**, todo en «No Access» salvo **Mail Send** en
+   «Full Access». Guarda la clave en el secreto `sendgrid-api-key` (paso 3).
+3. En el despliegue (paso 5): `CORREO_PROVEEDOR=sendgrid`, `CORREO_REMITENTE` con la dirección verificada
+   y `SENDGRID_API_KEY` desde el secreto.
+
+El plan gratuito permanente de SendGrid se retiró: revisa en tu cuenta hasta cuándo dura la prueba.
+Sin autenticar un dominio, algunos correos pueden caer en spam; para el piloto es suficiente.
+
+### Opción B: Amazon SES
 
 1. En la consola de SES (región `us-east-1`), verifica el dominio del remitente y publica en su DNS
    los registros **SPF, DKIM y DMARC** que SES indica.
@@ -77,11 +97,12 @@ gcloud builds submit backend --tag $IMAGEN:v1
 gcloud run deploy reciclakids-backend --image $IMAGEN:v1 --region $REGION \
   --allow-unauthenticated --min-instances=0 --max-instances=3 --memory=512Mi \
   --add-cloudsql-instances $PROYECTO:$REGION:$INSTANCIA \
-  --set-env-vars "RECICLAKIDS_ENTORNO=produccion,RECICLAKIDS_VISTA_PREVIA_CORREOS=false,CORREO_PROVEEDOR=ses,AWS_REGION=us-east-1" \
+  --set-env-vars "RECICLAKIDS_ENTORNO=produccion,RECICLAKIDS_VISTA_PREVIA_CORREOS=false,CORREO_PROVEEDOR=ses,AWS_REGION=us-east-1   # con SendGrid: CORREO_PROVEEDOR=sendgrid" \
   --set-env-vars "CORREO_REMITENTE=ReciclaKids <no-responder@tu-dominio>" \
   --set-env-vars "DATABASE_USER=reciclakids,DATABASE_URL=jdbc:postgresql:///reciclakids?cloudSqlInstance=$PROYECTO:$REGION:$INSTANCIA&socketFactory=com.google.cloud.sql.postgres.SocketFactory" \
   --set-secrets "DATABASE_PASSWORD=database-password:latest,JWT_SECRET=jwt-secret:latest,TAREAS_CLAVE=tareas-clave:latest" \
   --set-secrets "AWS_ACCESS_KEY_ID=aws-access-key-id:latest,AWS_SECRET_ACCESS_KEY=aws-secret-access-key:latest"
+# Con SendGrid, en lugar de la línea anterior: --set-secrets "SENDGRID_API_KEY=sendgrid-api-key:latest"
 ```
 
 Cloud Run responde con la URL del servicio (`https://reciclakids-backend-xxxx.a.run.app`). Ponla

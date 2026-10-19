@@ -16,6 +16,9 @@ data class Configuracion(
     companion object {
         const val SecretoJwtDeEjemplo = "solo-para-desarrollo-no-usar-en-produccion"
 
+        /** «memoria» no envía nada; «ses» es Amazon SES (ADR-10); «sendgrid» es la alternativa sin dominio propio. */
+        val ProveedoresDeCorreo = setOf("memoria", "ses", "sendgrid")
+
         fun desde(config: ApplicationConfig): Configuracion {
             fun texto(ruta: String) = config.property("reciclakids.$ruta").getString()
             val produccion = texto("entorno").equals("produccion", ignoreCase = true)
@@ -38,10 +41,14 @@ data class Configuracion(
                     proveedor = texto("correos.proveedor").lowercase(),
                     remitente = texto("correos.remitente"),
                     regionSes = texto("correos.regionSes"),
+                    claveSendGrid = texto("correos.claveSendGrid"),
                     vistaPrevia = texto("correos.vistaPrevia").toBoolean(),
                 ),
                 claveTareas = texto("tareas.clave"),
             )
+            check(configuracion.correos.proveedor in ProveedoresDeCorreo) {
+                "CORREO_PROVEEDOR debe ser uno de: ${ProveedoresDeCorreo.joinToString()} (llegó «${configuracion.correos.proveedor}»)"
+            }
             if (produccion) configuracion.validarProduccion()
             return configuracion
         }
@@ -54,7 +61,12 @@ data class Configuracion(
         }
         check(urlPublica.startsWith("https://")) { "RECICLAKIDS_URL_PUBLICA debe usar HTTPS en producción (ADR-07)" }
         check(!correos.vistaPrevia) { "Apaga la vista previa de correos en producción (RECICLAKIDS_VISTA_PREVIA_CORREOS=false)" }
-        check(correos.proveedor == "ses") { "En producción los correos salen por Amazon SES (CORREO_PROVEEDOR=ses)" }
+        check(correos.proveedor == "ses" || correos.proveedor == "sendgrid") {
+            "En producción los correos salen por Amazon SES o por SendGrid (CORREO_PROVEEDOR=ses o sendgrid)"
+        }
+        check(correos.proveedor != "sendgrid" || correos.claveSendGrid.isNotBlank()) {
+            "Con CORREO_PROVEEDOR=sendgrid hace falta SENDGRID_API_KEY"
+        }
         check(claveTareas.length >= 24) { "TAREAS_CLAVE debe tener al menos 24 caracteres en producción" }
     }
 }
@@ -63,4 +75,10 @@ data class ConfiguracionBaseDatos(val url: String, val usuario: String, val cont
 
 data class ConfiguracionJwt(val secreto: String, val emisor: String, val audiencia: String)
 
-data class ConfiguracionCorreos(val proveedor: String, val remitente: String, val regionSes: String, val vistaPrevia: Boolean)
+data class ConfiguracionCorreos(
+    val proveedor: String,
+    val remitente: String,
+    val regionSes: String,
+    val claveSendGrid: String,
+    val vistaPrevia: Boolean,
+)

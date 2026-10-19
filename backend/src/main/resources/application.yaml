@@ -26,10 +26,12 @@ reciclakids:
     audiencia: "reciclakids-app"
 
   correos:
-    # «memoria» no envía nada (desarrollo y pruebas); «ses» usa Amazon SES (ADR-10).
+    # «memoria» no envía nada (desarrollo y pruebas); «ses» usa Amazon SES (ADR-10); «sendgrid» usa
+    # SendGrid (no exige dominio propio: basta un remitente verificado en su consola).
     proveedor: "$CORREO_PROVEEDOR:memoria"
     remitente: "$CORREO_REMITENTE:ReciclaKids <no-responder@reciclakids.app>"
     regionSes: "$AWS_REGION:us-east-1"
+    claveSendGrid: "$SENDGRID_API_KEY:"
     # Vista previa de las plantillas con datos ficticios en /correos/vista-previa/...
     # Encendida para desarrollo; en producción se apaga con RECICLAKIDS_VISTA_PREVIA_CORREOS=false.
     vistaPrevia: "$RECICLAKIDS_VISTA_PREVIA_CORREOS:true"

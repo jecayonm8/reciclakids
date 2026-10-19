@@ -26,6 +26,7 @@ class ConfiguracionTest {
         "reciclakids.correos.proveedor" to "memoria",
         "reciclakids.correos.remitente" to "r@x.co",
         "reciclakids.correos.regionSes" to "us-east-1",
+        "reciclakids.correos.claveSendGrid" to "",
         "reciclakids.correos.vistaPrevia" to "true",
         "reciclakids.tareas.clave" to "",
     ).apply { cambios.forEach { (clave, valor) -> put("reciclakids.$clave", valor) } }
@@ -52,6 +53,31 @@ class ConfiguracionTest {
         assertFailsWith<IllegalStateException> {
             Configuracion.desde(config("entorno" to "produccion", "jwt.secreto" to "x".repeat(40), "urlPublica" to "http://inseguro"))
         }
+    }
+
+    @Test
+    fun enProduccionLosCorreosSalenPorSesOPorSendGridConSuClave() {
+        fun produccion(vararg extra: Pair<String, String>) = config(
+            "entorno" to "produccion",
+            "jwt.secreto" to "x".repeat(40),
+            "urlPublica" to "https://api.reciclakids.app",
+            "correos.vistaPrevia" to "false",
+            "tareas.clave" to "y".repeat(30),
+            *extra,
+        )
+        // «memoria» no sirve en producción: no enviaría nada.
+        assertFailsWith<IllegalStateException> { Configuracion.desde(produccion("correos.proveedor" to "memoria")) }
+        // SendGrid sin clave tampoco.
+        assertFailsWith<IllegalStateException> { Configuracion.desde(produccion("correos.proveedor" to "sendgrid")) }
+        val sendgrid = Configuracion.desde(produccion("correos.proveedor" to "sendgrid", "correos.claveSendGrid" to "SG.clave-de-prueba"))
+        assertEquals("sendgrid", sendgrid.correos.proveedor)
+        assertTrue(Configuracion.desde(produccion("correos.proveedor" to "SES")).produccion)
+    }
+
+    @Test
+    fun unProveedorDesconocidoNoArrancaNiEnDesarrollo() {
+        // Un error de tecleo («sendgrd») no debe caer en silencio al enviador en memoria.
+        assertFailsWith<IllegalStateException> { Configuracion.desde(config("correos.proveedor" to "sendgrd")) }
     }
 
     @Test

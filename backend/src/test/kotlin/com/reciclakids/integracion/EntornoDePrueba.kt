@@ -79,7 +79,7 @@ fun configuracionDePrueba() = Configuracion(
     urlPublica = "https://reciclakids.test",
     baseDatos = ConfiguracionBaseDatos("", "", "", 1),
     jwt = ConfiguracionJwt("secreto-solo-para-las-pruebas-de-integracion", "reciclakids-backend", "reciclakids-app"),
-    correos = ConfiguracionCorreos("memoria", "ReciclaKids <no-responder@reciclakids.test>", "us-east-1", vistaPrevia = false),
+    correos = ConfiguracionCorreos("memoria", "ReciclaKids <no-responder@reciclakids.test>", "us-east-1", claveSendGrid = "", vistaPrevia = false),
     claveTareas = "clave-de-tareas-de-prueba-larga",
 )
 
