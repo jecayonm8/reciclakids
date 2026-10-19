@@ -112,7 +112,7 @@
     "app": [
       "RepositorioJuegoTest.siLaAppSeCierraLaPartidaSeRetomaDondeQuedo",
       "RepositorioJuegoTest.cadaIntentoQuedaPendienteDeSincronizar",
-      "SincronizadorResultadosTest.loQueElBackendConfirmaDejaDeEstarPendiente",
+      "SincronizadorResultadosTest.cadaNinoEnviaSusPartidasCompletasYLoConfirmadoDejaDeEstarPendiente",
       "SincronizadorResultadosTest.siElEnvioFallaNadaSePierdeYSeReintenta"
     ]
   },
