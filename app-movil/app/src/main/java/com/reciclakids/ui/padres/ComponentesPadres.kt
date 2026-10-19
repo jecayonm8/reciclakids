@@ -73,10 +73,12 @@ internal val TintaLogro = Color(0xFF7A6330)
 internal val ResumenInicio = Color(0xFF00546A)
 internal val ResumenFin = Color(0xFF00687F)
 
-/** «Jardín B · 5 años» */
+/** «Jardín B · 5 años», o solo «Jardín B» si no se registró la edad. */
 @Composable
-internal fun detalleHijo(hijo: HijoVinculado): String =
-    stringResource(R.string.padres_hijo_detalle, hijo.grupo, pluralStringResource(R.plurals.padres_edad, hijo.edad, hijo.edad))
+internal fun detalleHijo(hijo: HijoVinculado): String {
+    val edad = hijo.edad ?: return hijo.grupo
+    return stringResource(R.string.padres_hijo_detalle, hijo.grupo, pluralStringResource(R.plurals.padres_edad, edad, edad))
+}
 
 /**
  * Barra de UI-29 con el hijo o hija elegido. Si la cuenta tiene más de uno, toda la fila abre el

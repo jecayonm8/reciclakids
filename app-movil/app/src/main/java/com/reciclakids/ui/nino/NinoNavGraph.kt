@@ -46,6 +46,7 @@ import com.reciclakids.viewmodel.JuegoViewModel
 import com.reciclakids.viewmodel.Retroalimentacion
 import com.reciclakids.viewmodel.SesionNinoViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 /** Rutas del proceso P2 · Juego del niño. */
@@ -125,6 +126,8 @@ fun NavGraphBuilder.ninoGraph(
             LaunchedEffect(Unit) { locutor.decir(titulo) }
             LaunchedEffect(elegido, ninos) {
                 val nino = ninos?.firstOrNull { it.id == elegido } ?: return@LaunchedEffect
+                // Su token y su límite diario: no se espera la respuesta para que juegue aunque no haya red.
+                reto?.let { contenedor.alcance.launch { servicioRetos.abrirSesion(it, nino) } }
                 delay(EsperaAvatarMs)
                 sesion.elegirNino(nino)
                 navController.navigate(RutasNino.Menu) {
@@ -363,15 +366,17 @@ fun NavGraphBuilder.ninoGraph(
         }
 
         composable(RutasNino.TiempoTerminado) { entrada ->
+            // No se puede saltar desde el Modo Niño: el botón atrás no hace nada.
+            BackHandler { }
             val sesion = sesionNino(navController, entrada)
-            // El límite es el del control parental de este niño (UI-33).
-            val minutos = sesion.nino?.let { contenedor.controlesParentales.de(it.id) }?.limiteMinutosDiarios
-                ?: ControlParental().limiteMinutosDiarios
+            // El límite es el del control parental de este niño (UI-33), guardado en el teléfono.
+            val ninoId = sesion.nino?.id
+            val control by remember(ninoId) { ninoId?.let(contenedor.limitesJuego::observar) ?: flowOf(ControlParental()) }
+                .collectAsState(null)
+            val minutos = control?.limiteMinutosDiarios ?: return@composable
             val locutor = rememberLocutor()
             val mensaje = stringResource(R.string.tiempo_titulo)
             LaunchedEffect(Unit) { locutor.decir(mensaje) }
-            // No se puede saltar desde el Modo Niño: el botón atrás no hace nada.
-            BackHandler { }
             TiempoTerminadoScreen(
                 minutos = minutos,
                 onRepetirVoz = { locutor.decir(mensaje) },

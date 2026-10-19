@@ -50,4 +50,7 @@ class RegistroViewModel : ViewModel() {
     var rol by mutableStateOf(RolAdulto.Docente)
     val docente = FormularioDocente()
     val acudiente = FormularioAcudiente()
+
+    /** Código de vinculación que el backend no reconoció: UI-05 lo marca mientras no se cambie. */
+    var codigoRechazado by mutableStateOf<String?>(null)
 }

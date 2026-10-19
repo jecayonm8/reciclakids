@@ -27,6 +27,20 @@ data class RetoDocente(
     val editable: Boolean get() = estado != EstadoReto.Publicado
 }
 
+/** «Las tres canecas» o «Reto de aprovechables y orgánicos»: el nombre de un reto sin nombre propio. */
+fun nombrePorDefecto(categorias: Set<CategoriaResiduo>): String =
+    if (categorias.size == CategoriaResiduo.entries.size) {
+        "Las tres canecas"
+    } else {
+        "Reto de " + categorias.sorted().joinToString(" y ") {
+            when (it) {
+                CategoriaResiduo.Aprovechable -> "aprovechables"
+                CategoriaResiduo.NoAprovechable -> "no aprovechables"
+                CategoriaResiduo.Organico -> "orgánicos"
+            }
+        }
+    }
+
 /** Lo que la docente arma en el asistente (UI-22) antes de publicar. */
 data class RetoBorrador(
     val categorias: Set<CategoriaResiduo>,

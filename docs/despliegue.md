@@ -118,9 +118,58 @@ gcloud scheduler jobs create http reporte-semanal --location=$REGION \
 
 ## 8. Conectar la app
 
-La app de Android apunta a la URL de Cloud Run (`$URL/api/v1/`). Solo habla HTTPS con el backend;
-en local se usa `docker compose up` dentro de `backend/` y la dirección `http://10.0.2.2:8080`
-desde el emulador.
+La app de Android lee la dirección de la API de `BuildConfig.API_URL`, que se fija al compilar.
+La release solo habla HTTPS y solo confía en los certificados del sistema
+(`app-movil/app/src/main/res/xml/red_produccion.xml`).
+
+### Release contra Cloud Run
+
+Con la `$URL` del paso 5 (o el dominio propio, si se mapeó), desde `app-movil/`:
+
+```bash
+export RECICLAKIDS_API_URL="$URL/api/v1/"     # o -Preciclakids.apiUrl=$URL/api/v1/
+./gradlew assembleRelease                      # APK en app/build/outputs/apk/release/
+./gradlew bundleRelease                        # AAB para Google Play en app/build/outputs/bundle/release/
+```
+
+La firma sale de cuatro variables de entorno; el keystore y sus claves viven en la máquina de
+quien publica (o en los secretos de la CI), nunca en el repositorio:
+
+| Variable | Qué es |
+|---|---|
+| `RECICLAKIDS_KEYSTORE` | Ruta al archivo `.jks` de la app |
+| `RECICLAKIDS_KEYSTORE_CLAVE` | Contraseña del keystore |
+| `RECICLAKIDS_KEY_ALIAS` | Alias de la llave |
+| `RECICLAKIDS_KEY_CLAVE` | Contraseña de la llave |
+
+Si están las cuatro, la release sale firmada y **la compilación falla** si falta la URL o no es
+HTTPS. Sin ellas sale un APK sin firmar, que no se puede instalar: es lo que compila la CI
+(`./gradlew build`) para comprobar que la release compila. El keystore se crea una sola vez con
+`keytool -genkeypair -v -keystore reciclakids.jks -keyalg RSA -keysize 2048 -validity 10000 -alias reciclakids`
+y se guarda con copia de respaldo: sin él no se pueden publicar actualizaciones en Google Play.
+
+### En local (debug)
+
+Con el backend de `docker compose up --build` dentro de `backend/`:
+
+- **Emulador**: `./gradlew installDebug` apunta a `http://10.0.2.2:8080/api/v1/` (el PC visto
+  desde el emulador).
+- **Teléfono en la misma red Wi-Fi**: con la IP del PC,
+  `./gradlew installDebug -Preciclakids.apiUrl=http://192.168.1.5:8080/api/v1/`. Si Windows
+  pregunta, permite el puerto 8080 en el firewall para redes privadas.
+
+Solo la app debug acepta HTTP sin cifrar, y solo hacia `10.0.2.2`, `localhost`, `127.0.0.1` y el
+host de esa URL: la tarea `generarRedDesarrolloDebug` escribe su network security config.
+
+### Qué guarda el teléfono
+
+- La sesión del adulto (token de acceso de 1 h y de refresco de 30 días) y el token de cada niño
+  (7 días) van cifrados con una llave del Android Keystore y se excluyen de los respaldos. Al
+  pasar la puerta para adultos, una sesión vigente abre directo su modo (`GET /cuenta`); si el
+  refresco falla, la app vuelve al inicio de sesión.
+- Las partidas se guardan en Room antes de salir. El sincronizador las manda completas a
+  `POST /nino/partidas` con el token de cada niño (un teléfono puede ser de varios) y solo marca
+  como enviado lo que el backend confirmó (ADR-04).
 
 ## Lista de verificación antes del piloto
 

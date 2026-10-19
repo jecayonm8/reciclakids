@@ -5,6 +5,7 @@ import com.reciclakids.di.ContenedorApp
 import com.reciclakids.local.BaseDatosReciclaKids
 import com.reciclakids.model.ControlParental
 import com.reciclakids.network.ControlesParentales
+import com.reciclakids.network.ServicioAcceso
 import com.reciclakids.network.ServicioAccesoEnMemoria
 import com.reciclakids.network.ServicioDocenteEnMemoria
 import com.reciclakids.network.ServicioPadresEnMemoria
@@ -19,8 +20,9 @@ import org.robolectric.RuntimeEnvironment
 fun contenedorDePrueba(
     controlParental: ControlParental = ControlParental(),
     controles: ControlesParentales = ControlesParentales(porDefecto = controlParental),
+    servicioAcceso: ServicioAcceso = ServicioAccesoEnMemoria(latenciaMs = 0),
 ): ContenedorApp = ContenedorApp(
-    servicioAcceso = ServicioAccesoEnMemoria(latenciaMs = 0),
+    servicioAcceso = servicioAcceso,
     servicioRetos = ServicioRetosEnMemoria(latenciaMs = 0),
     servicioResultados = ServicioResultadosEnMemoria(latenciaMs = 0),
     baseDatos = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), BaseDatosReciclaKids::class.java)

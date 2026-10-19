@@ -14,7 +14,8 @@ data class HijoVinculado(
     /** Ya viene como «Salomé M.»: nunca el apellido completo. */
     val nombre: String,
     val grupo: String,
-    val edad: Int,
+    /** `null` si la docente no la registró al agregarlo. */
+    val edad: Int?,
     val avatar: String,
     val vinculadoEl: LocalDate,
 )
