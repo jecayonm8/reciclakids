@@ -1,0 +1,181 @@
+{
+  "CP-001": {
+    "app": [
+      "FlujoAccesoTest.laDocenteSeRegistraYSuSesionAbreElModoDocente"
+    ]
+  },
+  "CP-002": {
+    "app": [
+      "ServicioAccesoEnMemoriaTest.elCorreoNoDistingueMayusculasNiEspacios"
+    ]
+  },
+  "CP-003": {
+    "app": [
+      "ValidacionTest.contrasenaExigeOchoCaracteres"
+    ]
+  },
+  "CP-004": {
+    "backend": [
+      "ApiTest.registroYValidaciones",
+      "ApiTest.recorridoCompletoDocenteNinoYAcudiente"
+    ]
+  },
+  "CP-005": {
+    "app": [
+      "FlujoAccesoTest.elAcudienteAutorizaLosDatosYSuSesionAbreElModoPadres"
+    ]
+  },
+  "CP-006": {
+    "app": [
+      "ServicioAccesoEnMemoriaTest.laSesionAbreConElRolDeLaCuenta",
+      "ServicioAccesoEnMemoriaTest.contrasenaEquivocadaOCuentaInexistenteDanElMismoResultado",
+      "FlujoAccesoTest.unaCuentaQueNoExisteNoEntra"
+    ]
+  },
+  "CP-007": {
+    "app": [
+      "ServicioAccesoEnMemoriaTest.laRecuperacionNoRevelaSiElCorreoExiste"
+    ]
+  },
+  "CP-008": {
+    "app": [
+      "CodigoRetoViewModelTest",
+      "FlujoNinoTest.unCodigoEquivocadoInvitaAProbarOtraVez",
+      "FlujoNinoTest.unCodigoVencidoPideUnoNuevoALaProfe",
+      "FlujoNinoTest.elCodigoDelDiaLlevaAElegirAvatarYLuegoAlMenu"
+    ]
+  },
+  "CP-009": {
+    "backend": [
+      "ApiTest.cadaRolSoloVeLoSuyo"
+    ]
+  },
+  "CP-010": {
+    "backend": [
+      "ApiTest.vincularOtroHijoYQuitarNinos"
+    ]
+  },
+  "CP-011": {
+    "backend": [
+      "ApiTest.recorridoCompletoDocenteNinoYAcudiente"
+    ]
+  },
+  "CP-012": {
+    "app": [
+      "AsistenteRetoTest.reutilizarCopiaLaConfiguracionParaHoyYSaltaALaVistaPrevia",
+      "FlujoDocenteTest.reutilizarDesdeElTableroSaltaALaVistaPrevia"
+    ]
+  },
+  "CP-013": {
+    "backend": [
+      "ApiTest.elCodigoSoloValeElDiaDelReto"
+    ]
+  },
+  "CP-014": {
+    "backend": [
+      "ApiTest.elCodigoSoloValeElDiaDelReto",
+      "ReglasTest.formatoDeLosCodigos"
+    ]
+  },
+  "CP-015": {
+    "app": [
+      "ServicioDocenteEnMemoriaTest.sinConexionElRetoQuedaComoBorradorYReintentarNoLoDuplica",
+      "PantallasDocenteTest.siFallaLaPublicacionQuedaComoBorradorYSePuedeReintentar"
+    ]
+  },
+  "CP-016": {
+    "app": [
+      "FlujoNinoTest.arrastrarElResiduoCercaDeSuCanecaCuentaComoAcierto",
+      "EstadoPartidaTest.laEvaluacionCoincideConElCodigoDeColoresEnQuinientosIntentos"
+    ]
+  },
+  "CP-017": {
+    "app": [
+      "FlujoNinoTest.soltarLejosDeLasCanecasNoCuentaComoError",
+      "FlujoNinoTest.arrastrarElResiduoCercaDeSuCanecaCuentaComoAcierto"
+    ]
+  },
+  "CP-018": {
+    "app": [
+      "FlujoNinoTest.unErrorNoRestaPuntosYMuestraLaCanecaQueBrilla",
+      "EstadoPartidaTest.unErrorNoRestaPuntosPeroReiniciaLaRacha"
+    ]
+  },
+  "CP-019": {
+    "app": [
+      "EstadoPartidaTest.cadaAciertoSumaDiezYDesdeElTerceroSeguidoVeinte",
+      "EstadoPartidaTest.unErrorNoRestaPuntosPeroReiniciaLaRacha",
+      "EstadoPartidaTest.laPartidaTerminaAlClasificarElUltimoResiduo"
+    ]
+  },
+  "CP-020": {
+    "app": [
+      "RepositorioJuegoTest.siLaAppSeCierraLaPartidaSeRetomaDondeQuedo",
+      "RepositorioJuegoTest.cadaIntentoQuedaPendienteDeSincronizar",
+      "SincronizadorResultadosTest.loQueElBackendConfirmaDejaDeEstarPendiente",
+      "SincronizadorResultadosTest.siElEnvioFallaNadaSePierdeYSeReintenta"
+    ]
+  },
+  "CP-021": {
+    "app": [
+      "InsigniaTest.sinErroresSeGanaAmigaTortuga",
+      "InsigniaTest.unaInsigniaNoSeOtorgaDosVeces",
+      "FlujoNinoTest.sinErroresSeGanaUnaInsigniaQueQuedaEnLaColeccion"
+    ],
+    "backend": [
+      "ApiTest.recorridoCompletoDocenteNinoYAcudiente"
+    ]
+  },
+  "CP-022": {
+    "app": [
+      "TiempoDeJuegoTest.alAgotarElLimiteDiarioSeMuestraElDescansoYNoSePuedeSalir"
+    ]
+  },
+  "CP-023": {
+    "backend": [
+      "ApiTest.recorridoCompletoDocenteNinoYAcudiente"
+    ]
+  },
+  "CP-024": {
+    "app": [
+      "RetoTest.laDificultadNoCambiaLasCanecasDelJuego",
+      "RetoTest.unRetoDeUnaSolaCanecaMuestraLasTresParaQueHayaQueElegir",
+      "PantallasDocenteTest.laVistaPreviaMuestraLasCanecasElegidasYNoLasDeLaDificultad",
+      "PantallasDocenteTest.conUnaSolaCanecaLaVistaPreviaMuestraLasTresComoElJuego"
+    ],
+    "backend": [
+      "DominioTest.residuosDelRetoSalenDeLasCategoriasElegidas",
+      "DominioTest.cadaDificultadTraeSuCantidadDeResiduos"
+    ]
+  },
+  "CP-025": {
+    "app": [
+      "InsigniaTest.laRachaEntreRetosSigueDeUnaPartidaAOtraYUnErrorLaCorta",
+      "InsigniaTest.lasRachasDanSusInsigniasConLaRachaEntreRetos",
+      "InsigniaTest.coralFelizSeAlcanzaUniendoDosRetosMediosSinErrores",
+      "RepositorioJuegoTest.laRachaEntreRetosSigueEnLaPartidaSiguienteYUnErrorLaCorta"
+    ],
+    "backend": [
+      "DominioTest.lasRachasSeMidenEntreRetos"
+    ]
+  },
+  "CP-026": {
+    "app": [
+      "FlujoDocenteTest.laDocenteAgregaUnNinoComparteSuCodigoYDespuesLoQuita",
+      "AgregarNinoViewModelTest.delApellidoSoloQuedaLaInicialEnMayuscula",
+      "ServicioDocenteEnMemoriaTest.regenerarCambiaSoloElCodigoDeEseNinoYSuAcudienteSigueVinculado"
+    ],
+    "backend": [
+      "ApiTest.vincularOtroHijoYQuitarNinos"
+    ]
+  },
+  "CP-027": {
+    "app": [
+      "EditarPerfilViewModelTest.conLasMismasReglasDelRegistroUnCampoVacioOUnCorreoMalEscritoNoSeGuardan",
+      "EditarPerfilViewModelTest.elCorreoEnUsoBloqueaGuardarHastaEscribirOtro",
+      "EditarPerfilViewModelTest.sinConexionAvisaYSePuedeReintentar",
+      "FlujoDocenteTest.elPerfilEditadoSeVeAlVolverALaCuenta",
+      "FlujoPadresTest.elPerfilEditadoSeVeAlVolverALaCuenta"
+    ]
+  }
+}
