@@ -51,8 +51,7 @@ import com.reciclakids.model.Insignia
 import com.reciclakids.model.MensajeSemana
 import com.reciclakids.model.Residuo
 import com.reciclakids.model.inicioSemana
-import com.reciclakids.ui.common.EstiloMarcador
-import com.reciclakids.ui.common.rayado
+import com.reciclakids.ui.common.IlustracionInsignia
 import com.reciclakids.ui.docente.AvatarNino
 import com.reciclakids.ui.docente.FormaTarjeta
 import com.reciclakids.ui.docente.nombreEnFrase
@@ -125,17 +124,20 @@ internal fun BarraHijo(hijo: HijoVinculado, varios: Boolean, abierto: Boolean, o
     )
 }
 
-/** Medalla provisional: rayada si se ganó, gris lisa si está por descubrir. */
+/** Medalla de la insignia: su ilustración si se ganó, círculo gris liso si está por descubrir. */
 @Composable
-internal fun MedallaInsignia(ganada: Boolean, modifier: Modifier = Modifier, tamano: Dp = 56.dp) {
-    val estilo = EstiloMarcador.Insignia
-    Box(
-        modifier
-            .size(tamano)
-            .clip(CircleShape)
-            .then(if (ganada) Modifier.rayado(estilo.claro, estilo.oscuro, paso = 8.dp) else Modifier.background(Color(0xFFE1E9EC)))
-            .clearAndSetSemantics { }
-    )
+internal fun MedallaInsignia(insignia: Insignia, ganada: Boolean, modifier: Modifier = Modifier, tamano: Dp = 56.dp) {
+    if (ganada) {
+        IlustracionInsignia(insignia, modifier.size(tamano).clearAndSetSemantics { })
+    } else {
+        Box(
+            modifier
+                .size(tamano)
+                .clip(CircleShape)
+                .background(Color(0xFFE1E9EC))
+                .clearAndSetSemantics { }
+        )
+    }
 }
 
 /** Tarjeta verde de la frase interpretativa: el avance en lenguaje claro. */

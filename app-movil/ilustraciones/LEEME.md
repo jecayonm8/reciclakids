@@ -1,32 +1,38 @@
 # Ilustraciones de ReciclaKids (parte 1 del frontend)
 
 Solo ilustraciones. Animaciones, audio y pantallas/backend no se tocan aquí.
+Los prompts para generar lo que falte están en [PROMPTS.md](PROMPTS.md), listos para copiar y pegar.
 
 ## Agregar una ilustración nueva (3 pasos)
 
-1. **Recórtala** si trae fondo blanco:
-   `python herramientas/recortar_fondo.py entrada.png salida.png` (objetos: `--objeto`; con sombra gris: `--tol 24`).
+1. **Recórtala** si trae fondo blanco (`herramientas/recortar_fondo.py`):
+   - Personaje de IA (1024 px, con estrellitas o «z»): `python recortar_fondo.py entrada.png salida.png --ampliar 1 --recorte 0 --motas 0.0008 --maximo 640 --paleta`
+   - Objeto: `... --objeto --ampliar 1 --recorte 0 --maximo 448 --paleta`
+   - Medalla redonda (insignias, acuario, logo): `... --circulo --maximo 640` (sin `--paleta`: los degradados se escalonan)
 2. **Cópiala** a `app/src/main/res/drawable-nodpi/` con nombre en minúsculas y guion bajo (`pulpo_flota.png`).
 3. **Conéctala** donde hoy hay un marcador rayado (`MarcadorIlustracion`). Casi siempre es una línea en
-   `app/src/main/java/com/reciclakids/ui/common/Ilustraciones.kt` (residuos, insignias, avatares) o en
-   `PersonajeMarino.kt` (pez, tortuga, pulpo).
+   `app/src/main/java/com/reciclakids/ui/common/Ilustraciones.kt` (personajes, residuos, insignias, acuario, avatares).
 
 > Al generar con IA pide: **fondo blanco liso, sin sombra en el piso, personaje completo, 1024 × 1024**.
-> Así el recorte sale limpio. Mismo estilo que el pez cartero y la tortuga con capa.
+> Mismo estilo que el pez guía y la tortuga con capa.
 
 ## Ya conectadas (se ven en la app)
 
-| Archivo en `drawable-nodpi` | Origen | Dónde sale |
-|---|---|---|
-| `amiga_tortuga.png` | 0.2 UI (UI-29) | Insignia «Amiga tortuga»: UI-29 y colección UI-30 |
-| `pez_cartero.png` | 0.2 UI (UI-08) | Recuperar contraseña |
-| `pez_guia.png` | 0.2 UI (UI-09) | Ingreso del código del reto |
-| `peces_dormidos.png` | 0.2 UI (UI-32) | Tiempo de juego terminado |
-| `tortuga_mascota.png` | 0.2 UI (UI-29): la tortuga con capa, con la cintura difuminada | Selector de modo (personaje Tortuga) |
-| `caneca_blanca / negra / verde.png` | 0.2 UI (UI-12) | Juego, tutorial (traen su rótulo dibujado) |
-| `residuo_botella.png` | 0.2 UI | Juego, tutorial, vista previa del reto |
-| `residuo_lata.png`, `residuo_restos.png` | Canva | Juego y vista previa (**baja resolución**) |
-| `avatar_nino.png` (pez guía) y `avatar_nina.png` (tortuga con capa) | 0.2 UI | Selección «¿Quién eres?», menú, listas de docente y padres |
+| Archivo(s) en `drawable-nodpi` | Dónde sale |
+|---|---|
+| `logo_reciclakids` | Bienvenida (Splash) |
+| `ic_launcher_fondo` + `ic_launcher_frente` | Ícono de la app (adaptable; el frente es el emblema del logo, provisional) |
+| `pez_*`, `tortuga_*`, `pulpo_*` (flota, saluda, celebra, duerme) | `PersonajeMarino`. Hoy solo se ve la tortuga que saluda (selector de modo): el pez y el pulpo se verán cuando el personaje de cada caneca se anime (parte 2) |
+| `pulpo_casi` | Mensaje «¡Casi!» del juego (52 dp) |
+| `acuario_nivel_1` … `4` | Menú del acuario (UI-10), según el progreso |
+| `insignia_*` (7) + `amiga_tortuga` | Colección de insignias (UI-30) e insignia obtenida (UI-29) |
+| `residuo_papel`, `carton`, `cascara`, `servilleta`, `empaque`, `lata` (+ `botella`, `restos` anteriores) | Juego, vista previa del reto |
+| `mano_arrastre` | Tutorial de arrastre (UI-11) |
+| `vacio_grupo` | Mi grupo vacío |
+| `vacio_acuario` | Tablero del docente vacío y código no disponible |
+| `vacio_acuario_nuevo` | Inicio de padres sin datos |
+| `avatar_nino` (pez guía) y `avatar_nina` (tortuga con capa) | «¿Quién eres?», menú, listas de docente y padres |
+| `pez_cartero`, `pez_guia`, `peces_dormidos`, `caneca_blanca / negra / verde` | Recuperar contraseña, código del reto, tiempo terminado, juego (0.2 UI) |
 
 **Tortuga:** la oficial es la de capa y camiseta de reciclaje (UI-29). La de gorra y botella del Canva se descartó.
 
@@ -36,26 +42,22 @@ de la app, así que hoy se reparte por el nombre (`Ilustraciones.avatarDe`: mism
 Pendiente de «Pantallas y backend»: que la docente elija niño o niña al agregarlo y que el backend guarde
 solo esas dos opciones (hoy `DocenteServicio.Avatares` trae 8 nombres). Al hacerlo, solo cambia `avatarDe`.
 
-## Faltan (generar con Claude Design u otra IA)
+## Faltan o conviene regenerar
 
-| # | Qué | Dónde se conecta | Nota |
-|---|---|---|---|
-| 1 | Logo «ReciclaKids» (200 dp) | `SplashScreen` | Hoy marcador «logo» |
-| 2 | **Pez** solo, sin marco (4 poses: flota, saluda, celebra, duerme) | `PersonajeMarino` (Pez) | El de `pez_guia` y `pez_cartero` va dentro de un círculo |
-| 3 | **Pulpo** (4 poses) + versión pequeña 52 dp para «¡Casi!» | `PersonajeMarino` (Pulpo) y `MensajeCasi` en `JuegoScreen` | No existe en ningún documento |
-| 4 | **Tortuga con capa**, cuerpo completo (4 poses: flota, saluda, celebra, duerme) | `PersonajeMarino` (Tortuga) | Hoy sale el busto de UI-29, cortado a la cintura |
-| 5 | Acuario por nivel: 1 agua turbia sin vida · 2 aparece el pez · 3 pez y tortuga · 4 pez, tortuga y pulpo | `MenuAcuarioScreen.personajesDelNivel` | 150 dp |
-| 6 | Mano con gesto de arrastre | `TutorialArrastreScreen` | 92 dp |
-| 7 | Residuos: papel, cartón, cáscara de banano, servilleta usada, empaque metalizado | `Ilustraciones.residuo` (ids `papel`, `carton`, `cascara`, `servilleta`, `empaque`) | El «papel» de Canva es un ícono de documento, no sirve |
-| 8 | Insignias (7): Rápido como pez, Racha de 5, 5 retos diarios, Pulpo ordenado, Agua cristalina, Coral feliz, Guardián del mar | `Ilustraciones.insignia` | Hoy se ve el marcador. En `por-conectar/` hay 4 hexágonos genéricos de Canva por si se quiere algo provisional |
-| 9 | Estados vacíos: grupo vacío, acuario vacío (tablero), biblioteca vacía, acuario nuevo (inicio de padres) | `EstadoVacioDocente` (150 dp) | Hoy marcadores de texto |
-| 10 | Ícono de la app (launcher) | `res/mipmap-*` y `drawable/ic_launcher_*` | Sigue el robot verde de Android |
+| Qué | Dónde | Nota |
+|---|---|---|
+| `vacio_biblioteca`: caja o estante vacío con la tortuga asomando | Biblioteca de retos vacía (`BibliotecaRetosScreen`) | Hoy marcador de texto. El archivo que llegó con ese nombre era la pecera vacía, por eso es `vacio_acuario` |
+| `ic_launcher_frente` definitivo (cara del pez o emblema) | Ícono | El actual sale del logo; el fondo (`ic_launcher_fondo`) llegó con el nombre `ic_launcher_frente` |
+| `tortuga_saluda` y `tortuga_flota` **con capa verde** | `PersonajeMarino` | Llegaron sin capa (se ve el caparazón); `celebra` y `duerme` sí la traen |
+| `residuo_restos` en alta resolución | Juego | Sigue siendo el del Canva (≈ 80 × 99 px) |
 
-## Calidad: lo que conviene regenerar aunque ya se vea
+## Calidad
 
-- `amiga_tortuga.png` y `tortuga_mascota.png` vienen **cortadas a la cintura** en el diseño. La insignia se apoya abajo del círculo para que el marco haga de corte; la mascota tiene la cintura difuminada. Falta la versión de cuerpo completo (ver item 4).
-- `residuo_lata.png` (≈60 × 99 px) y `residuo_restos.png` (≈80 × 99) son de baja resolución: se ven un poco blandos en pantallas grandes.
-- `avatar_nino.png` y `avatar_nina.png` (384 px) salen del pez guía y del busto de la tortuga; si se genera arte nuevo de los personajes, rehacerlos.
+- `insignia_guardian_del_mar` trae el texto «Guardián del mar» dibujado dentro de la imagen (no se traduce ni lo lee el lector de pantalla; la tarjeta ya dice el nombre aparte).
+- `amiga_tortuga.png` viene **cortada a la cintura** del diseño UI-29: se apoya abajo del círculo para que el marco haga de corte.
+- `vacio_grupo`: el respaldo de las sillitas quedó blanco; se ve bien sobre fondo claro (las pantallas del docente), no sobre oscuro.
+- Peso: personajes, objetos y vacíos van como PNG de 256 colores (≈ 50 KB); las medallas, acuario y logo en color completo
+  (≈ 400 KB). En total ≈ 6 MB.
 
 ## `por-conectar/`
 
@@ -68,4 +70,4 @@ para no engordar el APK; cópialos a `drawable-nodpi/` cuando los uses.
 Delfín y tortuga con caneca (prototipo de Canva descartado), la tortuga con gorra y botella del Canva y las seis caras
 de niños (los avatares son ahora solo el pez y la tortuga), `por-conectar/tortuga_senala.png` (otra tortuga que no es la
 de capa), canecas azul y amarilla (el código colombiano es blanca, negra y verde), fondos de océano (la app ya dibuja el suyo
-con `FondoSubmarino`) y las capturas de pantalla.
+con `FondoSubmarino`), la lata y los restos viejos del Canva (reemplazados) y las capturas de pantalla.

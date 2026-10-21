@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.reciclakids.R
 import com.reciclakids.ui.theme.ReciclaKidsColors
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 
@@ -25,9 +24,8 @@ enum class AnimacionPersonaje(val etiqueta: String, val periodoMs: Int) {
 }
 
 /**
- * Personaje marino. Mientras llega la ilustración definitiva muestra un marcador
- * a tamaño y posición reales. La tortuga es la de capa y camiseta de reciclaje (UI-29): por ahora
- * es el busto con la cintura difuminada; falta la de cuerpo completo en sus cuatro poses.
+ * Personaje marino en una de sus cuatro poses (arte en `Ilustraciones.personaje`).
+ * La tortuga es la de capa y camiseta de reciclaje (UI-29).
  */
 @Composable
 fun PersonajeMarino(
@@ -36,18 +34,12 @@ fun PersonajeMarino(
     animacion: AnimacionPersonaje = AnimacionPersonaje.Flotar,
     tamano: Dp = 150.dp,
 ) {
-    val arte = when (tipo) {
-        TipoPersonaje.Tortuga -> R.drawable.tortuga_mascota
-        else -> null
-    }
-    val movimiento = modifier
-        .flotar(periodoMs = animacion.periodoMs)
-        .size(tamano)
-    if (arte != null) {
-        IlustracionImagen(arte, movimiento)
-    } else {
-        MarcadorIlustracion(etiqueta = "${tipo.etiqueta}\n${animacion.etiqueta}", modifier = movimiento)
-    }
+    IlustracionImagen(
+        recurso = Ilustraciones.personaje(tipo, animacion),
+        modifier = modifier
+            .flotar(periodoMs = animacion.periodoMs)
+            .size(tamano),
+    )
 }
 
 @Preview

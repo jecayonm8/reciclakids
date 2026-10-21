@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,7 +39,6 @@ import com.reciclakids.ui.common.Caneca
 import com.reciclakids.ui.common.EstadoCaneca
 import com.reciclakids.ui.common.FondoSubmarino
 import com.reciclakids.ui.common.IlustracionImagen
-import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.common.TipoCaneca
 import com.reciclakids.ui.common.VarianteBotonNino
 import com.reciclakids.ui.theme.BalooDos
@@ -163,20 +161,18 @@ fun TutorialArrastreScreen(onEntendido: () -> Unit, onRepetirVoz: () -> Unit, mo
                     ) {
                         IlustracionImagen(R.drawable.residuo_botella, Modifier.padding(12.dp))
                     }
-                    MarcadorIlustracion(
-                        etiqueta = "mano\ngesto",
+                    IlustracionImagen(
+                        recurso = R.drawable.mano_arrastre,
                         modifier = Modifier
                             .align(Alignment.TopCenter)
-                            .padding(top = 34.dp)
+                            .padding(top = 84.dp)
                             .graphicsLayer {
                                 translationY = Recorrido.toPx() * descenso
                                 scaleX = presion
                                 scaleY = presion
                                 alpha = opacidadMano
                             }
-                            .size(92.dp)
-                            .background(Color.White.copy(alpha = 0.55f), CircleShape)
-                            .border(4.dp, Color.White, CircleShape),
+                            .size(100.dp),
                     )
                     Caneca(
                         tipo = TipoCaneca.Blanca,

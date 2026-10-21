@@ -69,11 +69,10 @@ import com.reciclakids.ui.common.BotonCircularNino
 import com.reciclakids.ui.common.Caneca
 import com.reciclakids.ui.common.EstadoCaneca
 import com.reciclakids.ui.common.EstadoResiduo
-import com.reciclakids.ui.common.EstiloMarcador
 import com.reciclakids.ui.common.FondoSubmarino
+import com.reciclakids.ui.common.IlustracionImagen
 import com.reciclakids.ui.common.Ilustraciones
 import com.reciclakids.ui.common.IndicadorRacha
-import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.common.ObjetoResiduo
 import com.reciclakids.ui.common.TipoCaneca
 import com.reciclakids.ui.common.caneca
@@ -433,7 +432,7 @@ private fun MensajeCasi(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        MarcadorIlustracion("pulpo", Modifier.size(52.dp), estilo = EstiloMarcador.Avatar)
+        IlustracionImagen(R.drawable.pulpo_casi, Modifier.size(52.dp))
         Text(
             stringResource(R.string.juego_casi),
             fontFamily = BalooDos,

@@ -51,7 +51,8 @@ import com.reciclakids.R
 import com.reciclakids.ui.common.AcuarioEstado
 import com.reciclakids.ui.common.AvatarIlustrado
 import com.reciclakids.ui.common.BotonNino
-import com.reciclakids.ui.common.MarcadorIlustracion
+import com.reciclakids.ui.common.IlustracionImagen
+import com.reciclakids.ui.common.Ilustraciones
 import com.reciclakids.ui.common.VarianteBotonNino
 import com.reciclakids.ui.common.flotar
 import com.reciclakids.ui.theme.BalooDos
@@ -60,13 +61,6 @@ import com.reciclakids.ui.theme.ReciclaKidsColors
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 
 /** Qué personajes ya viven en el acuario según su nivel. Marcadores hasta tener las ilustraciones. */
-private fun personajesDelNivel(nivel: Int) = when (nivel) {
-    1 -> "agua turbia\nsin vida"
-    2 -> "pez\naparece"
-    3 -> "pez y\ntortuga"
-    else -> "pez, tortuga\ny pulpo"
-}
-
 /**
  * UI-10 Menú · acuario. El progreso se muestra como el estado del mundo, sin números:
  * el acuario se limpia a medida que el niño completa retos.
@@ -109,7 +103,7 @@ fun MenuAcuarioScreen(
                     PastillaConexion(hayConexion)
                 }
                 Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    MarcadorIlustracion(personajesDelNivel(nivel), Modifier.flotar().size(150.dp))
+                    IlustracionImagen(Ilustraciones.acuario(nivel), Modifier.flotar().size(200.dp))
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Box {

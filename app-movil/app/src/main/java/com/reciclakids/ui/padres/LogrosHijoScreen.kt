@@ -134,7 +134,7 @@ private fun TarjetaLogro(logro: LogroHijo, datos: LogrosHijo, modifier: Modifier
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        MedallaInsignia(ganada = logro.ganada, tamano = 64.dp)
+        MedallaInsignia(logro.insignia, ganada = logro.ganada, tamano = 64.dp)
         Text(
             logro.insignia.nombre,
             style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp, lineHeight = 18.sp),

@@ -88,6 +88,7 @@ import com.reciclakids.model.residuosPorReto
 import com.reciclakids.ui.common.AvatarIlustrado
 import com.reciclakids.ui.common.EstiloMarcador
 import com.reciclakids.ui.common.FiguraDigito
+import com.reciclakids.ui.common.IlustracionImagen
 import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.common.caneca
 import com.reciclakids.ui.common.flotar
@@ -290,10 +291,19 @@ internal fun EstadoVacioDocente(
     texto: String,
     modifier: Modifier = Modifier,
     flotante: Boolean = false,
+    @DrawableRes arte: Int? = null,
     acciones: @Composable ColumnScope.() -> Unit = {},
 ) {
     PantallaCentrada(modifier) {
-        if (ilustracion != null) {
+        if (arte != null) {
+            IlustracionImagen(
+                recurso = arte,
+                modifier = Modifier
+                    .then(if (flotante) Modifier.flotar(amplitud = 8.dp) else Modifier)
+                    .size(150.dp)
+                    .clearAndSetSemantics { },
+            )
+        } else if (ilustracion != null) {
             MarcadorIlustracion(
                 etiqueta = ilustracion,
                 modifier = Modifier

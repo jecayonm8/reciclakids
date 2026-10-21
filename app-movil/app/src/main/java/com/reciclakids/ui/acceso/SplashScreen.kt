@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.sp
 import com.reciclakids.R
 import com.reciclakids.ui.common.Burbuja
 import com.reciclakids.ui.common.FondoSubmarino
-import com.reciclakids.ui.common.MarcadorIlustracion
+import com.reciclakids.ui.common.IlustracionImagen
 import com.reciclakids.ui.common.flotar
 import com.reciclakids.ui.common.sombraTitular
 import com.reciclakids.ui.theme.BalooDos
@@ -95,7 +95,7 @@ fun SplashScreen(onContinuar: () -> Unit, modifier: Modifier = Modifier, esperaM
             },
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                MarcadorIlustracion("logo\nReciclaKids", Modifier.flotar().size(200.dp))
+                IlustracionImagen(R.drawable.logo_reciclakids, Modifier.flotar().size(200.dp))
                 Text(
                     text = stringResource(R.string.app_name),
                     style = TextStyle(

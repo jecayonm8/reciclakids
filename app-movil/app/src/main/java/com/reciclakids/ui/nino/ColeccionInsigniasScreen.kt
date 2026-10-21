@@ -110,7 +110,7 @@ fun ColeccionInsigniasScreen(
                             nombre = insignia.nombre,
                             nota = if (ganada) insignia.requisito else notaPendiente(insignia, progreso, diasConReto),
                             ganada = ganada,
-                            ilustracion = Ilustraciones.insignia(insignia)?.let { painterResource(it) },
+                            ilustracion = painterResource(Ilustraciones.insignia(insignia)),
                             onClick = { onTocar(insignia) },
                         )
                     }

@@ -81,6 +81,7 @@ fun TableroDocenteScreen(
             EstadoUi.Error -> EstadoErrorRed(onReintentar, Modifier.padding(relleno))
             is EstadoUi.Vacio -> EstadoVacioDocente(
                 ilustracion = stringResource(R.string.tablero_vacio_ilustracion),
+                arte = R.drawable.vacio_acuario,
                 titulo = stringResource(R.string.tablero_vacio_titulo),
                 texto = stringResource(R.string.tablero_vacio_texto),
                 modifier = Modifier.padding(relleno),
