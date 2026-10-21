@@ -85,7 +85,7 @@ fun SelectorModoScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(28.dp, Alignment.CenterVertically),
                 ) {
-                    PersonajeMarino(TipoPersonaje.Tortuga, animacion = AnimacionPersonaje.Animar, tamano = 170.dp)
+                    PersonajeMarino(TipoPersonaje.Tortuga, animacion = AnimacionPersonaje.Animar, tamano = 210.dp)
                     BotonNino(
                         texto = stringResource(R.string.selector_jugar),
                         onClick = onJugar,

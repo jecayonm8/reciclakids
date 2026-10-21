@@ -26,7 +26,8 @@ enum class AnimacionPersonaje(val etiqueta: String, val periodoMs: Int) {
 
 /**
  * Personaje marino. Mientras llega la ilustración definitiva muestra un marcador
- * a tamaño y posición reales.
+ * a tamaño y posición reales. La tortuga es la de capa y camiseta de reciclaje (UI-29): por ahora
+ * es el busto con la cintura difuminada; falta la de cuerpo completo en sus cuatro poses.
  */
 @Composable
 fun PersonajeMarino(

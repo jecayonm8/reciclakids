@@ -21,21 +21,19 @@ import com.reciclakids.model.Insignia
  * mostrando el [MarcadorIlustracion]; la lista de lo que falta está en app-movil/ilustraciones/LEEME.md.
  */
 object Ilustraciones {
-    private val avatares = intArrayOf(
-        R.drawable.avatar_1,
-        R.drawable.avatar_2,
-        R.drawable.avatar_3,
-        R.drawable.avatar_4,
-        R.drawable.avatar_5,
-        R.drawable.avatar_6,
-    )
+    /** Catálogo de avatares: solo dos. El pez guía representa al niño y la tortuga con capa a la niña. */
+    val avatarNino: Int get() = R.drawable.avatar_nino
+
+    val avatarNina: Int get() = R.drawable.avatar_nina
 
     /**
-     * Avatar provisional: el niño todavía no elige avatar (no se guarda), así que se asigna uno
-     * estable a partir de su nombre. Mismo nombre, mismo avatar en todas las pantallas.
+     * Avatar provisional: la app todavía no sabe si es niño o niña (el campo `avatar` que guarda el
+     * backend no llega al modelo de la app), así que se asigna uno estable a partir del nombre.
+     * Mismo nombre, mismo avatar en todas las pantallas. Cuando exista la elección, solo cambia esta función.
      */
     @DrawableRes
-    fun avatarDe(nombre: String): Int = avatares[nombre.trim().lowercase().hashCode().mod(avatares.size)]
+    fun avatarDe(nombre: String): Int =
+        if (nombre.trim().lowercase().hashCode().mod(2) == 0) avatarNino else avatarNina
 
     /** Arte de cada residuo por su id (ver CatalogoResiduos); null si todavía no existe. */
     @DrawableRes

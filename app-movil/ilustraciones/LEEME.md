@@ -12,7 +12,7 @@ Solo ilustraciones. Animaciones, audio y pantallas/backend no se tocan aquí.
    `PersonajeMarino.kt` (pez, tortuga, pulpo).
 
 > Al generar con IA pide: **fondo blanco liso, sin sombra en el piso, personaje completo, 1024 × 1024**.
-> Así el recorte sale limpio. Mismo estilo que el pez cartero y la tortuga con gorra.
+> Así el recorte sale limpio. Mismo estilo que el pez cartero y la tortuga con capa.
 
 ## Ya conectadas (se ven en la app)
 
@@ -22,23 +22,28 @@ Solo ilustraciones. Animaciones, audio y pantallas/backend no se tocan aquí.
 | `pez_cartero.png` | 0.2 UI (UI-08) | Recuperar contraseña |
 | `pez_guia.png` | 0.2 UI (UI-09) | Ingreso del código del reto |
 | `peces_dormidos.png` | 0.2 UI (UI-32) | Tiempo de juego terminado |
-| `tortuga_mascota.png` | Canva (tortuga con gorra y botella) | Selector de modo (personaje Tortuga) |
+| `tortuga_mascota.png` | 0.2 UI (UI-29): la tortuga con capa, con la cintura difuminada | Selector de modo (personaje Tortuga) |
 | `caneca_blanca / negra / verde.png` | 0.2 UI (UI-12) | Juego, tutorial (traen su rótulo dibujado) |
 | `residuo_botella.png` | 0.2 UI | Juego, tutorial, vista previa del reto |
 | `residuo_lata.png`, `residuo_restos.png` | Canva | Juego y vista previa (**baja resolución**) |
-| `avatar_1` … `avatar_6.png` | Canva | Selección «¿Quién eres?», menú, listas de docente y padres |
+| `avatar_nino.png` (pez guía) y `avatar_nina.png` (tortuga con capa) | 0.2 UI | Selección «¿Quién eres?», menú, listas de docente y padres |
 
-Los avatares son **provisionales**: el niño todavía no elige avatar (no se guarda), así que se asigna uno
-fijo a partir de su nombre (`Ilustraciones.avatarDe`). Cuando exista la elección, solo cambia esa función.
+**Tortuga:** la oficial es la de capa y camiseta de reciclaje (UI-29). La de gorra y botella del Canva se descartó.
+
+**Avatares:** solo hay dos, un animal marino por cada uno: **niño = pez guía**, **niña = tortuga con capa**.
+Todavía es **provisional quién recibe cuál**: el backend guarda un `avatar` por niño, pero no llega al modelo
+de la app, así que hoy se reparte por el nombre (`Ilustraciones.avatarDe`: mismo nombre, mismo avatar).
+Pendiente de «Pantallas y backend»: que la docente elija niño o niña al agregarlo y que el backend guarde
+solo esas dos opciones (hoy `DocenteServicio.Avatares` trae 8 nombres). Al hacerlo, solo cambia `avatarDe`.
 
 ## Faltan (generar con Claude Design u otra IA)
 
 | # | Qué | Dónde se conecta | Nota |
 |---|---|---|---|
 | 1 | Logo «ReciclaKids» (200 dp) | `SplashScreen` | Hoy marcador «logo» |
-| 2 | **Pez** solo, sin marco (4 poses: flota, celebra, saluda, duerme) | `PersonajeMarino` (Pez) | El de `pez_guia` y `pez_cartero` va dentro de un círculo |
+| 2 | **Pez** solo, sin marco (4 poses: flota, saluda, celebra, duerme) | `PersonajeMarino` (Pez) | El de `pez_guia` y `pez_cartero` va dentro de un círculo |
 | 3 | **Pulpo** (4 poses) + versión pequeña 52 dp para «¡Casi!» | `PersonajeMarino` (Pulpo) y `MensajeCasi` en `JuegoScreen` | No existe en ningún documento |
-| 4 | Tortuga: poses celebra y duerme | `PersonajeMarino` (Tortuga) | Saluda ya usa `tortuga_mascota` |
+| 4 | **Tortuga con capa**, cuerpo completo (4 poses: flota, saluda, celebra, duerme) | `PersonajeMarino` (Tortuga) | Hoy sale el busto de UI-29, cortado a la cintura |
 | 5 | Acuario por nivel: 1 agua turbia sin vida · 2 aparece el pez · 3 pez y tortuga · 4 pez, tortuga y pulpo | `MenuAcuarioScreen.personajesDelNivel` | 150 dp |
 | 6 | Mano con gesto de arrastre | `TutorialArrastreScreen` | 92 dp |
 | 7 | Residuos: papel, cartón, cáscara de banano, servilleta usada, empaque metalizado | `Ilustraciones.residuo` (ids `papel`, `carton`, `cascara`, `servilleta`, `empaque`) | El «papel» de Canva es un ícono de documento, no sirve |
@@ -48,9 +53,9 @@ fijo a partir de su nombre (`Ilustraciones.avatarDe`). Cuando exista la elecció
 
 ## Calidad: lo que conviene regenerar aunque ya se vea
 
-- `amiga_tortuga.png` viene **cortada a la cintura** en el diseño; se apoya abajo del círculo para que el marco haga de corte. Falta la versión de cuerpo completo.
-- `residuo_lata.png` (≈60 × 99 px), `residuo_restos.png` (≈80 × 99) y `avatar_*.png` (≈120 px) son de baja resolución: se ven un poco blandos en pantallas grandes.
-- `tortuga_mascota.png` (376 × 475) es la tortuga con gorra del Canva. Hay otra tortuga más clara (`por-conectar/tortuga_senala.png`) que no coincide con el estilo de las demás.
+- `amiga_tortuga.png` y `tortuga_mascota.png` vienen **cortadas a la cintura** en el diseño. La insignia se apoya abajo del círculo para que el marco haga de corte; la mascota tiene la cintura difuminada. Falta la versión de cuerpo completo (ver item 4).
+- `residuo_lata.png` (≈60 × 99 px) y `residuo_restos.png` (≈80 × 99) son de baja resolución: se ven un poco blandos en pantallas grandes.
+- `avatar_nino.png` y `avatar_nina.png` (384 px) salen del pez guía y del busto de la tortuga; si se genera arte nuevo de los personajes, rehacerlos.
 
 ## `por-conectar/`
 
@@ -60,6 +65,7 @@ para no engordar el APK; cópialos a `drawable-nodpi/` cuando los uses.
 
 ## No se usó
 
-Delfín y tortuga con caneca (prototipo de Canva descartado), canecas azul y amarilla (el código colombiano es blanca,
-negra y verde), el avatar con foto de «Salomé» (es el mismo de `avatar_1`), fondos de océano (la app ya dibuja el suyo
+Delfín y tortuga con caneca (prototipo de Canva descartado), la tortuga con gorra y botella del Canva y las seis caras
+de niños (los avatares son ahora solo el pez y la tortuga), `por-conectar/tortuga_senala.png` (otra tortuga que no es la
+de capa), canecas azul y amarilla (el código colombiano es blanca, negra y verde), fondos de océano (la app ya dibuja el suyo
 con `FondoSubmarino`) y las capturas de pantalla.
