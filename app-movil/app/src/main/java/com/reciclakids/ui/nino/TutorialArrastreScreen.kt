@@ -38,8 +38,8 @@ import com.reciclakids.R
 import com.reciclakids.ui.common.BotonNino
 import com.reciclakids.ui.common.Caneca
 import com.reciclakids.ui.common.EstadoCaneca
-import com.reciclakids.ui.common.EstiloMarcador
 import com.reciclakids.ui.common.FondoSubmarino
+import com.reciclakids.ui.common.IlustracionImagen
 import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.common.TipoCaneca
 import com.reciclakids.ui.common.VarianteBotonNino
@@ -148,8 +148,7 @@ fun TutorialArrastreScreen(onEntendido: () -> Unit, onRepetirVoz: () -> Unit, mo
                     BotonRepetirVoz(onRepetirVoz, tamano = 64.dp)
                 }
                 Box(Modifier.weight(1f).fillMaxWidth().clearAndSetSemantics { }) {
-                    MarcadorIlustracion(
-                        etiqueta = "botella\nplástica",
+                    Box(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(top = 20.dp)
@@ -158,10 +157,12 @@ fun TutorialArrastreScreen(onEntendido: () -> Unit, onRepetirVoz: () -> Unit, mo
                                 alpha = opacidadResiduo
                             }
                             .size(120.dp)
+                            .background(Color.White, RoundedCornerShape(28.dp))
                             .border(3.dp, Color.White, RoundedCornerShape(28.dp)),
-                        forma = RoundedCornerShape(28.dp),
-                        estilo = EstiloMarcador.Residuo,
-                    )
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        IlustracionImagen(R.drawable.residuo_botella, Modifier.padding(12.dp))
+                    }
                     MarcadorIlustracion(
                         etiqueta = "mano\ngesto",
                         modifier = Modifier

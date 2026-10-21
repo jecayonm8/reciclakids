@@ -150,7 +150,7 @@ private fun SelectorHijo(hijos: List<HijoVinculado>, elegido: String, onElegir: 
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        AvatarNino(Modifier.size(36.dp))
+                        AvatarNino(Modifier.size(36.dp), opcion.nombre)
                         Column(Modifier.weight(1f)) {
                             Text(opcion.nombre, style = MaterialTheme.typography.bodyLarge)
                             Text(detalleHijo(opcion), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

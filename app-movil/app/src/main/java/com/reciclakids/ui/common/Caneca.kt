@@ -12,13 +12,13 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -63,18 +64,20 @@ enum class TipoCaneca(
     val fondo: Color,
     val borde: Color,
     val personaje: TipoPersonaje,
+    /** Ilustración de la caneca (0.2 UI): trae su ícono y su rótulo dibujados. */
+    @param:DrawableRes val arte: Int,
 ) {
     Blanca(
         R.string.caneca_blanca, R.string.caneca_blanca_descripcion, R.drawable.ic_caneca_reciclaje,
-        ReciclaKidsColors.canecaBlanca, ReciclaKidsColors.canecaBlancaBorde, TipoPersonaje.Pez,
+        ReciclaKidsColors.canecaBlanca, ReciclaKidsColors.canecaBlancaBorde, TipoPersonaje.Pez, R.drawable.caneca_blanca,
     ),
     Negra(
         R.string.caneca_negra, R.string.caneca_negra_descripcion, R.drawable.ic_caneca_no_aprovechable,
-        ReciclaKidsColors.canecaNegra, ReciclaKidsColors.canecaNegra, TipoPersonaje.Pulpo,
+        ReciclaKidsColors.canecaNegra, ReciclaKidsColors.canecaNegra, TipoPersonaje.Pulpo, R.drawable.caneca_negra,
     ),
     Verde(
         R.string.caneca_verde, R.string.caneca_verde_descripcion, R.drawable.ic_caneca_organico,
-        ReciclaKidsColors.canecaVerde, ReciclaKidsColors.canecaVerde, TipoPersonaje.Tortuga,
+        ReciclaKidsColors.canecaVerde, ReciclaKidsColors.canecaVerde, TipoPersonaje.Tortuga, R.drawable.caneca_verde,
     ),
 }
 
@@ -106,7 +109,6 @@ enum class EstadoCaneca {
     Brillante,
 }
 
-private val FormaTapa = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomEnd = 5.dp, bottomStart = 5.dp)
 private val FormaCuerpo = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp, bottomEnd = 22.dp, bottomStart = 22.dp)
 
 /**
@@ -151,23 +153,18 @@ fun Caneca(
         contentAlignment = Alignment.TopCenter,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy((-7).dp)) {
-                Box(
-                    Modifier
-                        .size(ancho - 18.dp, 26.dp)
-                        .background(tipo.fondo, FormaTapa)
-                        .border(3.dp, tipo.borde, FormaTapa)
+            // La ilustración mide 1,4 veces su ancho; el halo late alrededor de toda la caneca.
+            Box(
+                modifier = Modifier
+                    .size(ancho, ancho * 1.4f)
+                    .haloPulsante(FormaCuerpo, activo = encendida),
+            ) {
+                Image(
+                    painter = painterResource(tipo.arte),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit,
                 )
-                Box(
-                    modifier = Modifier
-                        .size(ancho, 110.dp)
-                        .haloPulsante(FormaCuerpo, activo = encendida)
-                        .background(tipo.fondo, FormaCuerpo)
-                        .border(3.dp, if (encendida) ReciclaKidsColors.halo else tipo.borde, FormaCuerpo),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Image(painterResource(tipo.icono), contentDescription = null, modifier = Modifier.size(46.dp))
-                }
             }
             Text(
                 text = stringResource(tipo.etiqueta),

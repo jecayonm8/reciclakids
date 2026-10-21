@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -36,6 +37,7 @@ import com.reciclakids.model.Insignia
 import com.reciclakids.model.ProgresoNino
 import com.reciclakids.model.faltante
 import com.reciclakids.ui.common.FondoSubmarino
+import com.reciclakids.ui.common.Ilustraciones
 import com.reciclakids.ui.common.TarjetaInsignia
 import com.reciclakids.ui.common.sombraTitular
 import com.reciclakids.ui.theme.BalooDos
@@ -108,6 +110,7 @@ fun ColeccionInsigniasScreen(
                             nombre = insignia.nombre,
                             nota = if (ganada) insignia.requisito else notaPendiente(insignia, progreso, diasConReto),
                             ganada = ganada,
+                            ilustracion = Ilustraciones.insignia(insignia)?.let { painterResource(it) },
                             onClick = { onTocar(insignia) },
                         )
                     }

@@ -47,8 +47,7 @@ import com.reciclakids.R
 import com.reciclakids.model.Insignia
 import com.reciclakids.ui.common.BotonNino
 import com.reciclakids.ui.common.Burbuja
-import com.reciclakids.ui.common.EstiloMarcador
-import com.reciclakids.ui.common.MarcadorIlustracion
+import com.reciclakids.ui.common.IlustracionInsignia
 import com.reciclakids.ui.common.VarianteBotonNino
 import com.reciclakids.ui.common.sombraTitular
 import com.reciclakids.ui.theme.BalooDos
@@ -147,7 +146,7 @@ fun InsigniaObtenidaScreen(
                         .border(8.dp, ReciclaKidsColors.insigniaBorde, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    MarcadorIlustracion("ilustración\n${insignia.nombre.lowercase()}", Modifier.size(170.dp), estilo = EstiloMarcador.Insignia)
+                    IlustracionInsignia(insignia, Modifier.size(214.dp))
                 }
                 Text(
                     insignia.nombre,

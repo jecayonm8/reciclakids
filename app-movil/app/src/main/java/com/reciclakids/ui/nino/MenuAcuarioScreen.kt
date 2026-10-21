@@ -49,8 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
 import com.reciclakids.ui.common.AcuarioEstado
+import com.reciclakids.ui.common.AvatarIlustrado
 import com.reciclakids.ui.common.BotonNino
-import com.reciclakids.ui.common.EstiloMarcador
 import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.common.VarianteBotonNino
 import com.reciclakids.ui.common.flotar
@@ -95,7 +95,7 @@ fun MenuAcuarioScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        MarcadorIlustracion("avatar", Modifier.size(52.dp), estilo = EstiloMarcador.Avatar)
+                        AvatarIlustrado(nombre, Modifier.size(52.dp))
                         Text(
                             text = nombre,
                             fontFamily = BalooDos,

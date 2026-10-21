@@ -35,7 +35,7 @@ import com.reciclakids.R
 import com.reciclakids.ui.common.CasillasCodigo
 import com.reciclakids.ui.common.EstadoCodigo
 import com.reciclakids.ui.common.FondoSubmarino
-import com.reciclakids.ui.common.MarcadorIlustracion
+import com.reciclakids.ui.common.IlustracionImagen
 import com.reciclakids.ui.common.TecladoNumericoNino
 import com.reciclakids.ui.common.flotar
 import com.reciclakids.ui.theme.EscalaFijaNino
@@ -83,7 +83,7 @@ fun CodigoRetoScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    MarcadorIlustracion("pez\nguía", Modifier.flotar().size(84.dp))
+                    IlustracionImagen(R.drawable.pez_guia, Modifier.flotar().size(84.dp))
                     BurbujaPez(estado, Modifier.weight(1f))
                     BotonRepetirVoz(onRepetirVoz)
                 }

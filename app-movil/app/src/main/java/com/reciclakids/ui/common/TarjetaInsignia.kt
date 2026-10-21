@@ -87,7 +87,12 @@ fun TarjetaInsignia(
                     .background(Color.White.copy(alpha = 0.35f), CircleShape)
                     .border(3.dp, Color.White.copy(alpha = 0.6f), CircleShape)
             )
-            ilustracion != null -> Image(ilustracion, contentDescription = null, modifier = Modifier.size(82.dp).clip(CircleShape))
+            ilustracion != null -> Image(
+                ilustracion,
+                contentDescription = null,
+                modifier = Modifier.size(82.dp).clip(CircleShape),
+                alignment = Alignment.BottomCenter,
+            )
             else -> MarcadorIlustracion("ilustración", Modifier.size(82.dp), estilo = EstiloMarcador.Insignia)
         }
         Text(

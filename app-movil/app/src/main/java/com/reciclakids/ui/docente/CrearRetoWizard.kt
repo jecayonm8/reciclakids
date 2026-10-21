@@ -86,6 +86,8 @@ import com.reciclakids.model.RetoDocente
 import com.reciclakids.model.canecasDelJuego
 import com.reciclakids.ui.common.EstiloMarcador
 import com.reciclakids.ui.common.FiguraDigito
+import com.reciclakids.ui.common.IlustracionImagen
+import com.reciclakids.ui.common.Ilustraciones
 import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.common.caneca
 import com.reciclakids.ui.theme.ReciclaKidsColors
@@ -639,16 +641,31 @@ private fun VistaPreviaJuego(categorias: Set<CategoriaResiduo>) {
                 }
                 Box(Modifier.size(80.dp, 34.dp).background(panel, CircleShape))
             }
-            MarcadorIlustracion(
-                etiqueta = residuo.nombre,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 90.dp)
-                    .size(84.dp)
-                    .border(3.dp, Color.White, RoundedCornerShape(20.dp)),
-                forma = RoundedCornerShape(20.dp),
-                estilo = EstiloMarcador.Residuo,
-            )
+            val arteResiduo = Ilustraciones.residuo(residuo.id)
+            if (arteResiduo != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 90.dp)
+                        .size(84.dp)
+                        .background(Color.White, RoundedCornerShape(20.dp))
+                        .border(3.dp, Color.White, RoundedCornerShape(20.dp)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    IlustracionImagen(arteResiduo, Modifier.padding(8.dp))
+                }
+            } else {
+                MarcadorIlustracion(
+                    etiqueta = residuo.nombre,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 90.dp)
+                        .size(84.dp)
+                        .border(3.dp, Color.White, RoundedCornerShape(20.dp)),
+                    forma = RoundedCornerShape(20.dp),
+                    estilo = EstiloMarcador.Residuo,
+                )
+            }
             Row(
                 Modifier.align(Alignment.BottomCenter).padding(bottom = 14.dp),
                 horizontalArrangement = Arrangement.spacedBy(28.dp),
