@@ -90,6 +90,7 @@ fun MiGrupoScreen(
             EstadoUi.Error -> EstadoErrorRed(onReintentar, Modifier.padding(relleno))
             is EstadoUi.Vacio -> EstadoVacioDocente(
                 ilustracion = stringResource(R.string.grupo_vacio_ilustracion),
+                arte = R.drawable.vacio_grupo,
                 titulo = stringResource(R.string.grupo_vacio_titulo),
                 texto = stringResource(R.string.grupo_vacio_texto),
                 modifier = Modifier.padding(relleno),

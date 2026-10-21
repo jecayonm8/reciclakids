@@ -324,7 +324,7 @@ private fun TarjetaInsigniasSemana(insignias: List<LogroHijo>, onVerLogros: () -
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        MedallaInsignia(ganada = true, tamano = 52.dp)
+                        MedallaInsignia(logro.insignia, ganada = true, tamano = 52.dp)
                         Text(logro.insignia.nombre, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
                     }
                 }

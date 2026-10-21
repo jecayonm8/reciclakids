@@ -90,6 +90,7 @@ fun CodigoPublicadoScreen(
             }
             else -> EstadoVacioDocente(
                 ilustracion = stringResource(R.string.tablero_vacio_ilustracion),
+                arte = R.drawable.vacio_acuario,
                 titulo = stringResource(R.string.codigo_no_disponible_titulo),
                 texto = stringResource(R.string.codigo_no_disponible_texto),
                 modifier = Modifier.padding(relleno),

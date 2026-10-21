@@ -119,6 +119,7 @@ fun InicioPadresScreen(
                     )
                     is EstadoUi.Vacio -> EstadoVacioDocente(
                         ilustracion = stringResource(R.string.inicio_vacio_ilustracion),
+                        arte = R.drawable.vacio_acuario_nuevo,
                         titulo = stringResource(R.string.inicio_vacio_titulo),
                         texto = stringResource(R.string.inicio_vacio_texto, hijo.nombre),
                         flotante = true,
@@ -309,7 +310,7 @@ private fun TarjetaUltimoLogro(logro: LogroHijo, hoy: LocalDate) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        MedallaInsignia(ganada = true)
+        MedallaInsignia(logro.insignia, ganada = true)
         Column(Modifier.weight(1f)) {
             val cuando = logro.ganadaEl?.let { textoCuando(it, hoy) }.orEmpty()
             Text(stringResource(R.string.inicio_ultimo_logro, cuando), style = MaterialTheme.typography.bodyMedium, color = TintaLogro)

@@ -1,6 +1,7 @@
 package com.reciclakids.ui.common
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -141,10 +142,17 @@ class ComponentesJuegoTest {
     @Test
     fun acuarioAcotaElNivelFueraDeRango() {
         var nivel by mutableStateOf(0)
-        compose.setContent { ReciclaKidsTheme { AcuarioEstado(nivel) { PersonajeMarino(TipoPersonaje.Pez, tamano = 80.dp) } } }
-        compose.onNodeWithText("pez\nflota").assertIsDisplayed()
+        compose.setContent {
+            ReciclaKidsTheme {
+                AcuarioEstado(nivel) {
+                    Text("dentro del acuario")
+                    PersonajeMarino(TipoPersonaje.Pez, tamano = 80.dp)
+                }
+            }
+        }
+        compose.onNodeWithText("dentro del acuario").assertIsDisplayed()
 
         nivel = 9
-        compose.onNodeWithText("pez\nflota").assertIsDisplayed()
+        compose.onNodeWithText("dentro del acuario").assertIsDisplayed()
     }
 }

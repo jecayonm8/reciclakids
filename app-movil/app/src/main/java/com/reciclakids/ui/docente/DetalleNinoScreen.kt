@@ -57,8 +57,10 @@ import com.reciclakids.R
 import com.reciclakids.model.CategoriaResiduo
 import com.reciclakids.model.Confusion
 import com.reciclakids.model.DetalleNino
+import com.reciclakids.model.Insignia
 import com.reciclakids.model.InsigniaNino
 import com.reciclakids.ui.common.EstiloMarcador
+import com.reciclakids.ui.common.IlustracionInsignia
 import com.reciclakids.ui.common.rayado
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.viewmodel.EstadoUi
@@ -404,6 +406,7 @@ private fun InsigniaMini(insignia: InsigniaNino, modifier: Modifier = Modifier) 
         insignia.nombre,
     )
     val estiloMedalla = EstiloMarcador.Insignia
+    val arte = Insignia.entries.firstOrNull { it.nombre == insignia.nombre }
     Column(
         modifier = modifier
             .then(
@@ -418,18 +421,22 @@ private fun InsigniaMini(insignia: InsigniaNino, modifier: Modifier = Modifier) 
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Box(
-            Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .then(
-                    if (insignia.ganada) {
-                        Modifier.rayado(estiloMedalla.claro, estiloMedalla.oscuro, paso = 8.dp)
-                    } else {
-                        Modifier.background(Color(0xFFE1E9EC))
-                    }
-                )
-        )
+        if (insignia.ganada && arte != null) {
+            IlustracionInsignia(arte, Modifier.size(56.dp))
+        } else {
+            Box(
+                Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .then(
+                        if (insignia.ganada) {
+                            Modifier.rayado(estiloMedalla.claro, estiloMedalla.oscuro, paso = 8.dp)
+                        } else {
+                            Modifier.background(Color(0xFFE1E9EC))
+                        }
+                    )
+            )
+        }
         Text(
             insignia.nombre,
             style = MaterialTheme.typography.labelLarge,

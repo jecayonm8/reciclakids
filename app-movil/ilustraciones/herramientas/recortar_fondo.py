@@ -14,11 +14,21 @@ Uso:
     python recortar_fondo.py entrada.png salida.png            # personaje (anime/cartoon)
     python recortar_fondo.py caneca.jpg caneca.png --objeto    # objetos (caneca, botella…)
     python recortar_fondo.py img.png out.png --tol 24          # fondo con sombra gris suave
+    python recortar_fondo.py ficha.png out.png --ampliar 1 --recorte 0 --motas 0.0008
+                                                              # IA 1024 px con estrellitas o «z» sueltas
+    python recortar_fondo.py insignia.png out.png --circulo   # medallas redondas (insignias, acuario, logo)
 
 Opciones útiles:
     --tol N     cuánto se parece al fondo para borrarlo (14 blanco puro; 22-32 si hay sombra).
     --ampliar N escala previa (2 = mejor borde en imágenes pequeñas; 1 si ya son grandes).
     --maximo PX lado máximo de salida (para no engordar el APK).
+    --recorte N píxeles que se descartan en cada borde (2 por defecto, por la línea gris de los mockups; 0 en
+                imágenes de IA).
+    --motas F   tamaño mínimo de una pieza suelta, como fracción de la pieza más grande (0.02 por defecto;
+                0.0008 conserva estrellitas y «z»).
+    --paleta    guarda con 256 colores (PNG hasta 8 veces más liviano; úsalo en personajes y objetos, no en
+                medallas con degradados porque se nota el escalonado).
+    --circulo   para medallas redondas: en vez de adivinar el borde, calcula el círculo y lo recorta limpio.
 La primera vez rembg descarga el modelo (~170 MB) a ~/.u2net.
 """
 import argparse
@@ -30,12 +40,13 @@ from pymatting import estimate_alpha_cf, estimate_foreground_ml
 from rembg import new_session, remove
 
 
-def recortar(ruta, ampliar=2, tol=14, objeto=False, borde=1):
+def recortar(ruta, ampliar=2, tol=14, objeto=False, borde=1, motas=0.02, recorte=2):
     modelo = "isnet-general-use" if objeto else "isnet-anime"
     sesion = new_session(modelo)
     im = Image.open(ruta).convert("RGB")
     # Los mockups exportados traen una línea gris en el borde: se descartan 2 px.
-    im = im.crop((2, 2, im.width - 2, im.height - 2))
+    if recorte:
+        im = im.crop((recorte, recorte, im.width - recorte, im.height - recorte))
     if ampliar != 1:
         im = im.resize((im.width * ampliar, im.height * ampliar), Image.LANCZOS)
     rgb = np.array(im)
@@ -68,7 +79,7 @@ def recortar(ruta, ampliar=2, tol=14, objeto=False, borde=1):
     n, lab, st, _ = cv2.connectedComponentsWithStats((alfa > 0.5).astype(np.uint8), connectivity=8)
     if n > 1:
         areas = st[1:, cv2.CC_STAT_AREA]
-        grandes = [i + 1 for i, a in enumerate(areas) if a >= 0.02 * areas.max()]
+        grandes = [i + 1 for i, a in enumerate(areas) if a >= motas * areas.max()]
         cerca = cv2.dilate(np.isin(lab, grandes).astype(np.uint8), np.ones((7, 7), np.uint8))
         alfa = alfa * cerca
 
@@ -87,6 +98,28 @@ def recortar(ruta, ampliar=2, tol=14, objeto=False, borde=1):
     return salida
 
 
+def recortar_circulo(ruta, margen=1.5, umbral=10):
+    """Medalla redonda sobre fondo blanco: calcula el círculo (área y centro de lo que no es blanco)
+    y lo recorta con borde suave. Devuelve la imagen y un diagnóstico (blanco dentro, color fuera)."""
+    from scipy.ndimage import binary_fill_holes
+    im = Image.open(ruta).convert("RGB")
+    rgb = np.array(im)
+    h, w, _ = rgb.shape
+    no_blanco = binary_fill_holes((255 - rgb.astype(int)).max(axis=2) > umbral)
+    ys, xs = np.nonzero(no_blanco)
+    cx, cy = xs.mean() + 0.5, ys.mean() + 0.5
+    r = np.sqrt(no_blanco.sum() / np.pi) - margen
+    yy, xx = np.mgrid[0:h, 0:w]
+    d = np.hypot(xx + 0.5 - cx, yy + 0.5 - cy)
+    mascara = np.clip(r - d + 0.5, 0, 1).astype(np.float32)   # borde suave de ~1 px
+    salida = Image.fromarray(np.dstack([rgb, (mascara * 255 + 0.5).astype(np.uint8)]), "RGBA")
+    caja = salida.split()[-1].point(lambda v: 255 if v > 8 else 0).getbbox()
+    salida = salida.crop(caja)
+    fuera = (no_blanco & (mascara < 0.5)).sum() / max(no_blanco.sum(), 1)
+    dentro_blanco = (((255 - rgb.astype(int)).max(axis=2) <= 3) & (mascara > 0.5)).sum() / max((mascara > 0.5).sum(), 1)
+    return salida, {"radio": round(float(r), 1), "color_fuera": round(float(fuera), 4), "blanco_dentro": round(float(dentro_blanco), 4)}
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Recorta el fondo claro de una ilustración (PNG transparente).")
     ap.add_argument("entrada")
@@ -95,9 +128,19 @@ if __name__ == "__main__":
     ap.add_argument("--ampliar", type=int, default=2)
     ap.add_argument("--maximo", type=int, default=0)
     ap.add_argument("--objeto", action="store_true")
+    ap.add_argument("--recorte", type=int, default=2)
+    ap.add_argument("--motas", type=float, default=0.02)
+    ap.add_argument("--circulo", action="store_true")
+    ap.add_argument("--paleta", action="store_true")
     a = ap.parse_args()
-    r = recortar(a.entrada, ampliar=a.ampliar, tol=a.tol, objeto=a.objeto)
+    if a.circulo:
+        r, info = recortar_circulo(a.entrada)
+        print("Círculo:", info)
+    else:
+        r = recortar(a.entrada, ampliar=a.ampliar, tol=a.tol, objeto=a.objeto, motas=a.motas, recorte=a.recorte)
     if a.maximo and max(r.size) > a.maximo:
         r.thumbnail((a.maximo, a.maximo), Image.LANCZOS)
+    if a.paleta:
+        r = r.quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.FLOYDSTEINBERG)
     r.save(a.salida, optimize=True)
     print(f"Listo: {a.salida} {r.size}")
