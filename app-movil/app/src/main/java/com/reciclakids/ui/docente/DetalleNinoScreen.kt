@@ -105,7 +105,7 @@ fun DetalleNinoScreen(
             BarraDocente(
                 titulo = detalle?.nombre.orEmpty(),
                 onAtras = onVolver,
-                inicioTitulo = { AvatarNino() },
+                inicioTitulo = { AvatarNino(nombre = detalle?.nombre) },
             )
         },
     ) { relleno ->

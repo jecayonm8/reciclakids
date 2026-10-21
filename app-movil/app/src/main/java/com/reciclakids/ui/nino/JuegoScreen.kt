@@ -71,6 +71,7 @@ import com.reciclakids.ui.common.EstadoCaneca
 import com.reciclakids.ui.common.EstadoResiduo
 import com.reciclakids.ui.common.EstiloMarcador
 import com.reciclakids.ui.common.FondoSubmarino
+import com.reciclakids.ui.common.Ilustraciones
 import com.reciclakids.ui.common.IndicadorRacha
 import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.common.ObjetoResiduo
@@ -211,6 +212,7 @@ fun JuegoScreen(
                                 else -> EstadoResiduo.Reposo
                             },
                             enIman = iman != null,
+                            ilustracion = Ilustraciones.residuo(residuo.id)?.let { painterResource(it) },
                             tamano = LadoResiduo,
                             modifier = Modifier
                                 .graphicsLayer {

@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.reciclakids.R
 import com.reciclakids.ui.theme.ReciclaKidsColors
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 
@@ -34,12 +35,18 @@ fun PersonajeMarino(
     animacion: AnimacionPersonaje = AnimacionPersonaje.Flotar,
     tamano: Dp = 150.dp,
 ) {
-    MarcadorIlustracion(
-        etiqueta = "${tipo.etiqueta}\n${animacion.etiqueta}",
-        modifier = modifier
-            .flotar(periodoMs = animacion.periodoMs)
-            .size(tamano),
-    )
+    val arte = when (tipo) {
+        TipoPersonaje.Tortuga -> R.drawable.tortuga_mascota
+        else -> null
+    }
+    val movimiento = modifier
+        .flotar(periodoMs = animacion.periodoMs)
+        .size(tamano)
+    if (arte != null) {
+        IlustracionImagen(arte, movimiento)
+    } else {
+        MarcadorIlustracion(etiqueta = "${tipo.etiqueta}\n${animacion.etiqueta}", modifier = movimiento)
+    }
 }
 
 @Preview

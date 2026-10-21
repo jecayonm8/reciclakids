@@ -24,8 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
-import com.reciclakids.ui.common.EstiloMarcador
-import com.reciclakids.ui.common.MarcadorIlustracion
+import com.reciclakids.ui.common.IlustracionImagen
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.util.correoValido
 
@@ -60,7 +59,7 @@ fun RecuperarContrasenaScreen(
             verticalArrangement = Arrangement.spacedBy(18.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            MarcadorIlustracion("pez cartero\nilustración", Modifier.size(170.dp), estilo = EstiloMarcador.Adulto)
+            IlustracionImagen(R.drawable.pez_cartero, Modifier.size(170.dp))
             Text(
                 stringResource(R.string.recuperar_texto),
                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp, lineHeight = 22.sp),

@@ -101,7 +101,7 @@ private fun FormularioAgregar(formulario: FormularioNino, estado: EstadoAgregarN
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                AvatarNino(Modifier.size(40.dp))
+                AvatarNino(Modifier.size(40.dp), formulario.nombreGuardado)
                 Text(
                     stringResource(R.string.agregar_nino_vista_previa, formulario.nombreGuardado),
                     style = MaterialTheme.typography.bodyLarge,

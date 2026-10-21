@@ -177,7 +177,7 @@ private fun TarjetaHijos(hijos: List<HijoVinculado>, onVincular: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                AvatarNino(Modifier.size(40.dp))
+                AvatarNino(Modifier.size(40.dp), hijo.nombre)
                 Column(Modifier.weight(1f)) {
                     Text(hijo.nombre, style = MaterialTheme.typography.bodyLarge)
                     Text(

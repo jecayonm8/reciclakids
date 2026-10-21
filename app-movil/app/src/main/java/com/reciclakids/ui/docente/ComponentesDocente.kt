@@ -85,6 +85,7 @@ import com.reciclakids.model.Dificultad
 import com.reciclakids.model.EstadoReto
 import com.reciclakids.model.RetoDocente
 import com.reciclakids.model.residuosPorReto
+import com.reciclakids.ui.common.AvatarIlustrado
 import com.reciclakids.ui.common.EstiloMarcador
 import com.reciclakids.ui.common.FiguraDigito
 import com.reciclakids.ui.common.MarcadorIlustracion
@@ -494,12 +495,17 @@ internal fun MuestraCaneca(
 }
 
 @Composable
-internal fun AvatarNino(modifier: Modifier = Modifier) {
-    MarcadorIlustracion(
-        etiqueta = stringResource(R.string.grupo_avatar),
-        modifier = modifier.size(44.dp).clearAndSetSemantics { },
-        estilo = EstiloMarcador.Avatar,
-    )
+internal fun AvatarNino(modifier: Modifier = Modifier, nombre: String? = null) {
+    val tamano = modifier.size(44.dp).clearAndSetSemantics { }
+    if (nombre != null) {
+        AvatarIlustrado(nombre, tamano)
+    } else {
+        MarcadorIlustracion(
+            etiqueta = stringResource(R.string.grupo_avatar),
+            modifier = tamano,
+            estilo = EstiloMarcador.Avatar,
+        )
+    }
 }
 
 /** Los dígitos del código con su color y su forma, idénticos al teclado del niño. */

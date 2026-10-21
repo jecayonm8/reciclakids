@@ -100,7 +100,7 @@ internal fun BarraHijo(hijo: HijoVinculado, varios: Boolean, abierto: Boolean, o
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                AvatarNino()
+                AvatarNino(nombre = hijo.nombre)
                 Column(Modifier.weight(1f)) {
                     Text(hijo.nombre, style = MaterialTheme.typography.titleLarge.copy(fontSize = 18.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(

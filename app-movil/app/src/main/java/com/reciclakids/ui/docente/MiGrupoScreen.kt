@@ -136,7 +136,7 @@ private fun FilaNino(nino: NinoHoy, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        AvatarNino()
+        AvatarNino(nombre = nino.nombre)
         Column(Modifier.weight(1f)) {
             Text(nino.nombre, style = MaterialTheme.typography.bodyLarge)
             Text(

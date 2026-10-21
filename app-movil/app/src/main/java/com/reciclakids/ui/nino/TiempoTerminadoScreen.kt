@@ -34,9 +34,8 @@ import androidx.compose.ui.unit.sp
 import com.reciclakids.R
 import com.reciclakids.ui.common.Alga
 import com.reciclakids.ui.common.BotonCircularNino
-import com.reciclakids.ui.common.EstiloMarcador
 import com.reciclakids.ui.common.FondoSubmarino
-import com.reciclakids.ui.common.MarcadorIlustracion
+import com.reciclakids.ui.common.IlustracionPecesDormidos
 import com.reciclakids.ui.common.flotar
 import com.reciclakids.ui.theme.BalooDos
 import com.reciclakids.ui.theme.EscalaFijaNino
@@ -70,11 +69,7 @@ fun TiempoTerminadoScreen(minutos: Int, onRepetirVoz: () -> Unit, modifier: Modi
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(22.dp, Alignment.CenterVertically),
             ) {
-                MarcadorIlustracion(
-                    "peces\ndormidos",
-                    Modifier.flotar(periodoMs = 5000).size(200.dp),
-                    estilo = EstiloMarcador.Noche,
-                )
+                IlustracionPecesDormidos(Modifier.flotar(periodoMs = 5000))
                 Text(
                     stringResource(R.string.tiempo_titulo),
                     modifier = Modifier.semantics { heading() },

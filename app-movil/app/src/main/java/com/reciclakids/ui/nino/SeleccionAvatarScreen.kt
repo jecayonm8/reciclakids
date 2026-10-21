@@ -38,9 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
 import com.reciclakids.model.Nino
-import com.reciclakids.ui.common.EstiloMarcador
+import com.reciclakids.ui.common.AvatarIlustrado
 import com.reciclakids.ui.common.FondoSubmarino
-import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.theme.BalooDos
 import com.reciclakids.ui.theme.EscalaFijaNino
 import com.reciclakids.ui.theme.ReciclaKidsColors
@@ -120,7 +119,7 @@ private fun TarjetaAvatar(nino: Nino, elegido: Boolean, onClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
     ) {
-        MarcadorIlustracion("avatar", Modifier.size(86.dp), estilo = EstiloMarcador.Avatar)
+        AvatarIlustrado(nino.nombre, Modifier.size(86.dp))
         Text(
             text = nino.nombre,
             fontFamily = BalooDos,
