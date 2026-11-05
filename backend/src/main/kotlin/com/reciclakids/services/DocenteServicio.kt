@@ -40,6 +40,7 @@ import com.reciclakids.repositories.ResultadosRepositorio
 import com.reciclakids.repositories.RetoGuardado
 import com.reciclakids.repositories.RetosRepositorio
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
 import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
@@ -173,9 +174,7 @@ class DocenteServicio(
         val delGrupo = ninos.delGrupo(grupo.id)
         // Dos niños con el mismo nombre no se distinguen en el aula ni en los reportes.
         val clave = Validacion.claveNombre(nombre)
-        if (delGrupo.any { Validacion.claveNombre(it.nombre) == clave }) {
-            throw Conflicto("nino_repetido", "Ya hay un niño llamado $nombre en el grupo. Agrega su segundo nombre para diferenciarlos.")
-        }
+        if (delGrupo.any { Validacion.claveNombre(it.nombre) == clave }) throw ninoRepetido(nombre)
         if (delGrupo.size >= MaxNinosPorGrupo) throw DatosInvalidos("El grupo ya tiene $MaxNinosPorGrupo niños", "grupo_lleno")
         val nino = NinoGuardado(
             id = nuevoId(),
@@ -187,9 +186,19 @@ class DocenteServicio(
             rachaEntreRetos = 0,
             mejorRachaEntreRetos = 0,
         )
-        ninos.crear(nino, reloj.ahora())
+        try {
+            ninos.crear(nino, reloj.ahora())
+        } catch (e: ExposedSQLException) {
+            // Otra alta con el mismo nombre entró entre la consulta y el insert: la frena el índice
+            // único de V4 y se responde igual que si se hubiera visto antes, no con un 500.
+            if (e.sqlState == ViolacionDeUnicidad) throw ninoRepetido(nombre)
+            throw e
+        }
         NinoAgregadoDto(nino.id, nino.nombre, nino.codigoVinculacion)
     }
+
+    private fun ninoRepetido(nombre: String) =
+        Conflicto("nino_repetido", "Ya hay un niño llamado $nombre en el grupo. Agrega su segundo nombre para diferenciarlos.")
 
     /** El código anterior deja de servir; los acudientes ya vinculados no se ven afectados. */
     suspend fun regenerarCodigo(docenteId: String, ninoId: String): String = bd.transaccion {
@@ -361,6 +370,9 @@ class DocenteServicio(
         private const val SemanasDetalle = 4
         private const val MaxNinosPorGrupo = 40
         private const val IntentosCodigo = 50
+
+        /** SQLSTATE de PostgreSQL para «unique_violation». */
+        private const val ViolacionDeUnicidad = "23505"
 
         /** Avatares del piloto. Las ilustraciones llegan con el ilustrador; aquí solo viaja el nombre. */
         val Avatares = listOf(

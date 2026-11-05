@@ -53,8 +53,11 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.parameters
+import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
@@ -502,5 +505,22 @@ class ApiTest {
         assertEquals(HttpStatusCode.UnprocessableEntity, conEtiquetas.status)
         assertEquals("caracteres_invalidos", conEtiquetas.body<CuerpoError>().error)
         assertEquals(2, get("/api/v1/docente/grupo/hoy", docente).body<GrupoHoyDto>().ninos.size)
+    }
+
+    @Test
+    fun elIndiceUnicoTampocoDistingueTildesNiMayusculas() = probarApi {
+        val docente = registrarDocente()
+        agregarNino(docente, "Salomé", "M")
+
+        // Como una segunda alta que entra al mismo tiempo y se salta la consulta del servicio.
+        val error = assertFailsWith<ExposedSQLException> {
+            transaction(PostgresDePrueba.bd.database) {
+                exec(
+                    "INSERT INTO ninos (id, grupo_id, nombre, avatar, codigo_vinculacion, creado_en) " +
+                        "SELECT 'nino-paralelo', grupo_id, 'SALOME m.', avatar, 'ZZ-0000', creado_en FROM ninos",
+                )
+            }
+        }
+        assertEquals("23505", error.sqlState)
     }
 }
