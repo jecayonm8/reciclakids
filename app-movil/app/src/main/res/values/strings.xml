@@ -99,6 +99,18 @@
     <string name="recuperar_enviar">Enviar enlace</string>
     <string name="recuperar_enviado">Si ese correo tiene cuenta, ya te llegó el enlace. Revisa también la bandeja de spam.</string>
 
+    <!-- Cambiar contraseña con la sesión iniciada -->
+    <string name="cambiar_contrasena_texto">Escribe tu contraseña actual y la nueva. En tus otros teléfonos tendrás que volver a iniciar sesión.</string>
+    <string name="cambiar_contrasena_actual">Contraseña actual</string>
+    <string name="cambiar_contrasena_nueva">Contraseña nueva</string>
+    <string name="cambiar_contrasena_confirmar">Repite la contraseña nueva</string>
+    <string name="cambiar_contrasena_actual_incorrecta">La contraseña actual no es correcta</string>
+    <string name="cambiar_contrasena_igual">Debe ser distinta de la actual</string>
+    <string name="cambiar_contrasena_no_coincide">No coincide con la contraseña nueva</string>
+    <string name="cambiar_contrasena_olvide">¿Olvidaste tu contraseña actual?</string>
+    <string name="cambiar_contrasena_listo">Listo: tu contraseña cambió. En tus otros teléfonos tendrás que volver a iniciar sesión.</string>
+    <string name="cambiar_contrasena_volver">Volver a la cuenta</string>
+
     <!-- UI-07 Autorización de datos del menor (Ley 1581 de 2012) -->
     <string name="autorizacion_titulo">Autorización</string>
     <string name="autorizacion_encabezado">Datos de tu hijo o hija</string>

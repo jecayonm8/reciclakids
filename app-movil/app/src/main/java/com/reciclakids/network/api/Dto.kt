@@ -44,6 +44,9 @@ data class RefrescoSolicitud(val tokenRefresco: String)
 data class RecuperacionSolicitud(val correo: String)
 
 @Serializable
+data class CambioContrasenaSolicitud(val actual: String, val nueva: String)
+
+@Serializable
 data class CuentaDto(
     val nombre: String,
     val correo: String,

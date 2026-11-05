@@ -113,6 +113,7 @@ fun ModoDocente(
     servicio: ServicioDocente,
     onCerrarSesion: () -> Unit,
     onVerPolitica: () -> Unit,
+    onCambiarContrasena: () -> Unit,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -133,7 +134,7 @@ fun ModoDocente(
             enterTransition = { fadeIn(tween(Duracion.estandar)) },
             exitTransition = { fadeOut(tween(Duracion.estandar)) },
         ) {
-            pestanas(navController, servicio, perfilEditado, avisoGrupo, onCerrarSesion, onVerPolitica)
+            pestanas(navController, servicio, perfilEditado, avisoGrupo, onCerrarSesion, onVerPolitica, onCambiarContrasena)
             pantallasCompletas(navController, servicio, perfilEditado, avisoGrupo)
         }
         if (conBarra) BarraNavegacionDocente(destino, onPestana = { navController.irAPestana(it) })
@@ -147,6 +148,7 @@ private fun NavGraphBuilder.pestanas(
     avisoGrupo: MutableState<String?>,
     onCerrarSesion: () -> Unit,
     onVerPolitica: () -> Unit,
+    onCambiarContrasena: () -> Unit,
 ) {
     composable(RutasDocente.Inicio) {
         val vm = viewModel { CargaViewModel<TableroDocente>(fuente = { servicio.tablero() }, esVacio = { it.retoHoy == null }) }
@@ -254,6 +256,7 @@ private fun NavGraphBuilder.pestanas(
             onIrAGrupo = { navController.irAPestana(PestanaDocente.Grupo) },
             onEditarPerfil = { navController.navigate(RutasDocente.EditarPerfil) },
             onVerPolitica = onVerPolitica,
+            onCambiarContrasena = onCambiarContrasena,
             onCerrarSesion = onCerrarSesion,
             onEliminarDatos = {
                 alcance.launch {

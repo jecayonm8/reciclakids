@@ -6,6 +6,7 @@ import com.reciclakids.models.Dificultad
 import com.reciclakids.models.EstadoReto
 import com.reciclakids.models.Insignia
 import com.reciclakids.models.dto.AgregarNinoSolicitud
+import com.reciclakids.models.dto.CambioContrasenaSolicitud
 import com.reciclakids.models.dto.CambioControlParentalDto
 import com.reciclakids.models.dto.CodigoRetoDto
 import com.reciclakids.models.dto.ControlParentalDto
@@ -361,6 +362,31 @@ class ApiTest {
             append("confirmacion", "OtraClave99")
         })
         assertEquals(HttpStatusCode.UnprocessableEntity, otraVez.status)
+    }
+
+    @Test
+    fun cambiarLaContrasenaConLaSesionIniciada() = probarApi {
+        registrarDocente()
+        val esteTelefono = iniciarSesion("laura@jardin.co")
+        val otroTelefono = iniciarSesion("laura@jardin.co")
+        val ruta = "/api/v1/cuenta/contrasena"
+
+        // Pide la contraseña actual, no un enlace por correo (hallazgo 7 de la auditoría).
+        val malaActual = post(ruta, CambioContrasenaSolicitud("otra-clave", "NuevaClave99"), esteTelefono.tokenAcceso)
+        assertEquals(HttpStatusCode.UnprocessableEntity, malaActual.status)
+        assertEquals("contrasena_actual_incorrecta", malaActual.body<CuerpoError>().error)
+        assertEquals("contrasena_corta", post(ruta, CambioContrasenaSolicitud("Clave1234", "123"), esteTelefono.tokenAcceso).body<CuerpoError>().error)
+        assertEquals(HttpStatusCode.Unauthorized, post(ruta, CambioContrasenaSolicitud("Clave1234", "NuevaClave99")).status)
+
+        val cambio = post(ruta, CambioContrasenaSolicitud("Clave1234", "NuevaClave99"), esteTelefono.tokenAcceso)
+        assertEquals(HttpStatusCode.OK, cambio.status, cambio.bodyAsText())
+        val nueva = cambio.body<SesionDto>()
+
+        // El otro teléfono tiene que volver a entrar, sin cerrar la sesión nueva de este.
+        assertEquals(HttpStatusCode.Unauthorized, post("/api/v1/auth/refresco", RefrescoSolicitud(otroTelefono.tokenRefresco)).status)
+        assertEquals(HttpStatusCode.OK, post("/api/v1/auth/refresco", RefrescoSolicitud(nueva.tokenRefresco)).status)
+        assertEquals(HttpStatusCode.Unauthorized, post("/api/v1/auth/sesion", InicioSesionSolicitud("laura@jardin.co", "Clave1234")).status)
+        iniciarSesion("laura@jardin.co", "NuevaClave99")
     }
 
     @Test

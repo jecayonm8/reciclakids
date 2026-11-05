@@ -70,6 +70,7 @@ fun CuentaDocenteScreen(
     onEliminarDatos: () -> Unit,
     modifier: Modifier = Modifier,
     snackbar: SnackbarHostState? = null,
+    onCambiarContrasena: () -> Unit = {},
 ) {
     MarcoDocente(
         modifier = modifier,
@@ -81,10 +82,10 @@ fun CuentaDocenteScreen(
             EstadoUi.Cargando -> EsqueletoCarga(cuerpo)
             EstadoUi.Error -> EstadoErrorRed(onReintentar, cuerpo)
             is EstadoUi.Vacio -> ContenidoCuenta(
-                estado.datos, onAvisos, onIrAGrupo, onEditarPerfil, onVerPolitica, onCerrarSesion, onEliminarDatos, cuerpo,
+                estado.datos, onAvisos, onIrAGrupo, onEditarPerfil, onVerPolitica, onCambiarContrasena, onCerrarSesion, onEliminarDatos, cuerpo,
             )
             is EstadoUi.Contenido -> ContenidoCuenta(
-                estado.datos, onAvisos, onIrAGrupo, onEditarPerfil, onVerPolitica, onCerrarSesion, onEliminarDatos, cuerpo,
+                estado.datos, onAvisos, onIrAGrupo, onEditarPerfil, onVerPolitica, onCambiarContrasena, onCerrarSesion, onEliminarDatos, cuerpo,
             )
         }
     }
@@ -98,6 +99,7 @@ private fun ContenidoCuenta(
     onIrAGrupo: () -> Unit,
     onEditarPerfil: () -> Unit,
     onVerPolitica: () -> Unit,
+    onCambiarContrasena: () -> Unit,
     onCerrarSesion: () -> Unit,
     onEliminarDatos: () -> Unit,
     modifier: Modifier = Modifier,
@@ -115,7 +117,7 @@ private fun ContenidoCuenta(
         TarjetaPerfil(perfil, onEditarPerfil)
         TarjetaAvisos(perfil.avisos, onAvisos)
         TarjetaCodigosEnGrupo(onIrAGrupo)
-        TarjetaPrivacidad(onVerPolitica, onCerrarSesion, onEliminar = { confirmarEliminar = true })
+        TarjetaPrivacidad(onVerPolitica, onCambiarContrasena, onCerrarSesion, onEliminar = { confirmarEliminar = true })
     }
     if (confirmarEliminar) {
         DialogoConfirmacion(
@@ -247,7 +249,7 @@ private fun TarjetaCodigosEnGrupo(onIrAGrupo: () -> Unit) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TarjetaPrivacidad(onVerPolitica: () -> Unit, onCerrarSesion: () -> Unit, onEliminar: () -> Unit) {
+private fun TarjetaPrivacidad(onVerPolitica: () -> Unit, onCambiarContrasena: () -> Unit, onCerrarSesion: () -> Unit, onEliminar: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = FormaTarjeta,
@@ -263,6 +265,7 @@ private fun TarjetaPrivacidad(onVerPolitica: () -> Unit, onCerrarSesion: () -> U
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 BotonContorno(stringResource(R.string.cuenta_ver_politica), onClick = onVerPolitica)
+                BotonContorno(stringResource(R.string.cuenta_cambiar_contrasena), onClick = onCambiarContrasena)
                 BotonTexto(stringResource(R.string.cuenta_cerrar_sesion), onClick = onCerrarSesion, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 // Acción destructiva: el único lugar del Modo Docente donde se usa el rojo.
                 FilledTonalButton(
