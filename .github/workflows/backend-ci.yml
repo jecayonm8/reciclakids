@@ -21,6 +21,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Crea en TestRail los casos CP de casos-para-crear.csv que todavía no existan. No sube
+      # resultados, así que también corre en los PR. Solo este workflow los crea, para que el de la
+      # app no los duplique corriendo al mismo tiempo. Si falla, deja un aviso y sigue.
+      - name: Crear en TestRail los casos CP que falten
+        if: env.HAS_TESTRAIL == 'true'
+        continue-on-error: true
+        env:
+          TESTRAIL_URL: ${{ secrets.TESTRAIL_URL }}
+          TESTRAIL_USER: ${{ secrets.TESTRAIL_USER }}
+          TESTRAIL_API_KEY: ${{ secrets.TESTRAIL_API_KEY }}
+        run: python3 .github/testrail/resultados_por_caso.py --crear-faltantes .github/testrail/casos-para-crear.csv
+
       # El daemon de Gradle pide JDK 25 y el código compila con la toolchain 21.
       - uses: actions/setup-java@v4
         with:
