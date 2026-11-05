@@ -722,6 +722,9 @@
     </plurals>
     <string name="privacidad_no_guardamos">No guardamos documento, dirección, fotos, voz ni ubicación.</string>
     <string name="privacidad_descargar">Descargar mis datos</string>
+    <string name="privacidad_descargar_texto">Descarga un archivo con todo lo que guardamos: cada partida con sus intentos, las insignias, el control parental y los correos enviados.</string>
+    <string name="privacidad_descargado">Listo: el archivo con los datos quedó guardado</string>
+    <string name="privacidad_no_descargado">No pudimos guardar el archivo. Intenta de nuevo.</string>
     <string name="privacidad_solicitud_titulo">Solicitud enviada</string>
     <string name="privacidad_solicitud_texto">La recibimos el %1$s. Respondemos en máximo 15 días hábiles y te confirmamos por correo cuando se complete el borrado.</string>
     <string name="privacidad_cancelar_solicitud">Cancelar solicitud</string>
@@ -733,7 +736,6 @@
     <string name="privacidad_dialogo_texto">Es permanente: se borran %1$s, %2$s y todos los reportes. No se puede deshacer una vez procesada.</string>
     <string name="privacidad_dialogo_casilla">Entiendo que esta acción borra de forma permanente los datos de %1$s y retiro la autorización de tratamiento.</string>
     <string name="privacidad_dialogo_enviar">Enviar solicitud</string>
-    <string name="privacidad_exportar_texto">Datos que ReciclaKids guarda de %1$s\n• Nombre: %1$s\n• Grupo: %2$s\n• Avatar: %3$s\n• Resultados de retos: %4$s\n• Insignias: %5$s\nAutorización otorgada el %6$s por %7$s (Ley 1581 de 2012).\nNo guardamos documento, dirección, fotos, voz ni ubicación.</string>
 
     <!-- UI-35 Cuenta -->
     <string name="cuenta_padres_titulo">Cuenta</string>

@@ -21,9 +21,13 @@ import com.reciclakids.network.Respuesta
 import com.reciclakids.network.ResultadoEdicionPerfil
 import com.reciclakids.network.ResultadoVinculacion
 import com.reciclakids.network.ServicioPadres
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
+
+private val JsonLegible = Json { prettyPrint = true }
 
 /**
  * El Modo Padres (UI-29 a UI-35) contra la API /acudiente, con el token del acudiente. El backend
@@ -127,6 +131,12 @@ class ServicioPadresApi(
         alGuardarLimite(hijoId, respuesta.dato.limiteMinutosDiarios)
         return true
     }
+
+    // Se pasa tal cual llega, con sangría para que se pueda leer: así el archivo trae todo lo que el
+    // backend guarda, aunque mañana agregue un campo que la app todavía no conoce.
+    override suspend fun exportarDatos(hijoId: String): String? =
+        (cliente.get<JsonObject>("acudiente/hijos/$hijoId/privacidad/exportacion") as? RespuestaApi.Exito)?.dato
+            ?.let { JsonLegible.encodeToString(JsonObject.serializer(), it) }
 
     override suspend fun privacidad(hijoId: String): Respuesta<PrivacidadHijo> =
         cliente.get<PrivacidadHijoDto>("acudiente/hijos/$hijoId/privacidad").comoRespuesta {

@@ -12,6 +12,7 @@ import com.reciclakids.models.dto.CodigoRetoDto
 import com.reciclakids.models.dto.ControlParentalDto
 import com.reciclakids.models.dto.CuentaDto
 import com.reciclakids.models.dto.DetalleNinoDto
+import com.reciclakids.models.dto.ExportacionDatosDto
 import com.reciclakids.models.dto.GrupoHoyDto
 import com.reciclakids.models.dto.HijoDto
 import com.reciclakids.models.dto.HistorialCorreosDto
@@ -211,6 +212,19 @@ class ApiTest {
         val privacidad = get("/api/v1/acudiente/hijos/${salome.id}/privacidad", acudiente).body<PrivacidadHijoDto>()
         assertEquals(5 + 4, privacidad.registros)
         assertEquals("Marta Ruiz", privacidad.autorizadaPor)
+
+        // «Descargar mis datos» trae todo lo guardado, no un resumen (hallazgo 6 de la auditoría).
+        val datos = get("/api/v1/acudiente/hijos/${salome.id}/privacidad/exportacion", acudiente).body<ExportacionDatosDto>()
+        assertEquals("Salomé M.", datos.nino.nombre)
+        assertEquals("marta@casa.co", datos.acudiente.correo)
+        assertEquals(listOf(false, true), datos.partidas.map { it.terminada })
+        assertEquals(5 + 4, datos.partidas.sumOf { it.intentos.size })
+        assertEquals(1, datos.partidas.first().intentos.count { !it.correcto })
+        assertEquals(listOf("Amiga tortuga", "Racha de 5"), datos.insignias.map { it.nombre }.sorted())
+        assertEquals(1, datos.correos.size)
+        // Solo el acudiente del niño: otro no ve si existe.
+        val otraMama = registrarAcudiente(juan.codigoVinculacion, "otra@casa.co")
+        assertEquals(HttpStatusCode.NotFound, get("/api/v1/acudiente/hijos/${salome.id}/privacidad/exportacion", otraMama).status)
 
         // El control parental llega al niño.
         val control = "/api/v1/acudiente/hijos/${salome.id}/control-parental"

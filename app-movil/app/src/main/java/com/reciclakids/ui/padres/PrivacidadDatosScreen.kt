@@ -132,7 +132,7 @@ private fun ContenidoPrivacidad(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         TarjetaAutorizacion(datos)
-        TarjetaDatosGuardados(datos, onDescargar = { onDescargar(datos) }, onVerPolitica = onVerPolitica)
+        TarjetaDatosGuardados(datos, enviando, onDescargar = { onDescargar(datos) }, onVerPolitica = onVerPolitica)
         val solicitud = datos.solicitudEliminacion
         if (solicitud != null) {
             TarjetaSolicitudPendiente(solicitud, enviando, onCancelarSolicitud)
@@ -177,7 +177,7 @@ private fun TarjetaAutorizacion(datos: PrivacidadHijo) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TarjetaDatosGuardados(datos: PrivacidadHijo, onDescargar: () -> Unit, onVerPolitica: () -> Unit) {
+private fun TarjetaDatosGuardados(datos: PrivacidadHijo, enviando: Boolean, onDescargar: () -> Unit, onVerPolitica: () -> Unit) {
     TarjetaDocente(Modifier.fillMaxWidth(), espacio = 12.dp) {
         Text(stringResource(R.string.privacidad_datos, datos.hijo.nombre), style = MaterialTheme.typography.titleMedium)
         FilaDato(stringResource(R.string.privacidad_nombre), datos.hijo.nombre)
@@ -192,8 +192,13 @@ private fun TarjetaDatosGuardados(datos: PrivacidadHijo, onDescargar: () -> Unit
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Text(
+            stringResource(R.string.privacidad_descargar_texto),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            BotonContorno(stringResource(R.string.privacidad_descargar), onClick = onDescargar)
+            BotonContorno(stringResource(R.string.privacidad_descargar), onClick = onDescargar, habilitado = !enviando)
             BotonTexto(stringResource(R.string.cuenta_ver_politica), onClick = onVerPolitica)
         }
     }

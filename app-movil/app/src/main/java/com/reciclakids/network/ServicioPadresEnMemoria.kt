@@ -19,6 +19,9 @@ import com.reciclakids.model.TipoCorreo
 import com.reciclakids.model.inicioSemana
 import com.reciclakids.util.esDiaHabil
 import kotlinx.coroutines.delay
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonObject
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.time.Clock
@@ -151,6 +154,21 @@ class ServicioPadresEnMemoria(
             insignias = insignias(hijoId).size,
             solicitudEliminacion = solicitudes[hijoId],
         )
+    }
+
+    override suspend fun exportarDatos(hijoId: String): String? {
+        val datos = (privacidad(hijoId) as? Respuesta.Ok)?.dato ?: return null
+        return buildJsonObject {
+            put("generadoEn", hoy().toString())
+            put("nota", "Datos de demostración: la app no está conectada al backend.")
+            putJsonObject("nino") {
+                put("nombre", datos.hijo.nombre)
+                put("grupo", datos.hijo.grupo)
+                put("avatar", datos.hijo.avatar)
+            }
+            put("registros", datos.registros)
+            put("insignias", datos.insignias)
+        }.toString()
     }
 
     override suspend fun solicitarEliminacion(hijoId: String): LocalDate? {

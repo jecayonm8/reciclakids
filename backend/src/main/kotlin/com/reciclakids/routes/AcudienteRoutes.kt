@@ -54,6 +54,7 @@ fun Route.rutasAcudiente(servicio: PadresServicio) {
                 }
                 route("/privacidad") {
                     get { call.respond(servicio.privacidad(call.acudiente(), call.id())) }
+                    get("/exportacion") { call.respond(servicio.exportarDatos(call.acudiente(), call.id())) }
                     post("/solicitud-eliminacion") {
                         val fecha = servicio.solicitarEliminacion(call.acudiente(), call.id())
                         call.respond(HttpStatusCode.Created, SolicitudEliminacionDto(fecha.toString()))

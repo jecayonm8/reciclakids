@@ -49,6 +49,13 @@ interface ServicioPadres {
     suspend fun privacidad(hijoId: String): Respuesta<PrivacidadHijo>
 
     /** Devuelve la fecha en que quedó la solicitud, o `null` sin conexión. */
+    /**
+     * «Descargar mis datos»: todo lo que el backend guarda del niño (partidas, intentos,
+     * insignias, control parental, correos), como JSON legible para guardarlo en un archivo.
+     * `null` sin conexión.
+     */
+    suspend fun exportarDatos(hijoId: String): String?
+
     suspend fun solicitarEliminacion(hijoId: String): LocalDate?
 
     suspend fun cancelarSolicitudEliminacion(hijoId: String): Boolean

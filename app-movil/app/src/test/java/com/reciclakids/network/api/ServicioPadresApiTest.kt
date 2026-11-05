@@ -14,6 +14,7 @@ import com.reciclakids.network.ResultadoEdicionPerfil
 import com.reciclakids.network.ResultadoVinculacion
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
@@ -121,6 +122,21 @@ class ServicioPadresApiTest {
         // Solo viaja lo que cambió: los demás ajustes no se tocan en el servidor.
         assertEquals(setOf("limiteMinutosDiarios"), cuerpo.keys)
         assertEquals(listOf("n1" to 30), limitesGuardados)
+    }
+
+    @Test
+    fun descargarMisDatosTraeTodoLoQueGuardaElBackend() = runBlocking {
+        val respuesta = """{"generadoEn":"2026-11-05T10:00-05:00","nino":{"nombre":"Salomé M."},""" +
+            """"partidas":[{"fecha":"2026-11-04","intentos":[{"residuo":"botella plástica","correcto":true}]}]}"""
+        val api = ApiDePrueba { json(respuesta) }
+
+        val archivo = checkNotNull(servicio(api).exportarDatos("n1"))
+
+        assertEquals("GET acudiente/hijos/n1/privacidad/exportacion", api.rutas().single())
+        // Todo lo que llegó, sin quitar nada, con sangría para que se pueda leer.
+        assertEquals(Json.parseToJsonElement(respuesta), Json.parseToJsonElement(archivo))
+        assertTrue(archivo.contains("\n    "))
+        assertNull(servicio(ApiDePrueba { throw IOException("sin red") }).exportarDatos("n1"))
     }
 
     @Test

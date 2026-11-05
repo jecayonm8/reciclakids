@@ -118,6 +118,20 @@ class ResultadosRepositorio {
             .map { it.aPartida() }
     }
 
+    /** Todas las partidas del niño, de la más vieja a la más nueva (exportación de sus datos). */
+    fun partidasDelNino(ninoId: String): List<PartidaGuardada> =
+        Partidas.selectAll().where { Partidas.ninoId eq ninoId }
+            .orderBy(Partidas.fecha to SortOrder.ASC, Partidas.recibidaEn to SortOrder.ASC)
+            .map { it.aPartida() }
+
+    /** Los intentos de una partida en el orden en que se hicieron. */
+    fun intentosDePartida(partidaId: String): List<NuevoIntento> =
+        Intentos.selectAll().where { Intentos.partidaId eq partidaId }
+            .orderBy(Intentos.momentoMs to SortOrder.ASC)
+            .map {
+                NuevoIntento(it[Intentos.momentoMs], it[Intentos.residuoId], CategoriaResiduo.valueOf(it[Intentos.categoriaElegida]), it[Intentos.correcto])
+            }
+
     fun partidasDeReto(retoId: String): List<PartidaGuardada> =
         Partidas.selectAll().where { Partidas.retoId eq retoId }.map { it.aPartida() }
 
