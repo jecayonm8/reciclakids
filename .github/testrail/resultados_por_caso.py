@@ -25,6 +25,7 @@ import os
 import pathlib
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -32,6 +33,7 @@ import xml.etree.ElementTree as ET
 AQUI = pathlib.Path(__file__).resolve().parent
 NOMBRE_PROYECTO = "ReciclaKids"
 TITULO_CP = re.compile(r"^(CP-\d{3})\b")
+INTENTOS = 4  # el primero y tres reintentos (10, 20 y 40 s si TestRail no dice cuánto esperar)
 
 # Los mismos valores que usa la configuración de importación por CSV de este TestRail.
 PRIORIDADES = {"high": 3, "medium": 2}
@@ -80,13 +82,33 @@ def leer_resultados(carpeta: pathlib.Path) -> dict[str, str]:
 
 
 def pedir(url: str, autorizacion: str, ruta: str, datos: dict | None = None):
-    """GET a la API de TestRail, o POST si hay [datos]."""
+    """GET a la API de TestRail, o POST si hay [datos].
+
+    Reintenta con espera si TestRail está saturado (429) y, en las lecturas, si no está disponible
+    por un momento (502, 503, 504). Un POST no se repite ante un 5xx: podría haberse guardado.
+    """
     cuerpo = json.dumps(datos).encode() if datos is not None else None
-    peticion = urllib.request.Request(f"{url}/index.php?/api/v2/{ruta}", data=cuerpo)
-    peticion.add_header("Authorization", autorizacion)
-    peticion.add_header("Content-Type", "application/json")
-    with urllib.request.urlopen(peticion, timeout=30) as respuesta:
-        return json.loads(respuesta.read().decode())
+    reintentables = {429} if cuerpo else {429, 502, 503, 504}
+    for intento in range(INTENTOS):
+        peticion = urllib.request.Request(f"{url}/index.php?/api/v2/{ruta}", data=cuerpo)
+        peticion.add_header("Authorization", autorizacion)
+        peticion.add_header("Content-Type", "application/json")
+        try:
+            with urllib.request.urlopen(peticion, timeout=30) as respuesta:
+                return json.loads(respuesta.read().decode())
+        except urllib.error.HTTPError as error:
+            if error.code not in reintentables or intento == INTENTOS - 1:
+                raise
+            espera = error.headers.get("Retry-After", "")
+            espera = int(espera) if espera.isdigit() else 10 * 2 ** intento
+            print(f"TestRail respondió {error.code}; reintento en {espera} s ({intento + 1}/{INTENTOS - 1}).")
+            time.sleep(min(espera, 60))
+
+
+def explicar(error: urllib.error.HTTPError) -> str:
+    """«503 Service Unavailable: <texto que devolvió TestRail>», sin etiquetas HTML."""
+    texto = re.sub(r"<[^>]+>", " ", error.read().decode(errors="replace"))
+    return f"{error.code} {error.reason}: {' '.join(texto.split())[:300]}"
 
 
 def paginas(url: str, autorizacion: str, ruta: str, clave: str) -> list:
@@ -161,7 +183,7 @@ def crear_faltantes(url: str, autorizacion: str, proyecto: int, definiciones: pa
         try:
             caso = pedir(url, autorizacion, f"add_case/{seccion}", datos_del_caso(fila))
         except urllib.error.HTTPError as error:
-            aviso(f"{cp}: TestRail respondió {error.code}: {error.read().decode(errors='replace')[:300]}")
+            aviso(f"{cp}: TestRail respondió {explicar(error)}")
             fallos += 1
             continue
         existentes[cp] = (caso["id"], caso["title"])
@@ -203,8 +225,12 @@ def main() -> int:
     if not solo_crear and (opciones.proyecto is None or opciones.salida is None):
         argumentos.error("--resultados necesita --proyecto y --salida")
 
-    url, autorizacion, proyecto = conectar()
-    ids = casos_cp(url, autorizacion, proyecto)
+    try:
+        url, autorizacion, proyecto = conectar()
+        ids = casos_cp(url, autorizacion, proyecto)
+    except urllib.error.HTTPError as error:
+        aviso(f"No pude leer los casos de TestRail: {explicar(error)}")
+        return 1
     if opciones.crear_faltantes:
         fallos = crear_faltantes(url, autorizacion, proyecto, opciones.crear_faltantes, ids)
         if solo_crear:
