@@ -24,6 +24,18 @@ fun <T, R> Respuesta<T>.map(transformar: (T) -> R): Respuesta<R> = when (this) {
     Respuesta.SinConexion -> Respuesta.SinConexion
 }
 
+/** Lo que pasa al agregar un niño desde UI-25. */
+sealed interface ResultadoAgregarNino {
+    data class Agregado(val nino: NinoAgregado) : ResultadoAgregarNino
+
+    /** Ya hay un niño con ese nombre en el grupo: en el aula no se distinguirían. */
+    data object Repetido : ResultadoAgregarNino
+
+    /** El backend no aceptó el nombre: lleva símbolos o etiquetas. */
+    data object NombreInvalido : ResultadoAgregarNino
+    data object SinConexion : ResultadoAgregarNino
+}
+
 sealed interface ResultadoPublicacion {
     /** Publicado para hoy (con código) o programado para otro día. */
     data class Publicado(val reto: RetoDocente) : ResultadoPublicacion
@@ -63,9 +75,9 @@ interface ServicioDocente {
     /**
      * Agrega un niño al grupo. Solo viajan su nombre y la inicial del apellido (una letra): se
      * guarda «Salomé M.», nunca el apellido completo (Ley 1581 de 2012). Cada niño recibe su
-     * propio código de vinculación para su acudiente.
+     * propio código de vinculación para su acudiente. No se repiten nombres dentro del grupo.
      */
-    suspend fun agregarNino(nombre: String, inicialApellido: String): Respuesta<NinoAgregado>
+    suspend fun agregarNino(nombre: String, inicialApellido: String): ResultadoAgregarNino
 
     /**
      * El código anterior de ese niño deja de servir para vincular; si su acudiente ya estaba

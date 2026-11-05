@@ -20,6 +20,7 @@ import com.reciclakids.model.ValorNino
 import com.reciclakids.model.nombrePorDefecto
 import com.reciclakids.network.DatosPerfilDocente
 import com.reciclakids.network.Respuesta
+import com.reciclakids.network.ResultadoAgregarNino
 import com.reciclakids.network.ResultadoEdicionPerfil
 import com.reciclakids.network.ResultadoPublicacion
 import com.reciclakids.network.ServicioDocente
@@ -149,9 +150,16 @@ class ServicioDocenteApi(
             )
         }
 
-    override suspend fun agregarNino(nombre: String, inicialApellido: String): Respuesta<NinoAgregado> =
-        cliente.post<NinoAgregadoDto>("docente/ninos", AgregarNinoSolicitud(nombre.trim(), inicialApellido.trim()))
-            .comoRespuesta { NinoAgregado(it.id, it.nombre, it.codigoVinculacion) }
+    override suspend fun agregarNino(nombre: String, inicialApellido: String): ResultadoAgregarNino =
+        when (val respuesta = cliente.post<NinoAgregadoDto>("docente/ninos", AgregarNinoSolicitud(nombre.trim(), inicialApellido.trim()))) {
+            is RespuestaApi.Exito -> respuesta.dato.let { ResultadoAgregarNino.Agregado(NinoAgregado(it.id, it.nombre, it.codigoVinculacion)) }
+            is RespuestaApi.Rechazo -> when (respuesta.error) {
+                "nino_repetido" -> ResultadoAgregarNino.Repetido
+                "nombre_invalido", "caracteres_invalidos", "inicial_invalida" -> ResultadoAgregarNino.NombreInvalido
+                else -> ResultadoAgregarNino.SinConexion
+            }
+            RespuestaApi.SinConexion, RespuestaApi.SesionVencida -> ResultadoAgregarNino.SinConexion
+        }
 
     override suspend fun regenerarCodigoVinculacion(ninoId: String): String? =
         (cliente.post<CodigoVinculacionDto>("docente/ninos/$ninoId/codigo-vinculacion") as? RespuestaApi.Exito)?.dato?.codigoVinculacion

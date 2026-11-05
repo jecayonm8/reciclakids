@@ -10,6 +10,8 @@ import com.reciclakids.network.RegistroAcudiente
 import com.reciclakids.network.RegistroDocente
 import com.reciclakids.util.contrasenaValida
 import com.reciclakids.util.correoValido
+import com.reciclakids.util.nombreValido
+import com.reciclakids.util.textoLibreValido
 
 /** Campos del registro de docente (UI-04). La aceptación de términos nunca arranca marcada. */
 @Stable
@@ -22,7 +24,7 @@ class FormularioDocente {
     var aceptaTerminos by mutableStateOf(false)
 
     val completo: Boolean
-        get() = nombre.isNotBlank() && correoValido(correo) && jardin.isNotBlank() && grupo.isNotBlank() &&
+        get() = nombreValido(nombre) && correoValido(correo) && textoLibreValido(jardin) && textoLibreValido(grupo) &&
             contrasenaValida(contrasena)
 
     fun aRegistro() = RegistroDocente(nombre.trim(), correo.trim(), jardin.trim(), grupo.trim(), contrasena)
@@ -37,7 +39,7 @@ class FormularioAcudiente {
     var codigoVinculacion by mutableStateOf("")
 
     val completo: Boolean
-        get() = nombre.isNotBlank() && correoValido(correo) && contrasenaValida(contrasena) && codigoVinculacion.isNotBlank()
+        get() = nombreValido(nombre) && correoValido(correo) && contrasenaValida(contrasena) && codigoVinculacion.isNotBlank()
 
     fun aRegistro() = RegistroAcudiente(nombre.trim(), correo.trim(), contrasena, codigoVinculacion.trim())
 }

@@ -23,6 +23,26 @@ class ReglasTest {
     }
 
     @Test
+    fun losNombresSoloLlevanLetras() {
+        assertEquals("María José R.", Validacion.nombreNino("maría   José", "r"))
+        assertEquals("D'Angelo Ñ.", Validacion.nombreNino("D'Angelo", "ñ"))
+        assertEquals("Ana-Lucía Peña", Validacion.nombre(" Ana-Lucía Peña ", "tu nombre", 120))
+        for (nombre in listOf("<b>Pedro</b>", "Pedro<script>", "Pedro2", "{{pedro}}", "-Pedro")) {
+            assertFailsWith<DatosInvalidos>(nombre) { Validacion.nombreNino(nombre, "Q") }
+        }
+        val error = assertFailsWith<DatosInvalidos> { Validacion.nombre("<i>Laura</i>", "tu nombre", 120) }
+        assertEquals("caracteres_invalidos", error.codigo)
+        assertEquals("Jardín Los Pinos #2", Validacion.texto("Jardín Los Pinos #2", "el jardín infantil", 120))
+        assertFailsWith<DatosInvalidos> { Validacion.texto("Jardín <img src=x>", "el jardín infantil", 120) }
+    }
+
+    @Test
+    fun dosNombresSonElMismoSinTildesNiMayusculas() {
+        assertEquals(Validacion.claveNombre("Salomé M."), Validacion.claveNombre("salome  m."))
+        assertTrue(Validacion.claveNombre("Salomé M.") != Validacion.claveNombre("Salomé N."))
+    }
+
+    @Test
     fun validaCorreoYContrasena() {
         assertEquals("laura@jardin.co", Validacion.correo(" Laura@Jardin.CO "))
         assertFailsWith<DatosInvalidos> { Validacion.correo("laura@") }

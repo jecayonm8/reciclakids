@@ -47,9 +47,30 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reciclakids.R
+import com.reciclakids.util.nombreValido
+import com.reciclakids.util.textoLibreValido
 
 private val FormaCampo = RoundedCornerShape(6.dp)
 private val FormaPanel = RoundedCornerShape(14.dp)
+
+/**
+ * Error de un campo de nombre: «Completa este campo» cuando está vacío y [mostrarVacio]; un
+ * símbolo se marca apenas se escribe, para que se sepa por qué no se puede guardar.
+ */
+@Composable
+internal fun errorNombre(nombre: String, mostrarVacio: Boolean): String? = when {
+    nombre.isBlank() -> if (mostrarVacio) stringResource(R.string.error_campo_obligatorio) else null
+    !nombreValido(nombre) -> stringResource(R.string.error_nombre_solo_letras)
+    else -> null
+}
+
+/** Como [errorNombre], para textos libres como el jardín o el grupo. */
+@Composable
+internal fun errorTextoLibre(texto: String, mostrarVacio: Boolean): String? = when {
+    texto.isBlank() -> if (mostrarVacio) stringResource(R.string.error_campo_obligatorio) else null
+    !textoLibreValido(texto) -> stringResource(R.string.error_sin_simbolos)
+    else -> null
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

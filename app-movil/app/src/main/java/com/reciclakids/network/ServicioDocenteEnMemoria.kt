@@ -18,6 +18,7 @@ import com.reciclakids.model.TableroDocente
 import com.reciclakids.model.ValorDia
 import com.reciclakids.model.ValorNino
 import com.reciclakids.model.nombrePorDefecto
+import com.reciclakids.model.claveNombre
 import com.reciclakids.model.nombreConInicial
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -159,10 +160,21 @@ class ServicioDocenteEnMemoria(
         }
     }
 
-    override suspend fun agregarNino(nombre: String, inicialApellido: String): Respuesta<NinoAgregado> = consultar {
+    override suspend fun agregarNino(nombre: String, inicialApellido: String): ResultadoAgregarNino {
+        val completo = nombreConInicial(nombre, inicialApellido)
+        val respuesta = consultar {
+            if (ninos.any { claveNombre(it.nombre) == claveNombre(completo) }) null else agregarNinoDemo(completo)
+        }
+        return when (respuesta) {
+            is Respuesta.Ok -> respuesta.dato?.let { ResultadoAgregarNino.Agregado(it) } ?: ResultadoAgregarNino.Repetido
+            Respuesta.SinConexion -> ResultadoAgregarNino.SinConexion
+        }
+    }
+
+    private fun agregarNinoDemo(nombre: String): NinoAgregado {
         val nino = NinoDemo(
             id = "nino-nuevo-${siguienteId++}",
-            nombre = nombreConInicial(nombre, inicialApellido),
+            nombre = nombre,
             estadoHoy = EstadoNinoHoy.SinEmpezar,
             aciertosPorSemana = emptyList(),
             aciertosPorCategoria = emptyMap(),
@@ -172,7 +184,7 @@ class ServicioDocenteEnMemoria(
         )
         ninos += nino
         codigos[nino.id] = nuevoCodigoVinculacion()
-        NinoAgregado(nino.id, nino.nombre, codigos.getValue(nino.id))
+        return NinoAgregado(nino.id, nino.nombre, codigos.getValue(nino.id))
     }
 
     override suspend fun regenerarCodigoVinculacion(ninoId: String): String? {

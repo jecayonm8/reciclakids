@@ -26,6 +26,7 @@ import com.reciclakids.models.dto.TipoEstadoNino
 import com.reciclakids.models.dto.ValorDiaDto
 import com.reciclakids.models.dto.ValorNinoDto
 import com.reciclakids.models.residuosDelReto
+import com.reciclakids.plugins.Conflicto
 import com.reciclakids.plugins.DatosInvalidos
 import com.reciclakids.plugins.NoEncontrado
 import com.reciclakids.plugins.Prohibido
@@ -112,7 +113,8 @@ class DocenteServicio(
         val reto = RetoGuardado(
             id = existente?.id ?: nuevoId(),
             grupoId = grupo.id,
-            nombre = borrador.nombre?.trim()?.takeIf { it.isNotEmpty() }?.take(120) ?: nombrePorDefecto(categorias),
+            nombre = borrador.nombre?.trim()?.takeIf { it.isNotEmpty() }?.take(120)?.let { Validacion.texto(it, "el nombre del reto", 120) }
+                ?: nombrePorDefecto(categorias),
             categorias = categorias,
             dificultad = borrador.dificultad,
             fecha = fecha,
@@ -169,6 +171,11 @@ class DocenteServicio(
         val nombre = Validacion.nombreNino(datos.nombre, datos.inicialApellido)
         if (datos.edad != null && datos.edad !in 2..7) throw DatosInvalidos("La edad va de 2 a 7 años", "edad_invalida")
         val delGrupo = ninos.delGrupo(grupo.id)
+        // Dos niños con el mismo nombre no se distinguen en el aula ni en los reportes.
+        val clave = Validacion.claveNombre(nombre)
+        if (delGrupo.any { Validacion.claveNombre(it.nombre) == clave }) {
+            throw Conflicto("nino_repetido", "Ya hay un niño llamado $nombre en el grupo. Agrega su segundo nombre para diferenciarlos.")
+        }
         if (delGrupo.size >= MaxNinosPorGrupo) throw DatosInvalidos("El grupo ya tiene $MaxNinosPorGrupo niños", "grupo_lleno")
         val nino = NinoGuardado(
             id = nuevoId(),
@@ -215,7 +222,7 @@ class DocenteServicio(
     }
 
     suspend fun actualizarPerfil(docenteId: String, datos: PerfilDocenteSolicitud): PerfilDocenteDto {
-        val nombre = Validacion.texto(datos.nombre, "tu nombre", 120)
+        val nombre = Validacion.nombre(datos.nombre, "tu nombre", 120)
         val correo = Validacion.correo(datos.correo)
         val jardin = Validacion.texto(datos.jardin, "el jardín infantil", 120)
         val nombreGrupo = Validacion.texto(datos.grupo, "el grupo", 80)

@@ -166,7 +166,7 @@ class PadresServicio(
     }
 
     suspend fun actualizarPerfil(acudienteId: String, datos: PerfilAcudienteSolicitud): PerfilAcudienteDto {
-        val nombre = Validacion.texto(datos.nombre, "tu nombre", 120)
+        val nombre = Validacion.nombre(datos.nombre, "tu nombre", 120)
         val correo = Validacion.correo(datos.correo)
         bd.transaccion {
             val otro = cuentas.usuarioPorCorreo(correo)

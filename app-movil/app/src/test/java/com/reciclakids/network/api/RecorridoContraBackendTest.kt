@@ -13,6 +13,7 @@ import com.reciclakids.model.RolAdulto
 import com.reciclakids.network.RegistroAcudiente
 import com.reciclakids.network.RegistroDocente
 import com.reciclakids.network.Respuesta
+import com.reciclakids.network.ResultadoAgregarNino
 import com.reciclakids.network.ResultadoCodigo
 import com.reciclakids.network.ResultadoPublicacion
 import com.reciclakids.network.ResultadoRegistro
@@ -78,7 +79,7 @@ class RecorridoContraBackendTest {
         assertEquals(RolAdulto.Docente, (sesionDocente as ResultadoSesion.Iniciada).cuenta.rol)
         val servicioDocente = ServicioDocenteApi(docente.cliente, docente.sesion)
         val hoy = (servicioDocente.tablero() as Respuesta.Ok).dato.hoy
-        val salome = (servicioDocente.agregarNino("Salomé", "M") as Respuesta.Ok).dato
+        val salome = (servicioDocente.agregarNino("Salomé", "M") as ResultadoAgregarNino.Agregado).nino
         assertEquals("Salomé M.", salome.nombre)
         val publicado = servicioDocente.publicar(RetoBorrador(CategoriaResiduo.entries.toSet(), Dificultad.Facil, hoy))
         val reto = (publicado as ResultadoPublicacion.Publicado).reto

@@ -142,12 +142,10 @@ private fun CamposDocente(
     onLeerPolitica: () -> Unit,
 ) {
     var intentoEnviar by remember { mutableStateOf(false) }
-    val obligatorio = stringResource(R.string.error_campo_obligatorio)
-    fun falta(valor: String) = if (intentoEnviar && valor.isBlank()) obligatorio else null
 
     CampoTexto(
         formulario.nombre, { formulario.nombre = it }, stringResource(R.string.registro_nombre_apellido),
-        error = falta(formulario.nombre),
+        error = errorNombre(formulario.nombre, intentoEnviar),
         teclado = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
     )
     CampoCorreo(
@@ -155,8 +153,14 @@ private fun CamposDocente(
         etiqueta = stringResource(R.string.registro_correo_institucional),
         error = correoEnUso ?: errorCorreo(formulario.correo, intentoEnviar),
     )
-    CampoTexto(formulario.jardin, { formulario.jardin = it }, stringResource(R.string.registro_jardin), error = falta(formulario.jardin))
-    CampoTexto(formulario.grupo, { formulario.grupo = it }, stringResource(R.string.registro_grupo), error = falta(formulario.grupo))
+    CampoTexto(
+        formulario.jardin, { formulario.jardin = it }, stringResource(R.string.registro_jardin),
+        error = errorTextoLibre(formulario.jardin, intentoEnviar),
+    )
+    CampoTexto(
+        formulario.grupo, { formulario.grupo = it }, stringResource(R.string.registro_grupo),
+        error = errorTextoLibre(formulario.grupo, intentoEnviar),
+    )
     CampoContrasena(
         formulario.contrasena, { formulario.contrasena = it },
         error = errorContrasena(formulario.contrasena, intentoEnviar),
@@ -192,7 +196,7 @@ private fun CamposAcudiente(formulario: FormularioAcudiente, correoEnUso: String
     PasoProgreso(paso = 1, total = 2)
     CampoTexto(
         formulario.nombre, { formulario.nombre = it }, stringResource(R.string.registro_tu_nombre),
-        error = falta(formulario.nombre),
+        error = errorNombre(formulario.nombre, intentoEnviar),
         teclado = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
     )
     CampoCorreo(

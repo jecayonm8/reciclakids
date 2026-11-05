@@ -421,4 +421,21 @@ class ApiTest {
         assertEquals(1, tablero.totalNinos)
         assertTrue(get("/api/v1/docente/ninos/${salome.id}", docente).body<DetalleNinoDto>().insignias.none { it.ganada })
     }
+
+    @Test
+    fun losNinosDelGrupoNoSeRepitenNiLlevanEtiquetas() = probarApi {
+        val docente = registrarDocente()
+        agregarNino(docente, "Salomé", "M")
+
+        val repetido = post("/api/v1/docente/ninos", AgregarNinoSolicitud("salome", "m"), docente)
+        assertEquals(HttpStatusCode.Conflict, repetido.status)
+        assertEquals("nino_repetido", repetido.body<CuerpoError>().error)
+        // Con su segundo nombre ya se distingue en el aula.
+        assertEquals("Salomé Andrea M.", agregarNino(docente, "Salomé Andrea", "M").nombre)
+
+        val conEtiquetas = post("/api/v1/docente/ninos", AgregarNinoSolicitud("<b>Pedro</b>", "Q"), docente)
+        assertEquals(HttpStatusCode.UnprocessableEntity, conEtiquetas.status)
+        assertEquals("caracteres_invalidos", conEtiquetas.body<CuerpoError>().error)
+        assertEquals(2, get("/api/v1/docente/grupo/hoy", docente).body<GrupoHoyDto>().ninos.size)
+    }
 }

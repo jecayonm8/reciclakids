@@ -43,6 +43,8 @@
     <string name="error_contrasena_corta">Debe tener al menos 8 caracteres</string>
     <string name="error_correo_en_uso">Ya existe una cuenta con ese correo</string>
     <string name="error_codigo_vinculacion">Ese código no existe. Revísalo o pídeselo a la docente</string>
+    <string name="error_nombre_solo_letras">Usa solo letras, espacios y guiones</string>
+    <string name="error_sin_simbolos">Quita los símbolos &lt; &gt; { }</string>
     <string name="paso_de">Paso %1$d de %2$d</string>
 
     <!-- UI-01 Bienvenida -->
@@ -508,6 +510,9 @@
     <string name="agregar_nino_nombre">Nombre</string>
     <string name="agregar_nino_inicial">Inicial del apellido</string>
     <string name="agregar_nino_inicial_ayuda">Solo una letra</string>
+    <string name="agregar_nino_error_nombre">Escribe su nombre</string>
+    <string name="agregar_nino_error_inicial">Escribe la inicial de su apellido</string>
+    <string name="agregar_nino_error_repetido">Ya hay un niño llamado %1$s en el grupo. Agrega su segundo nombre para diferenciarlos.</string>
     <string name="agregar_nino_vista_previa">Así aparecerá en la app: %1$s</string>
     <string name="agregar_nino_guardar">Agregar al grupo</string>
     <string name="agregar_nino_listo">%1$s ya está en tu grupo</string>
