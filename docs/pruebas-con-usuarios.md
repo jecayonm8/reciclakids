@@ -38,7 +38,7 @@ La columna «Verifica» enlaza cada tarea con el hallazgo de la auditoría que c
 | # | Tarea | Se cumple si… | Verifica |
 |---|---|---|---|
 | D1 | Crear su cuenta | Llega al tablero | |
-| D2 | Tocar «Guardar» en «Agregar niño» sin escribir nada | Ve qué campos faltan | #8 |
+| D2 | Tocar «Agregar al grupo» en «Agregar niño» sin escribir nada | Ve qué campos faltan | #8 |
 | D3 | Agregar al niño participante | Ve el código de vinculación | |
 | D4 | Agregar otra vez un niño con el mismo nombre | La app avisa que ya está en el grupo | #2 |
 | D5 | Crear un reto programado para otro día y buscarlo en la biblioteca | Lee la fecha con el mes | #10 |
