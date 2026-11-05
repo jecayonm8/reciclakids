@@ -57,6 +57,8 @@ object RutasNino {
     const val Menu = "nino/menu"
     const val Tutorial = "nino/tutorial"
     const val Juego = "nino/juego"
+    const val RetoCompletado = "nino/reto-completado"
+    const val Practica = "nino/practica"
     const val Resultado = "nino/resultado"
     const val InsigniaObtenida = "nino/insignia"
     const val TiempoTerminado = "nino/tiempo-terminado"
@@ -161,16 +163,18 @@ fun NavGraphBuilder.ninoGraph(
             val locutor = rememberLocutor()
             val saludo = stringResource(R.string.menu_saludo, nino.nombre)
             LaunchedEffect(Unit) { locutor.decir(saludo) }
+            // Un reto ya terminado no se vuelve a jugar para contar: se avisa y se ofrece practicar.
+            val jugar = { destino: String ->
+                val siguiente = if (progreso?.completo(reto) == true) RutasNino.RetoCompletado else destino
+                navController.navigate(siguiente) { launchSingleTop = true }
+            }
             MenuAcuarioScreen(
                 nombre = nino.nombre,
                 nivel = progreso?.nivelAcuario ?: 1,
                 retoPendiente = progreso?.completo(reto) == false,
                 hayConexion = hayConexion,
-                onRetoDiario = {
-                    val siguiente = if (progreso?.tutorialVisto == true) RutasNino.Juego else RutasNino.Tutorial
-                    navController.navigate(siguiente) { launchSingleTop = true }
-                },
-                onContinuar = { navController.navigate(RutasNino.Juego) { launchSingleTop = true } },
+                onRetoDiario = { jugar(if (progreso?.tutorialVisto == true) RutasNino.Juego else RutasNino.Tutorial) },
+                onContinuar = { jugar(RutasNino.Juego) },
                 onInsignias = { navController.navigate(RutasNino.Insignias) { launchSingleTop = true } },
                 onAjustes = { navController.navigate(RutasNino.Ajustes) { launchSingleTop = true } },
             )
@@ -195,75 +199,24 @@ fun NavGraphBuilder.ninoGraph(
             )
         }
 
-        composable(RutasNino.Juego) { entrada ->
-            val sesion = sesionNino(navController, entrada)
-            val nino = sesion.nino
-            val reto = sesion.reto
-            if (nino == null || reto == null) {
-                LaunchedEffect(Unit) { onSalir() }
-                return@composable
-            }
-            val juego = viewModel(key = "juego-${reto.codigo}-${nino.id}") {
-                JuegoViewModel(reto, nino, contenedor.juego, alTerminar = contenedor.programarSincronizacion)
-            }
-            val ajustes by contenedor.ajustes.observar().collectAsState(initial = AjustesNino())
-            val alcance = rememberCoroutineScope()
-            val locutor = rememberLocutor(ajustes.volumenSonidos / NivelesVolumen.toFloat())
-            val haptico = LocalHapticFeedback.current
-            val muyBien = stringResource(R.string.juego_muy_bien)
-            val casi = stringResource(R.string.juego_casi)
-            val guia = juego.residuoEnPantalla?.let { residuo ->
-                stringResource(R.string.juego_guia, residuo.nombre, stringResource(residuo.categoria.caneca.etiqueta).lowercase())
-            }
-
-            LaunchedEffect(juego.retroalimentacion) {
-                when (juego.retroalimentacion) {
-                    Retroalimentacion.Acierto -> {
-                        haptico.performHapticFeedback(HapticFeedbackType.Confirm)
-                        locutor.decir(muyBien)
+        composable(RutasNino.RetoCompletado) {
+            val locutor = rememberLocutor()
+            val aviso = stringResource(R.string.reto_completado_titulo) + " " + stringResource(R.string.reto_completado_texto)
+            LaunchedEffect(Unit) { locutor.decir(aviso) }
+            RetoCompletadoScreen(
+                onPracticar = {
+                    navController.navigate(RutasNino.Practica) {
+                        popUpTo(RutasNino.RetoCompletado) { inclusive = true }
                     }
-                    Retroalimentacion.Rebote -> locutor.decir(casi)
-                    Retroalimentacion.Ninguna -> Unit
-                }
-            }
-            LaunchedEffect(juego.resultado) {
-                val resultado = juego.resultado ?: return@LaunchedEffect
-                sesion.terminarReto(resultado)
-                navController.navigate(RutasNino.Resultado) {
-                    popUpTo(RutasNino.Juego) { inclusive = true }
-                }
-            }
-            // El botón atrás del sistema pausa: el niño no sale del juego por accidente.
-            BackHandler(enabled = !juego.pausado) { juego.pausar() }
-
-            val estado = juego.estado
-            if (estado == null) {
-                FondoSubmarino(agua = ReciclaKidsColors.aguaJuego, altoArena = 90.dp, modifier = Modifier.fillMaxSize()) {}
-                return@composable
-            }
-            Box(Modifier.fillMaxSize()) {
-                JuegoScreen(
-                    canecas = reto.canecas,
-                    estado = estado,
-                    residuo = juego.residuoEnPantalla,
-                    retroalimentacion = juego.retroalimentacion,
-                    fraccionTiempo = juego.fraccionTiempoRestante,
-                    pausado = juego.pausado,
-                    onClasificar = juego::clasificar,
-                    onPausar = juego::pausar,
-                    onGuia = { guia?.let(locutor::decir) },
-                )
-                if (juego.pausado) {
-                    PausaDialog(
-                        volumen = ajustes.volumenSonidos,
-                        onVolumen = { nivel -> alcance.launch { contenedor.ajustes.guardar(ajustes.conSonidos(nivel)) } },
-                        onContinuar = juego::reanudar,
-                        onReiniciar = juego::reiniciar,
-                        onMenu = { navController.popBackStack(RutasNino.Menu, inclusive = false) },
-                    )
-                }
-            }
+                },
+                onVolver = { navController.popBackStack(RutasNino.Menu, inclusive = false) },
+                onRepetirVoz = { locutor.decir(aviso) },
+            )
         }
+
+        composable(RutasNino.Juego) { entrada -> JuegoDelNino(navController, entrada, contenedor, onSalir, practica = false) }
+
+        composable(RutasNino.Practica) { entrada -> JuegoDelNino(navController, entrada, contenedor, onSalir, practica = true) }
 
         composable(RutasNino.Resultado) { entrada ->
             val sesion = sesionNino(navController, entrada)
@@ -274,8 +227,15 @@ fun NavGraphBuilder.ninoGraph(
             }
             val ajustes by contenedor.ajustes.observar().collectAsState(initial = AjustesNino())
             val locutor = rememberLocutor(ajustes.volumenSonidos / NivelesVolumen.toFloat())
+            val practica = sesion.ultimoFuePractica
             val anuncio = pluralStringResource(R.plurals.resultado_titulo, resultado.residuosSeparados, resultado.residuosSeparados) + " " +
-                stringResource(if (resultado.sumoAlAcuario) R.string.resultado_acuario else R.string.resultado_buen_trabajo)
+                stringResource(
+                    when {
+                        practica -> R.string.resultado_practica
+                        resultado.sumoAlAcuario -> R.string.resultado_acuario
+                        else -> R.string.resultado_buen_trabajo
+                    }
+                )
             val hayConexion by rememberHayConexion()
             val pendientes by contenedor.juego.intentosPendientes().collectAsState(initial = 0)
             LaunchedEffect(Unit) { locutor.decir(anuncio) }
@@ -288,6 +248,7 @@ fun NavGraphBuilder.ninoGraph(
                     pendientes > 0 -> EstadoConexion.Sincronizando
                     else -> EstadoConexion.Sincronizado
                 },
+                practica = practica,
             )
         }
 
@@ -390,6 +351,84 @@ fun NavController.irATiempoTerminado() {
     navigate(RutasNino.TiempoTerminado) {
         popUpTo(RutasNino.Grafo)
         launchSingleTop = true
+    }
+}
+
+/** UI-12 Juego, del reto del día o de práctica cuando ese reto ya estaba completo. */
+@Composable
+private fun JuegoDelNino(
+    navController: NavController,
+    entrada: NavBackStackEntry,
+    contenedor: ContenedorApp,
+    onSalir: () -> Unit,
+    practica: Boolean,
+) {
+    val sesion = sesionNino(navController, entrada)
+    val nino = sesion.nino
+    val reto = sesion.reto
+    if (nino == null || reto == null) {
+        LaunchedEffect(Unit) { onSalir() }
+        return
+    }
+    val juego = viewModel(key = "juego-${reto.codigo}-${nino.id}-$practica") {
+        JuegoViewModel(reto, nino, contenedor.juego, alTerminar = contenedor.programarSincronizacion, practica = practica)
+    }
+    val ajustes by contenedor.ajustes.observar().collectAsState(initial = AjustesNino())
+    val alcance = rememberCoroutineScope()
+    val locutor = rememberLocutor(ajustes.volumenSonidos / NivelesVolumen.toFloat())
+    val haptico = LocalHapticFeedback.current
+    val muyBien = stringResource(R.string.juego_muy_bien)
+    val casi = stringResource(R.string.juego_casi)
+    val guia = juego.residuoEnPantalla?.let { residuo ->
+        stringResource(R.string.juego_guia, residuo.nombre, stringResource(residuo.categoria.caneca.etiqueta).lowercase())
+    }
+
+    LaunchedEffect(juego.retroalimentacion) {
+        when (juego.retroalimentacion) {
+            Retroalimentacion.Acierto -> {
+                haptico.performHapticFeedback(HapticFeedbackType.Confirm)
+                locutor.decir(muyBien)
+            }
+            Retroalimentacion.Rebote -> locutor.decir(casi)
+            Retroalimentacion.Ninguna -> Unit
+        }
+    }
+    LaunchedEffect(juego.resultado) {
+        val resultado = juego.resultado ?: return@LaunchedEffect
+        sesion.terminarReto(resultado, practica)
+        navController.navigate(RutasNino.Resultado) {
+            popUpTo(if (practica) RutasNino.Practica else RutasNino.Juego) { inclusive = true }
+        }
+    }
+    // El botón atrás del sistema pausa: el niño no sale del juego por accidente.
+    BackHandler(enabled = !juego.pausado) { juego.pausar() }
+
+    val estado = juego.estado
+    if (estado == null) {
+        FondoSubmarino(agua = ReciclaKidsColors.aguaJuego, altoArena = 90.dp, modifier = Modifier.fillMaxSize()) {}
+        return
+    }
+    Box(Modifier.fillMaxSize()) {
+        JuegoScreen(
+            canecas = reto.canecas,
+            estado = estado,
+            residuo = juego.residuoEnPantalla,
+            retroalimentacion = juego.retroalimentacion,
+            fraccionTiempo = juego.fraccionTiempoRestante,
+            pausado = juego.pausado,
+            onClasificar = juego::clasificar,
+            onPausar = juego::pausar,
+            onGuia = { guia?.let(locutor::decir) },
+        )
+        if (juego.pausado) {
+            PausaDialog(
+                volumen = ajustes.volumenSonidos,
+                onVolumen = { nivel -> alcance.launch { contenedor.ajustes.guardar(ajustes.conSonidos(nivel)) } },
+                onContinuar = juego::reanudar,
+                onReiniciar = juego::reiniciar,
+                onMenu = { navController.popBackStack(RutasNino.Menu, inclusive = false) },
+            )
+        }
     }
 }
 

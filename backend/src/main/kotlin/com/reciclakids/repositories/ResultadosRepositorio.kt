@@ -14,6 +14,7 @@ import org.jetbrains.exposed.v1.core.between
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.batchInsert
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
@@ -61,6 +62,12 @@ class ResultadosRepositorio {
 
     fun partidaPorIdLocal(ninoId: String, idLocal: String): PartidaGuardada? =
         Partidas.selectAll().where { (Partidas.ninoId eq ninoId) and (Partidas.idLocal eq idLocal) }.singleOrNull()?.aPartida()
+
+    /** Si el niño ya terminó ese reto con otra partida (otro id local). */
+    fun retoTerminadoConOtraPartida(ninoId: String, retoId: String, idLocal: String): Boolean =
+        Partidas.selectAll().where {
+            (Partidas.ninoId eq ninoId) and (Partidas.retoId eq retoId) and (Partidas.terminada eq true) and (Partidas.idLocal neq idLocal)
+        }.any()
 
     fun crearPartida(partida: PartidaGuardada, idLocal: String, ahora: OffsetDateTime) {
         Partidas.insert {
@@ -110,6 +117,20 @@ class ResultadosRepositorio {
             .orderBy(Partidas.fecha to SortOrder.ASC)
             .map { it.aPartida() }
     }
+
+    /** Todas las partidas del niño, de la más vieja a la más nueva (exportación de sus datos). */
+    fun partidasDelNino(ninoId: String): List<PartidaGuardada> =
+        Partidas.selectAll().where { Partidas.ninoId eq ninoId }
+            .orderBy(Partidas.fecha to SortOrder.ASC, Partidas.recibidaEn to SortOrder.ASC)
+            .map { it.aPartida() }
+
+    /** Los intentos de una partida en el orden en que se hicieron. */
+    fun intentosDePartida(partidaId: String): List<NuevoIntento> =
+        Intentos.selectAll().where { Intentos.partidaId eq partidaId }
+            .orderBy(Intentos.momentoMs to SortOrder.ASC)
+            .map {
+                NuevoIntento(it[Intentos.momentoMs], it[Intentos.residuoId], CategoriaResiduo.valueOf(it[Intentos.categoriaElegida]), it[Intentos.correcto])
+            }
 
     fun partidasDeReto(retoId: String): List<PartidaGuardada> =
         Partidas.selectAll().where { Partidas.retoId eq retoId }.map { it.aPartida() }

@@ -1,5 +1,6 @@
 package com.reciclakids.model
 
+import java.text.Normalizer
 import java.time.LocalDate
 
 // Datos mínimos del niño (Ley 1581 de 2012): nombre con la inicial del apellido, avatar y resultados.
@@ -17,6 +18,14 @@ data class NinoHoy(val id: String, val nombre: String, val estado: EstadoNinoHoy
 /** «Salomé» y «m» → «Salomé M.»: es lo único que se guarda del nombre de un niño. */
 fun nombreConInicial(nombre: String, inicialApellido: String): String =
     "${nombre.trim()} ${inicialApellido.trim().uppercase()}."
+
+/** «Salomé M.» y «salome  m.» son el mismo niño en el aula: sin tildes, mayúsculas ni espacios de más. */
+fun claveNombre(nombre: String): String =
+    Normalizer.normalize(nombre, Normalizer.Form.NFD)
+        .replace(Regex("\\p{M}+"), "")
+        .lowercase()
+        .replace(Regex("\\s+"), " ")
+        .trim()
 
 /** Lo que se escribe en el campo de la inicial del apellido: solo su primera letra, en mayúscula. */
 fun inicialDe(texto: String): String = texto.firstOrNull { it.isLetter() }?.uppercase().orEmpty()

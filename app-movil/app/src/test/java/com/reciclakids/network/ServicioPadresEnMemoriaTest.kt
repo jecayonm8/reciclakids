@@ -2,6 +2,7 @@ package com.reciclakids.network
 
 import com.reciclakids.model.CatalogoResiduos
 import com.reciclakids.model.CategoriaResiduo
+import com.reciclakids.model.CambioControlParental
 import com.reciclakids.model.ControlParental
 import com.reciclakids.model.CuentaAdulto
 import com.reciclakids.model.Insignia
@@ -152,7 +153,7 @@ class ServicioPadresEnMemoriaTest {
         val servicio = servicio(controles = controles)
         val nuevo = ControlParental(limiteMinutosDiarios = 10, correosLogro = false)
 
-        assertTrue(servicio.guardarControlParental(salome, nuevo))
+        assertTrue(servicio.cambiarControlParental(salome, CambioControlParental.entre(ControlParental(), nuevo)))
 
         assertEquals(nuevo, servicio.controlParental(salome).dato())
         assertEquals(10, controles.de(salome).limiteMinutosDiarios)
@@ -211,7 +212,7 @@ class ServicioPadresEnMemoriaTest {
 
         assertEquals(Respuesta.SinConexion, servicio.hijos())
         assertEquals(Respuesta.SinConexion, servicio.inicio(salome))
-        assertFalse(servicio.guardarControlParental(salome, ControlParental(limiteMinutosDiarios = 5)))
+        assertFalse(servicio.cambiarControlParental(salome, CambioControlParental(limiteMinutosDiarios = 5)))
         assertNull(servicio.solicitarEliminacion(salome))
         assertEquals(ResultadoVinculacion.SinConexion, servicio.vincular("JB-5H8W"))
         assertEquals(ResultadoEdicionPerfil.SinConexion, servicio.guardarPerfil(DatosPerfilAcudiente("Otra", "otra@correo.com")))

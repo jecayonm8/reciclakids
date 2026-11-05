@@ -99,6 +99,7 @@ class FlujoPadresTest {
         compose.onNodeWithText("Cuenta").performClick()
         compose.onNodeWithText("mariana.r@correo.com").assertIsDisplayed()
         compose.onNodeWithText("Cerrar sesión").performScrollTo().performClick()
+        compose.onNodeWithText("Sí, cerrar sesión").performClick()
 
         compose.onNodeWithText("¡A jugar!").assertIsDisplayed()
     }

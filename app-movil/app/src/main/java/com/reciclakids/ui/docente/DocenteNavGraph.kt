@@ -113,6 +113,7 @@ fun ModoDocente(
     servicio: ServicioDocente,
     onCerrarSesion: () -> Unit,
     onVerPolitica: () -> Unit,
+    onCambiarContrasena: () -> Unit,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -133,7 +134,7 @@ fun ModoDocente(
             enterTransition = { fadeIn(tween(Duracion.estandar)) },
             exitTransition = { fadeOut(tween(Duracion.estandar)) },
         ) {
-            pestanas(navController, servicio, perfilEditado, avisoGrupo, onCerrarSesion, onVerPolitica)
+            pestanas(navController, servicio, perfilEditado, avisoGrupo, onCerrarSesion, onVerPolitica, onCambiarContrasena)
             pantallasCompletas(navController, servicio, perfilEditado, avisoGrupo)
         }
         if (conBarra) BarraNavegacionDocente(destino, onPestana = { navController.irAPestana(it) })
@@ -147,6 +148,7 @@ private fun NavGraphBuilder.pestanas(
     avisoGrupo: MutableState<String?>,
     onCerrarSesion: () -> Unit,
     onVerPolitica: () -> Unit,
+    onCambiarContrasena: () -> Unit,
 ) {
     composable(RutasDocente.Inicio) {
         val vm = viewModel { CargaViewModel<TableroDocente>(fuente = { servicio.tablero() }, esVacio = { it.retoHoy == null }) }
@@ -186,12 +188,25 @@ private fun NavGraphBuilder.pestanas(
             avisoGrupo.value = null
             snackbar.showSnackbar(aviso)
         }
+        val alcance = rememberCoroutineScope()
+        val textoSinConexion = stringResource(R.string.docente_error_accion)
+        val plantillaQuitado = stringResource(R.string.quitar_nino_hecho)
         MiGrupoScreen(
             estado = vm.estado,
             onReintentar = { vm.cargar() },
             onNino = { navController.navigate(RutasDocente.nino(it)) },
             onAgregarNino = { navController.navigate(RutasDocente.AgregarNino) },
             snackbar = snackbar,
+            onQuitar = { nino ->
+                alcance.launch {
+                    if (servicio.quitarNino(nino.id)) {
+                        vm.estado.datosCargados?.let { grupo -> vm.mostrar(grupo.copy(ninos = grupo.ninos - nino)) }
+                        snackbar.showSnackbar(plantillaQuitado.format(nino.nombre))
+                    } else {
+                        snackbar.showSnackbar(textoSinConexion)
+                    }
+                }
+            },
         )
     }
 
@@ -254,6 +269,7 @@ private fun NavGraphBuilder.pestanas(
             onIrAGrupo = { navController.irAPestana(PestanaDocente.Grupo) },
             onEditarPerfil = { navController.navigate(RutasDocente.EditarPerfil) },
             onVerPolitica = onVerPolitica,
+            onCambiarContrasena = onCambiarContrasena,
             onCerrarSesion = onCerrarSesion,
             onEliminarDatos = {
                 alcance.launch {

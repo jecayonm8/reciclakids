@@ -14,10 +14,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +43,9 @@ import com.reciclakids.viewmodel.datosCargados
 
 /**
  * UI-25 Mi grupo: de un vistazo, quién ya jugó el reto de hoy. Cada fila abre el detalle del
- * niño, con su código de vinculación; «Agregar niño» suma uno nuevo al grupo.
+ * niño, con su código de vinculación; «Agregar niño» suma uno nuevo al grupo. La papelera de
+ * cada fila lo quita del grupo después de confirmar (hallazgo 13 de la auditoría: la opción solo
+ * estaba al final del detalle y no se encontraba).
  */
 @Composable
 fun MiGrupoScreen(
@@ -48,7 +55,9 @@ fun MiGrupoScreen(
     onAgregarNino: () -> Unit,
     modifier: Modifier = Modifier,
     snackbar: SnackbarHostState? = null,
+    onQuitar: (NinoHoy) -> Unit = {},
 ) {
+    var porQuitar by remember { mutableStateOf<NinoHoy?>(null) }
     val datos = estado.datosCargados
     MarcoDocente(
         modifier = modifier,
@@ -97,13 +106,26 @@ fun MiGrupoScreen(
             ) {
                 BotonLleno(stringResource(R.string.grupo_vacio_agregar), onClick = onAgregarNino, icono = R.drawable.ic_mas)
             }
-            is EstadoUi.Contenido -> ListaGrupo(estado.datos, onNino, Modifier.padding(relleno))
+            is EstadoUi.Contenido -> ListaGrupo(estado.datos, onNino, onQuitar = { porQuitar = it }, Modifier.padding(relleno))
         }
+    }
+    porQuitar?.let { nino ->
+        DialogoConfirmacion(
+            titulo = stringResource(R.string.quitar_nino_titulo, nino.nombre),
+            texto = stringResource(R.string.quitar_nino_dialogo),
+            confirmar = stringResource(R.string.quitar_nino_confirmar),
+            destructivo = true,
+            onConfirmar = {
+                porQuitar = null
+                onQuitar(nino)
+            },
+            onCancelar = { porQuitar = null },
+        )
     }
 }
 
 @Composable
-private fun ListaGrupo(grupo: GrupoHoy, onNino: (String) -> Unit, modifier: Modifier = Modifier) {
+private fun ListaGrupo(grupo: GrupoHoy, onNino: (String) -> Unit, onQuitar: (NinoHoy) -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -119,7 +141,7 @@ private fun ListaGrupo(grupo: GrupoHoy, onNino: (String) -> Unit, modifier: Modi
         )
         TarjetaDocente(Modifier.fillMaxWidth(), relleno = PaddingValues(0.dp), espacio = 0.dp) {
             grupo.ninos.forEachIndexed { i, nino ->
-                FilaNino(nino, onClick = { onNino(nino.id) })
+                FilaNino(nino, onClick = { onNino(nino.id) }, onQuitar = { onQuitar(nino) })
                 if (i < grupo.ninos.lastIndex) HorizontalDivider(color = Color(0xFFEDF3F5))
             }
         }
@@ -127,15 +149,15 @@ private fun ListaGrupo(grupo: GrupoHoy, onNino: (String) -> Unit, modifier: Modi
 }
 
 @Composable
-private fun FilaNino(nino: NinoHoy, onClick: () -> Unit) {
+private fun FilaNino(nino: NinoHoy, onClick: () -> Unit, onQuitar: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 72.dp)
             .clickable(onClick = onClick)
-            .padding(horizontal = 18.dp, vertical = 12.dp),
+            .padding(start = 18.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         AvatarNino(nombre = nino.nombre)
         Column(Modifier.weight(1f)) {
@@ -149,6 +171,13 @@ private fun FilaNino(nino: NinoHoy, onClick: () -> Unit) {
             )
         }
         ChipEstadoNino(nino.estado)
+        IconButton(onClick = onQuitar) {
+            Icon(
+                painterResource(R.drawable.ic_eliminar),
+                contentDescription = stringResource(R.string.grupo_quitar_descripcion, nino.nombre),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         Icon(
             painterResource(R.drawable.ic_siguiente),
             contentDescription = null,

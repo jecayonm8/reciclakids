@@ -18,10 +18,14 @@ class ServicioAccesoEnMemoria(private val latenciaMs: Long = 600) : ServicioAcce
     private val mutex = Mutex()
     private val cuentas = mutableMapOf<String, Registro>()
 
+    /** Correo de la cuenta con la sesión abierta, para cambiar su contraseña. */
+    private var correoSesion: String? = null
+
     override suspend fun iniciarSesion(correo: String, contrasena: String): ResultadoSesion {
         delay(latenciaMs)
         val registro = mutex.withLock { cuentas[correo.normalizado()] }
         return if (registro != null && registro.contrasena == contrasena) {
+            correoSesion = registro.cuenta.correo
             ResultadoSesion.Iniciada(registro.cuenta)
         } else {
             ResultadoSesion.CredencialesInvalidas
@@ -45,6 +49,23 @@ class ServicioAccesoEnMemoria(private val latenciaMs: Long = 600) : ServicioAcce
     override suspend fun enviarEnlaceRecuperacion(correo: String): Boolean {
         delay(latenciaMs)
         return true
+    }
+
+    override suspend fun cambiarContrasena(actual: String, nueva: String): ResultadoCambioContrasena {
+        delay(latenciaMs)
+        return mutex.withLock {
+            val registro = correoSesion?.let(cuentas::get)
+            if (registro == null || registro.contrasena != actual) {
+                ResultadoCambioContrasena.ActualIncorrecta
+            } else {
+                cuentas[registro.cuenta.correo] = Registro(registro.cuenta, nueva)
+                ResultadoCambioContrasena.Cambiada
+            }
+        }
+    }
+
+    override fun cerrarSesion() {
+        correoSesion = null
     }
 
     private suspend fun registrar(cuenta: CuentaAdulto, contrasena: String): ResultadoRegistro {

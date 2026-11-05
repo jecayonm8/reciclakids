@@ -70,6 +70,8 @@ fun ResultadoScreen(
     modifier: Modifier = Modifier,
     /** UI-20: «Guardado aquí» sin red, «Guardando…» mientras sincroniza y «¡Guardado!» al terminar. */
     guardado: EstadoConexion = EstadoConexion.Sincronizado,
+    /** Se jugó un reto ya completo: no se guardó nada, así que no hay pastilla de guardado. */
+    practica: Boolean = false,
 ) {
     EscalaFijaNino {
         FondoSubmarino(
@@ -105,7 +107,13 @@ fun ResultadoScreen(
                     )
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Pastilla(
-                            stringResource(if (resultado.sumoAlAcuario) R.string.resultado_acuario else R.string.resultado_buen_trabajo),
+                            stringResource(
+                                when {
+                                    practica -> R.string.resultado_practica
+                                    resultado.sumoAlAcuario -> R.string.resultado_acuario
+                                    else -> R.string.resultado_buen_trabajo
+                                }
+                            ),
                             ReciclaKidsColors.tintaNino,
                         )
                         if (resultado.rachaMaxima >= 2) {
@@ -134,7 +142,7 @@ fun ResultadoScreen(
                         )
                     }
                 }
-                IndicadorSinConexion(guardado, Modifier.align(Alignment.BottomEnd).padding(14.dp))
+                if (!practica) IndicadorSinConexion(guardado, Modifier.align(Alignment.BottomEnd).padding(14.dp))
             }
         }
     }

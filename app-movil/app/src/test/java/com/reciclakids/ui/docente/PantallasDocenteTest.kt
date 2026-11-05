@@ -48,6 +48,7 @@ import com.reciclakids.model.TableroDocente
 import com.reciclakids.network.DatosPerfilDocente
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.ui.theme.Tactil
+import com.reciclakids.viewmodel.AgregarNinoViewModel
 import com.reciclakids.viewmodel.AsistenteReto
 import com.reciclakids.viewmodel.EstadoAgregarNino
 import com.reciclakids.viewmodel.EstadoGuardado
@@ -227,12 +228,12 @@ class PantallasDocenteTest {
         compose.setContent { ReciclaKidsTheme { AsistenteDePrueba(AsistenteReto(martes, paso = 3)) } }
 
         compose.onNodeWithText("Programar").performClick()
-        compose.onNodeWithText("mié 23").assertIsDisplayed()
-        compose.onNodeWithText("jue 24").performScrollTo().performClick()
+        compose.onNodeWithText("mié 23 sep").assertIsDisplayed()
+        compose.onNodeWithText("jue 24 sep").performScrollTo().performClick()
         compose.onNodeWithText("Siguiente").performClick()
 
         compose.onNodeWithText("Así lo verá el niño").assertIsDisplayed()
-        compose.onNodeWithText("Programado para jue 24").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Programado para jue 24 sep").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Todo listo").assertIsDisplayed()
     }
 
@@ -406,6 +407,28 @@ class PantallasDocenteTest {
     }
 
     @Test
+    fun desdeMiGrupoSeQuitaUnNinoDespuesDeConfirmar() {
+        val ana = NinoHoy("n03", "Ana L.", EstadoNinoHoy.EnCurso(4))
+        var quitado: NinoHoy? = null
+        compose.setContent {
+            ReciclaKidsTheme {
+                MiGrupoScreen(
+                    EstadoUi.Contenido(GrupoHoy("Jardín B", null, listOf(ana))),
+                    onReintentar = {}, onNino = {}, onAgregarNino = {}, onQuitar = { quitado = it },
+                )
+            }
+        }
+
+        // Hallazgo 13 de la auditoría: la opción está en la fila, no solo al final del detalle.
+        compose.onNodeWithContentDescription("Quitar a Ana L. del grupo").performClick()
+        compose.onNodeWithText("¿Quitar a Ana L. del grupo?").assertIsDisplayed()
+        assertEquals(null, quitado)
+        compose.onNodeWithText("Sí, quitar").performClick()
+
+        assertEquals(ana, quitado)
+    }
+
+    @Test
     fun elGrupoVacioInvitaAAgregarAlPrimerNino() {
         var agregar = 0
         compose.setContent {
@@ -439,7 +462,6 @@ class PantallasDocenteTest {
         }
         val agregar = compose.onNodeWithText("Agregar al grupo")
 
-        agregar.assertIsNotEnabled()
         campo("Nombre").performTextInput("Pedro")
         // Aunque se escriba el apellido completo, solo queda la inicial.
         campo("Inicial del apellido").performTextInput("quintero")
@@ -487,6 +509,54 @@ class PantallasDocenteTest {
 
         compose.onNodeWithText("No pudimos conectarnos. Revisa tu internet e intenta de nuevo.").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Agregar al grupo").performScrollTo().assertIsEnabled()
+    }
+
+    @Test
+    fun agregarSinEscribirNadaMarcaLoQueFalta() {
+        val vm = AgregarNinoViewModel { _, _ -> error("Con campos vacíos no se envía nada") }
+        compose.setContent {
+            ReciclaKidsTheme {
+                AgregarNinoScreen(vm.formulario, vm.estado, onGuardar = vm::guardar, onCompartir = {}, onOtro = {}, onVolver = {})
+            }
+        }
+        compose.onNodeWithText("Escribe su nombre").assertDoesNotExist()
+
+        compose.onNodeWithText("Agregar al grupo").performScrollTo().assertIsEnabled().performClick()
+
+        compose.onNodeWithText("Escribe su nombre").assertIsDisplayed()
+        compose.onNodeWithText("Escribe la inicial de su apellido").assertIsDisplayed()
+    }
+
+    @Test
+    fun unNombreConEtiquetasSeMarcaApenasSeEscribe() {
+        compose.setContent {
+            ReciclaKidsTheme {
+                AgregarNinoScreen(FormularioNino(), EstadoAgregarNino.Editando, onGuardar = {}, onCompartir = {}, onOtro = {}, onVolver = {})
+            }
+        }
+
+        campo("Nombre").performTextInput("<b>Pedro</b>")
+
+        compose.onNodeWithText("Usa solo letras, espacios y guiones").assertIsDisplayed()
+    }
+
+    @Test
+    fun unNombreRepetidoSeMarcaHastaQueSeCambie() {
+        val formulario = FormularioNino().apply {
+            nombre = "Salomé"
+            escribirInicial("M")
+        }
+        compose.setContent {
+            ReciclaKidsTheme {
+                AgregarNinoScreen(formulario, EstadoAgregarNino.Repetido("Salomé M."), onGuardar = {}, onCompartir = {}, onOtro = {}, onVolver = {})
+            }
+        }
+        val aviso = "Ya hay un niño llamado Salomé M. en el grupo. Agrega su segundo nombre para diferenciarlos."
+        compose.onNodeWithText(aviso).assertIsDisplayed()
+
+        campo("Nombre").performTextInput(" Andrea")
+
+        compose.onNodeWithText(aviso).assertDoesNotExist()
     }
 
     // --- UI-27 Detalle de un niño ---

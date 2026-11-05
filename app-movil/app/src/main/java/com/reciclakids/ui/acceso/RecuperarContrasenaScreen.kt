@@ -40,8 +40,10 @@ fun RecuperarContrasenaScreen(
     enviando: Boolean = false,
     enviado: Boolean = false,
     sinConexion: Boolean = false,
+    /** El de la cuenta cuando se llega desde «Cambiar contraseña» con la sesión iniciada. */
+    correoInicial: String = "",
 ) {
-    var correo by rememberSaveable { mutableStateOf("") }
+    var correo by rememberSaveable { mutableStateOf(correoInicial) }
     var intentoEnviar by rememberSaveable { mutableStateOf(false) }
     val correoOk = correoValido(correo)
 

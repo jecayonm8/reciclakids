@@ -93,7 +93,7 @@ import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.common.caneca
 import com.reciclakids.ui.common.flotar
 import com.reciclakids.ui.theme.Duracion
-import com.reciclakids.util.diaCorto
+import com.reciclakids.util.diaCortoConMes
 import java.time.LocalDate
 
 // Modos adultos: Material 3 estándar, objetivos de 48 dp, texto desde 14 sp y contraste AA.
@@ -797,12 +797,16 @@ internal fun EstadoReto.etiqueta(): String = stringResource(
     }
 )
 
-/** «hoy», «mié 23» o «sin fecha». */
+/**
+ * «hoy», «mié 23 sep», «sáb 5 dic 2027» o «sin fecha». Siempre con el mes: «sáb 5» no decía si
+ * era el 5 de este mes o del siguiente (hallazgo 10 de la auditoría).
+ */
 @Composable
 internal fun textoFecha(fecha: LocalDate?, hoy: LocalDate): String = when {
     fecha == null -> stringResource(R.string.reto_sin_fecha)
     fecha == hoy -> stringResource(R.string.reto_fecha_hoy)
-    else -> diaCorto(fecha)
+    fecha.year == hoy.year -> diaCortoConMes(fecha)
+    else -> "${diaCortoConMes(fecha)} ${fecha.year}"
 }
 
 /** «Aprovechables + Orgánicos · Medio · hoy» */

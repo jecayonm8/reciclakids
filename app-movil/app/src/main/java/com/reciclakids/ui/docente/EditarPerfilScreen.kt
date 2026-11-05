@@ -39,6 +39,8 @@ import com.reciclakids.network.DatosPerfilDocente
 import com.reciclakids.ui.acceso.AvisoError
 import com.reciclakids.ui.acceso.CampoCorreo
 import com.reciclakids.ui.acceso.CampoTexto
+import com.reciclakids.ui.acceso.errorNombre
+import com.reciclakids.ui.acceso.errorTextoLibre
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.util.correoValido
 import com.reciclakids.viewmodel.EstadoGuardado
@@ -61,13 +63,10 @@ fun EditarPerfilDocenteScreen(
     modifier: Modifier = Modifier,
 ) {
     MarcoEditarPerfil(estado, guardado, onGuardar, onReintentar, onVolver, modifier, pantallaCompleta = true) { formulario, habilitado ->
-        val obligatorio = stringResource(R.string.error_campo_obligatorio)
-        fun falta(valor: String) = if (valor.isBlank()) obligatorio else null
-
         TituloCampos(stringResource(R.string.editar_perfil_tus_datos))
         CampoTexto(
             formulario.nombre, { formulario.nombre = it }, stringResource(R.string.registro_nombre_apellido),
-            error = falta(formulario.nombre),
+            error = errorNombre(formulario.nombre, mostrarVacio = true),
             teclado = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
             habilitado = habilitado,
         )
@@ -81,12 +80,12 @@ fun EditarPerfilDocenteScreen(
         TituloCampos(stringResource(R.string.editar_perfil_jardin_grupo))
         CampoTexto(
             formulario.jardin, { formulario.jardin = it }, stringResource(R.string.registro_jardin),
-            error = falta(formulario.jardin),
+            error = errorTextoLibre(formulario.jardin, mostrarVacio = true),
             habilitado = habilitado,
         )
         CampoTexto(
             formulario.grupo, { formulario.grupo = it }, stringResource(R.string.registro_grupo),
-            error = falta(formulario.grupo),
+            error = errorTextoLibre(formulario.grupo, mostrarVacio = true),
             teclado = KeyboardOptions(imeAction = ImeAction.Done),
             habilitado = habilitado,
         )
@@ -115,7 +114,9 @@ internal fun <F : FormularioPerfil<*>> MarcoEditarPerfil(
     var confirmarDescartar by rememberSaveable { mutableStateOf(false) }
     val hayCambios = estado.datosCargados?.hayCambios == true && !guardado.ocupado
     val volver = { if (hayCambios) confirmarDescartar = true else onVolver() }
-    BackHandler(enabled = hayCambios) { confirmarDescartar = true }
+    // El atrás del sistema hace siempre lo mismo que la flecha de la barra, también sin cambios
+    // (hallazgo 5 de la auditoría: no respondía). No se deja en manos del NavHost anidado del modo.
+    BackHandler(onBack = volver)
 
     MarcoDocente(
         modifier = modifier,

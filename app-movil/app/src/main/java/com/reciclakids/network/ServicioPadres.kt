@@ -1,5 +1,6 @@
 package com.reciclakids.network
 
+import com.reciclakids.model.CambioControlParental
 import com.reciclakids.model.ControlParental
 import com.reciclakids.model.HijoVinculado
 import com.reciclakids.model.HistorialCorreos
@@ -42,9 +43,17 @@ interface ServicioPadres {
 
     suspend fun controlParental(hijoId: String): Respuesta<ControlParental>
 
-    suspend fun guardarControlParental(hijoId: String, control: ControlParental): Boolean
+    /** Envía solo los ajustes de [cambio]: los demás quedan como estaban en el servidor. */
+    suspend fun cambiarControlParental(hijoId: String, cambio: CambioControlParental): Boolean
 
     suspend fun privacidad(hijoId: String): Respuesta<PrivacidadHijo>
+
+    /**
+     * «Descargar mis datos»: todo lo que el backend guarda del niño (partidas, intentos,
+     * insignias, control parental, correos), como JSON legible para guardarlo en un archivo.
+     * `null` sin conexión.
+     */
+    suspend fun exportarDatos(hijoId: String): String?
 
     /** Devuelve la fecha en que quedó la solicitud, o `null` sin conexión. */
     suspend fun solicitarEliminacion(hijoId: String): LocalDate?

@@ -44,6 +44,9 @@ data class RefrescoSolicitud(val tokenRefresco: String)
 data class RecuperacionSolicitud(val correo: String)
 
 @Serializable
+data class CambioContrasenaSolicitud(val actual: String, val nueva: String)
+
+@Serializable
 data class CuentaDto(
     val nombre: String,
     val correo: String,
@@ -352,6 +355,16 @@ data class ControlParentalDto(
     val correosLogro: Boolean = true,
     val reporteSemanal: Boolean = true,
     val recordatorioSinJugar: Boolean = false,
+)
+
+/** Solo los ajustes que cambiaron; el backend deja los demás como estaban. */
+@Serializable
+data class CambioControlParentalDto(
+    val limiteMinutosDiarios: Int? = null,
+    val dificultadSugerida: Dificultad? = null,
+    val correosLogro: Boolean? = null,
+    val reporteSemanal: Boolean? = null,
+    val recordatorioSinJugar: Boolean? = null,
 )
 
 @Serializable

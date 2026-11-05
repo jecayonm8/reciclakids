@@ -27,6 +27,8 @@ sealed interface ResultadoSesion {
 /** [CodigoInvalido]: ningún niño tiene ese código de vinculación (solo en el registro del acudiente). */
 enum class ResultadoRegistro { Creada, CorreoEnUso, CodigoInvalido, SinConexion }
 
+enum class ResultadoCambioContrasena { Cambiada, ActualIncorrecta, SinConexion }
+
 /** Acceso de los modos adultos. La app abre Docente o Padres según el rol de la cuenta. */
 interface ServicioAcceso {
     suspend fun iniciarSesion(correo: String, contrasena: String): ResultadoSesion
@@ -41,6 +43,12 @@ interface ServicioAcceso {
      * si el correo tiene cuenta.
      */
     suspend fun enviarEnlaceRecuperacion(correo: String): Boolean
+
+    /**
+     * Cambia la contraseña con la sesión iniciada: pide la actual, no un enlace por correo. Las
+     * demás sesiones de la cuenta se cierran; la de este teléfono sigue abierta.
+     */
+    suspend fun cambiarContrasena(actual: String, nueva: String): ResultadoCambioContrasena
 
     /**
      * La sesión que quedó abierta en el teléfono, para entrar al modo sin volver a escribir la

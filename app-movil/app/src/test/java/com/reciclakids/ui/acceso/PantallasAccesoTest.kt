@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
@@ -12,10 +13,12 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import com.reciclakids.R
 import com.reciclakids.model.RolAdulto
+import com.reciclakids.network.ResultadoCambioContrasena
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.viewmodel.FormularioAcudiente
 import com.reciclakids.viewmodel.FormularioDocente
@@ -308,5 +311,59 @@ class PantallasAccesoTest {
         // La pantalla los empareja por posición: si el texto legal cambia, deben seguir en pareja.
         assertEquals(titulos.size, textos.size)
         assertTrue(textos.none { it.isBlank() })
+    }
+
+    // --- Cambiar contraseña con la sesión iniciada ---
+
+    @Test
+    fun cambiarLaContrasenaPideLaActualYQueLaNuevaCoincida() {
+        val enviados = mutableListOf<Pair<String, String>>()
+        compose.setContent {
+            ReciclaKidsTheme { CambiarContrasenaScreen(onAtras = {}, onCambiar = { actual, nueva -> enviados += actual to nueva }, onOlvide = {}) }
+        }
+        // El título de la barra dice lo mismo: el botón es el que se puede tocar.
+        val cambiar = compose.onNode(hasText("Cambiar contraseña") and hasClickAction())
+
+        cambiar.performScrollTo().performClick()
+        compose.onNodeWithText("Completa este campo").assertIsDisplayed()
+        compose.onNodeWithText("Debe tener al menos 8 caracteres").assertIsDisplayed()
+
+        campo("Contraseña actual").performTextInput("clave-vieja")
+        campo("Contraseña nueva").performTextInput("clave-nueva-1")
+        campo("Repite la contraseña nueva").performTextInput("clave-nueva-2")
+        cambiar.performScrollTo().performClick()
+        compose.onNodeWithText("No coincide con la contraseña nueva").assertIsDisplayed()
+        assertTrue(enviados.isEmpty())
+
+        campo("Repite la contraseña nueva").performTextClearance()
+        campo("Repite la contraseña nueva").performTextInput("clave-nueva-1")
+        cambiar.performScrollTo().performClick()
+        assertEquals(listOf("clave-vieja" to "clave-nueva-1"), enviados)
+    }
+
+    @Test
+    fun laContrasenaActualIncorrectaSeMarcaYOlvideLlevaALaRecuperacion() {
+        var olvide = 0
+        compose.setContent {
+            ReciclaKidsTheme {
+                CambiarContrasenaScreen(
+                    onAtras = {}, onCambiar = { _, _ -> }, onOlvide = { olvide++ },
+                    resultado = ResultadoCambioContrasena.ActualIncorrecta,
+                )
+            }
+        }
+
+        compose.onNodeWithText("La contraseña actual no es correcta").assertIsDisplayed()
+        compose.onNodeWithText("¿Olvidaste tu contraseña actual?").performScrollTo().performClick()
+        assertEquals(1, olvide)
+    }
+
+    @Test
+    fun laRecuperacionLlegaConElCorreoDeLaCuenta() {
+        compose.setContent {
+            ReciclaKidsTheme { RecuperarContrasenaScreen(onAtras = {}, onEnviar = {}, correoInicial = "marta@correo.com") }
+        }
+
+        compose.onNode(hasSetTextAction() and hasText("marta@correo.com")).assertIsDisplayed()
     }
 }

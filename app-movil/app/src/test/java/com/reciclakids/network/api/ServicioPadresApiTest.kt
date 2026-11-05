@@ -1,5 +1,6 @@
 package com.reciclakids.network.api
 
+import com.reciclakids.model.CambioControlParental
 import com.reciclakids.model.CatalogoResiduos
 import com.reciclakids.model.CategoriaResiduo
 import com.reciclakids.model.Conteo
@@ -13,7 +14,7 @@ import com.reciclakids.network.ResultadoEdicionPerfil
 import com.reciclakids.network.ResultadoVinculacion
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
@@ -103,7 +104,9 @@ class ServicioPadresApiTest {
     @Test
     fun elControlParentalIdaYVueltaYAvisaAlModoNinoDelTelefono() = runBlocking {
         val api = ApiDePrueba { peticion ->
-            if (peticion.metodo.value == "PUT") vacia() else {
+            if (peticion.metodo.value == "PATCH") {
+                json("""{"limiteMinutosDiarios":30,"dificultadSugerida":"Facil","correosLogro":false,"reporteSemanal":true,"recordatorioSinJugar":true}""")
+            } else {
                 json("""{"limiteMinutosDiarios":15,"dificultadSugerida":"Facil","correosLogro":false,"reporteSemanal":true,"recordatorioSinJugar":true}""")
             }
         }
@@ -112,19 +115,35 @@ class ServicioPadresApiTest {
         val control = (servicio.controlParental("n1") as Respuesta.Ok).dato
         assertEquals(ControlParental(15, Dificultad.Facil, correosLogro = false, reporteSemanal = true, recordatorioSinJugar = true), control)
 
-        assertTrue(servicio.guardarControlParental("n1", control.conMinutos(30)))
+        assertTrue(servicio.cambiarControlParental("n1", CambioControlParental.entre(control, control.conMinutos(30))))
         val cuerpo = api.peticiones.last().json
-        assertEquals("acudiente/hijos/n1/control-parental", api.peticiones.last().ruta)
+        assertEquals("PATCH acudiente/hijos/n1/control-parental", api.rutas().last())
         assertEquals(30, cuerpo["limiteMinutosDiarios"]?.jsonPrimitive?.int)
-        assertTrue(cuerpo["recordatorioSinJugar"]!!.jsonPrimitive.boolean)
+        // Solo viaja lo que cambió: los demás ajustes no se tocan en el servidor.
+        assertEquals(setOf("limiteMinutosDiarios"), cuerpo.keys)
         assertEquals(listOf("n1" to 30), limitesGuardados)
+    }
+
+    @Test
+    fun descargarMisDatosTraeTodoLoQueGuardaElBackend() = runBlocking {
+        val respuesta = """{"generadoEn":"2026-11-05T10:00-05:00","nino":{"nombre":"Salomé M."},""" +
+            """"partidas":[{"fecha":"2026-11-04","intentos":[{"residuo":"botella plástica","correcto":true}]}]}"""
+        val api = ApiDePrueba { json(respuesta) }
+
+        val archivo = checkNotNull(servicio(api).exportarDatos("n1"))
+
+        assertEquals("GET acudiente/hijos/n1/privacidad/exportacion", api.rutas().single())
+        // Todo lo que llegó, sin quitar nada, con sangría para que se pueda leer.
+        assertEquals(Json.parseToJsonElement(respuesta), Json.parseToJsonElement(archivo))
+        assertTrue(archivo.contains("\n    "))
+        assertNull(servicio(ApiDePrueba { throw IOException("sin red") }).exportarDatos("n1"))
     }
 
     @Test
     fun sinRedElControlNoSeGuardaNiCambiaElLimiteLocal() = runBlocking {
         val servicio = servicio(ApiDePrueba { throw IOException("sin red") })
 
-        assertEquals(false, servicio.guardarControlParental("n1", ControlParental()))
+        assertEquals(false, servicio.cambiarControlParental("n1", CambioControlParental(limiteMinutosDiarios = 25)))
         assertTrue(limitesGuardados.isEmpty())
     }
 

@@ -6,6 +6,7 @@ import com.reciclakids.models.CategoriaResiduo
 import com.reciclakids.models.Insignia
 import com.reciclakids.plugins.Tokens
 import com.reciclakids.repositories.AcudienteDeNino
+import com.reciclakids.repositories.CambioControl
 import com.reciclakids.repositories.CuentasRepositorio
 import com.reciclakids.repositories.GrupoDocente
 import com.reciclakids.repositories.NinoGuardado
@@ -110,8 +111,7 @@ class NotificacionesServicio(
         val (acudienteId, ninoId) = tokens.leerBaja(token) ?: return false
         return bd.transaccion {
             if (!ninos.estaVinculado(acudienteId, ninoId)) return@transaccion false
-            val control = ninos.control(ninoId)
-            ninos.guardarControl(ninoId, control.copy(correosLogro = false, reporteSemanal = false), reloj.ahora())
+            ninos.cambiarControl(ninoId, CambioControl(correosLogro = false, reporteSemanal = false), reloj.ahora())
             true
         }
     }

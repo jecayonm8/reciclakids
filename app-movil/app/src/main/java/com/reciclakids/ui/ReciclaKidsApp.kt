@@ -69,6 +69,7 @@ fun ReciclaKidsApp(
                 // Al volver desde un modo adulto se llega al selector, no al inicio de sesión.
                 navController.navigate(destino) { popUpTo(RutasAcceso.Selector) }
             },
+            correoSesion = { sesionAdulta.cuenta?.correo },
         )
         val volverAlSelector = { navController.popBackStack(RutasAcceso.Selector, inclusive = false) }
         val cerrarSesion = {
@@ -85,6 +86,7 @@ fun ReciclaKidsApp(
                     servicio = servicio,
                     onCerrarSesion = { cerrarSesion() },
                     onVerPolitica = { navController.navigate(RutasAcceso.Politica) },
+                    onCambiarContrasena = { navController.navigate(RutasAcceso.CambiarContrasena) },
                 )
             } else {
                 // La sesión no se guarda en disco: si el sistema cerró la app, se vuelve a la puerta.
@@ -98,7 +100,7 @@ fun ReciclaKidsApp(
                     servicio = servicio,
                     onCerrarSesion = { cerrarSesion() },
                     onVerPolitica = { navController.navigate(RutasAcceso.Politica) },
-                    onCambiarContrasena = { navController.navigate(RutasAcceso.Recuperar) },
+                    onCambiarContrasena = { navController.navigate(RutasAcceso.CambiarContrasena) },
                 )
             } else {
                 LaunchedEffect(Unit) { volverAlSelector() }

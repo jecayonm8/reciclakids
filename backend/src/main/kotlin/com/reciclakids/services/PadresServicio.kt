@@ -4,14 +4,22 @@ import com.reciclakids.config.BaseDatos
 import com.reciclakids.models.CatalogoResiduos
 import com.reciclakids.models.Insignia
 import com.reciclakids.models.dto.ConteoDto
+import com.reciclakids.models.dto.CambioControlParentalDto
 import com.reciclakids.models.dto.ControlParentalDto
 import com.reciclakids.models.dto.CorreoEnviadoDto
+import com.reciclakids.models.dto.AcudienteExportadoDto
+import com.reciclakids.models.dto.CorreoExportadoDto
 import com.reciclakids.models.dto.DiaDeJuegoDto
+import com.reciclakids.models.dto.ExportacionDatosDto
 import com.reciclakids.models.dto.HijoDto
 import com.reciclakids.models.dto.HistorialCorreosDto
 import com.reciclakids.models.dto.InicioPadresDto
+import com.reciclakids.models.dto.InsigniaExportadaDto
+import com.reciclakids.models.dto.IntentoExportadoDto
 import com.reciclakids.models.dto.LogroDto
 import com.reciclakids.models.dto.LogrosHijoDto
+import com.reciclakids.models.dto.NinoExportadoDto
+import com.reciclakids.models.dto.PartidaExportadaDto
 import com.reciclakids.models.dto.PerfilAcudienteDto
 import com.reciclakids.models.dto.PerfilAcudienteSolicitud
 import com.reciclakids.models.dto.PrivacidadHijoDto
@@ -22,14 +30,17 @@ import com.reciclakids.models.dto.TipoCorreoDto
 import com.reciclakids.models.dto.VinculacionDto
 import com.reciclakids.plugins.DatosInvalidos
 import com.reciclakids.plugins.NoEncontrado
+import com.reciclakids.repositories.CambioControl
 import com.reciclakids.repositories.ControlGuardado
 import com.reciclakids.repositories.CuentasRepositorio
 import com.reciclakids.repositories.HijoGuardado
 import com.reciclakids.repositories.NinosRepositorio
 import com.reciclakids.repositories.ResultadosRepositorio
+import com.reciclakids.repositories.RetoGuardado
 import com.reciclakids.repositories.RetosRepositorio
 import com.reciclakids.services.DocenteServicio.Companion.inicioSemana
 import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
+import java.time.Instant
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
@@ -124,8 +135,7 @@ class PadresServicio(
     }
 
     suspend fun guardarControlParental(acudienteId: String, hijoId: String, control: ControlParentalDto) {
-        val limite = control.limiteMinutosDiarios
-        if (limite !in 5..45 || limite % 5 != 0) throw DatosInvalidos("El tiempo diario va de 5 a 45 minutos, de 5 en 5", "limite_invalido")
+        val limite = validarLimite(control.limiteMinutosDiarios)
         bd.transaccion {
             val hijo = hijoDe(acudienteId, hijoId)
             ninos.guardarControl(
@@ -134,6 +144,31 @@ class PadresServicio(
                 reloj.ahora(),
             )
         }
+    }
+
+    /** Cambia solo los ajustes que llegan y devuelve el control completo como quedó. */
+    suspend fun cambiarControlParental(acudienteId: String, hijoId: String, cambio: CambioControlParentalDto): ControlParentalDto {
+        cambio.limiteMinutosDiarios?.let(::validarLimite)
+        return bd.transaccion {
+            val ninoId = hijoDe(acudienteId, hijoId).nino.id
+            ninos.cambiarControl(
+                ninoId,
+                CambioControl(
+                    cambio.limiteMinutosDiarios,
+                    cambio.dificultadSugerida,
+                    cambio.correosLogro,
+                    cambio.reporteSemanal,
+                    cambio.recordatorioSinJugar,
+                ),
+                reloj.ahora(),
+            )
+            ninos.control(ninoId).aDto()
+        }
+    }
+
+    private fun validarLimite(limite: Int): Int {
+        if (limite !in 5..45 || limite % 5 != 0) throw DatosInvalidos("El tiempo diario va de 5 a 45 minutos, de 5 en 5", "limite_invalido")
+        return limite
     }
 
     suspend fun privacidad(acudienteId: String, hijoId: String): PrivacidadHijoDto = bd.transaccion {
@@ -146,6 +181,54 @@ class PadresServicio(
             registros = resultados.contarIntentos(hijo.nino.id),
             insignias = resultados.insignias(hijo.nino.id).size,
             solicitudEliminacion = ninos.solicitudEliminacion(hijo.nino.id)?.toString(),
+        )
+    }
+
+    /** «Descargar mis datos»: todo lo que se guarda del niño, no un resumen (hallazgo 6 de la auditoría). */
+    suspend fun exportarDatos(acudienteId: String, hijoId: String): ExportacionDatosDto = bd.transaccion {
+        val hijo = hijoDe(acudienteId, hijoId)
+        val nino = hijo.nino
+        val acudiente = cuentas.usuarioPorId(acudienteId)!!
+        val nombresDeRetos = mutableMapOf<String, RetoGuardado?>()
+        ExportacionDatosDto(
+            generadoEn = reloj.ahora().toString(),
+            nino = NinoExportadoDto(
+                nombre = nino.nombre,
+                edad = nino.edad,
+                avatar = nino.avatar,
+                jardin = hijo.jardin,
+                grupo = hijo.grupo,
+                rachaEntreRetos = nino.rachaEntreRetos,
+                mejorRachaEntreRetos = nino.mejorRachaEntreRetos,
+            ),
+            acudiente = AcudienteExportadoDto(acudiente.nombre, acudiente.correo, hijo.vinculadoEn.toString(), hijo.autorizadaEn.toString()),
+            controlParental = ninos.control(nino.id).aDto(),
+            partidas = resultados.partidasDelNino(nino.id).map { partida ->
+                val reto = nombresDeRetos.getOrPut(partida.retoId) { retos.porId(partida.retoId) }
+                PartidaExportadaDto(
+                    fecha = partida.fecha.toString(),
+                    reto = reto?.nombre,
+                    dificultad = reto?.dificultad,
+                    terminada = partida.terminada,
+                    aciertos = partida.aciertos,
+                    errores = partida.errores,
+                    rachaMaxima = partida.rachaMaxima,
+                    segundosJugados = partida.tiempoMs / 1000,
+                    intentos = resultados.intentosDePartida(partida.id).map { intento ->
+                        IntentoExportadoDto(
+                            momento = Instant.ofEpochMilli(intento.momentoMs).toString(),
+                            residuo = CatalogoResiduos.porId(intento.residuoId)?.nombre ?: intento.residuoId,
+                            canecaElegida = intento.categoriaElegida,
+                            correcto = intento.correcto,
+                        )
+                    },
+                )
+            },
+            insignias = resultados.insignias(nino.id).entries.sortedBy { it.value }.map { (insignia, fecha) ->
+                InsigniaExportadaDto(insignia.nombre, insignia.logro, fecha.toString())
+            },
+            correos = resultados.correos(acudienteId, nino.id).map { CorreoExportadoDto(it.tipo, it.destinatario, it.enviadoEn.toString()) },
+            solicitudEliminacion = ninos.solicitudEliminacion(nino.id)?.toString(),
         )
     }
 
@@ -166,7 +249,7 @@ class PadresServicio(
     }
 
     suspend fun actualizarPerfil(acudienteId: String, datos: PerfilAcudienteSolicitud): PerfilAcudienteDto {
-        val nombre = Validacion.texto(datos.nombre, "tu nombre", 120)
+        val nombre = Validacion.nombre(datos.nombre, "tu nombre", 120)
         val correo = Validacion.correo(datos.correo)
         bd.transaccion {
             val otro = cuentas.usuarioPorCorreo(correo)

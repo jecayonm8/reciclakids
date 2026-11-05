@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.reciclakids.model.CambioControlParental
 import com.reciclakids.model.ControlParental
 import com.reciclakids.model.HijoVinculado
 import com.reciclakids.model.ReporteHijo
@@ -13,6 +14,8 @@ import com.reciclakids.network.ResultadoVinculacion
 import com.reciclakids.network.ServicioPadres
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
 
 /**
@@ -63,10 +66,13 @@ sealed interface AvisoControl {
 }
 
 /**
- * UI-33. Cada cambio se guarda solo y en el acto (cambio optimista): si no hay red, el control
+ * UI-33. Cada cambio se guarda solo y en el acto (cambio optimista): si no hay red, ese ajuste
  * vuelve a como estaba y se avisa. Después de guardar se ofrece «Deshacer».
  */
 class ControlParentalViewModel(private val servicio: ServicioPadres, private val hijoId: String) : ViewModel() {
+
+    /** Los cambios salen de a uno y en orden: dos toques rápidos no llegan al revés. */
+    private val cola = Mutex()
 
     var estado: EstadoUi<ControlParental> by mutableStateOf(EstadoUi.Cargando)
         private set
@@ -96,22 +102,30 @@ class ControlParentalViewModel(private val servicio: ServicioPadres, private val
 
     fun cambiar(nuevo: ControlParental) {
         val anterior = estado.datosCargados ?: return
-        if (nuevo == anterior) return
-        guardar(nuevo, siFalla = anterior, alGuardar = AvisoControl.Guardado(anterior))
+        guardar(anterior, nuevo, alGuardar = AvisoControl.Guardado(anterior))
     }
 
     fun deshacer(anterior: ControlParental) {
         val actual = estado.datosCargados ?: return
-        guardar(anterior, siFalla = actual, alGuardar = null)
+        guardar(actual, anterior, alGuardar = null)
     }
 
-    private fun guardar(nuevo: ControlParental, siFalla: ControlParental, alGuardar: AvisoControl?) {
-        estado = EstadoUi.Contenido(nuevo)
+    /**
+     * Solo viajan los ajustes que cambiaron, así que un cambio nunca pisa los demás (hallazgo 11
+     * de la auditoría). Si falla, solo esos ajustes vuelven atrás: lo que se cambió mientras
+     * tanto se queda.
+     */
+    private fun guardar(antes: ControlParental, despues: ControlParental, alGuardar: AvisoControl?) {
+        val cambio = CambioControlParental.entre(antes, despues)
+        if (cambio.vacio) return
+        estado = EstadoUi.Contenido(despues)
         viewModelScope.launch {
-            if (servicio.guardarControlParental(hijoId, nuevo)) {
+            val guardado = cola.withLock { servicio.cambiarControlParental(hijoId, cambio) }
+            if (guardado) {
                 if (alGuardar != null) avisar(alGuardar)
             } else {
-                estado = EstadoUi.Contenido(siFalla)
+                val actual = estado.datosCargados ?: despues
+                estado = EstadoUi.Contenido(CambioControlParental.entre(despues, antes).aplicarA(actual))
                 avisar(AvisoControl.NoGuardado)
             }
         }

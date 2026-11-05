@@ -4,6 +4,7 @@ import com.reciclakids.model.CuentaAdulto
 import com.reciclakids.model.RolAdulto
 import com.reciclakids.network.RegistroAcudiente
 import com.reciclakids.network.RegistroDocente
+import com.reciclakids.network.ResultadoCambioContrasena
 import com.reciclakids.network.ResultadoRegistro
 import com.reciclakids.network.ResultadoSesion
 import io.ktor.http.HttpMethod
@@ -53,6 +54,28 @@ class ServicioAccesoApiTest {
 
         val sinRed = ApiDePrueba { throw IOException("sin red") }
         assertEquals(ResultadoSesion.SinConexion, servicio(sinRed).iniciarSesion("x@y.co", "otra-clave"))
+    }
+
+    @Test
+    fun cambiarLaContrasenaGuardaLaSesionNuevaYReconoceLaActualIncorrecta() = runBlocking {
+        val api = ApiDePrueba { json(sesionJson("acceso-2", "refresco-2")) }
+        api.conSesion()
+
+        assertEquals(ResultadoCambioContrasena.Cambiada, servicio(api).cambiarContrasena("clave-segura", "clave-nueva-99"))
+        assertEquals("POST cuenta/contrasena", api.rutas().single())
+        assertEquals("clave-segura", api.peticiones.single().json["actual"]?.jsonPrimitive?.content)
+        assertEquals("clave-nueva-99", api.peticiones.single().json["nueva"]?.jsonPrimitive?.content)
+        // El backend cerró las demás sesiones: este teléfono sigue con la nueva.
+        assertEquals("refresco-2", api.sesion.leer()?.tokenRefresco)
+
+        val mala = ApiDePrueba { error(HttpStatusCode.UnprocessableEntity, "contrasena_actual_incorrecta") }
+        mala.conSesion()
+        assertEquals(ResultadoCambioContrasena.ActualIncorrecta, servicio(mala).cambiarContrasena("otra", "clave-nueva-99"))
+        assertEquals("refresco-1", mala.sesion.leer()?.tokenRefresco)
+
+        val sinRed = ApiDePrueba { throw IOException("sin red") }
+        sinRed.conSesion()
+        assertEquals(ResultadoCambioContrasena.SinConexion, servicio(sinRed).cambiarContrasena("clave-segura", "clave-nueva-99"))
     }
 
     @Test
