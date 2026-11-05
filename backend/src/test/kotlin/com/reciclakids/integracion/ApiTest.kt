@@ -159,8 +159,8 @@ class ApiTest {
         assertEquals(20, sesionNino.limiteMinutosDiarios)
         assertEquals(1, get("/api/v1/docente/retos/${reto.id}/ingresos", docente).body<IngresosDto>().ninosQueEntraron)
 
-        // Primera partida con un error: no hay insignias todavía.
-        val primera = partida(sesionNino.reto, "local-1", errores = 1, inicioMs = 1_000)
+        // Primera partida con un error, sin terminar (cerró la app): no hay insignias todavía.
+        val primera = partida(sesionNino.reto, "local-1", errores = 1, inicioMs = 1_000).copy(terminada = false)
         assertEquals(emptyList(), enviarPartidas(sesionNino.token, primera).insigniasNuevas)
         // Reenviar el mismo lote no duplica nada.
         enviarPartidas(sesionNino.token, primera)
@@ -174,6 +174,9 @@ class ApiTest {
         val segunda = partida(sesionNino.reto, "local-2", errores = 0, inicioMs = 10_000)
         val lote = enviarPartidas(sesionNino.token, segunda)
         assertEquals(listOf(Insignia.AmigaTortuga, Insignia.RachaDeCinco), lote.insigniasNuevas)
+        // Repetir el reto ya terminado no cuenta otra vez: ni racha, ni intentos, ni reportes.
+        val repetida = partida(sesionNino.reto, "local-3", errores = 0, inicioMs = 20_000)
+        assertEquals(emptyList(), enviarPartidas(sesionNino.token, repetida).insigniasNuevas)
         val progreso = get("/api/v1/nino/progreso", sesionNino.token).body<ProgresoNinoDto>()
         assertEquals(1, progreso.retosCompletados)
         assertEquals(8, progreso.mejorRachaEntreRetos)

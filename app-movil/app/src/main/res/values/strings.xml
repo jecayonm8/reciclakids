@@ -257,6 +257,13 @@
     </plurals>
     <string name="tiempo_nota">El tiempo lo define el control parental. No se puede saltar desde el Modo Niño.</string>
 
+    <!-- Reto ya completado: se puede practicar, pero no cuenta otra vez -->
+    <string name="reto_completado_titulo">¡Ya completaste el reto de hoy!</string>
+    <string name="reto_completado_texto">Puedes jugar de práctica. Tus estrellas y tus insignias no cambian.</string>
+    <string name="reto_completado_practicar">Jugar de práctica</string>
+    <string name="reto_completado_volver">Volver al acuario</string>
+    <string name="resultado_practica">Fue de práctica: el reto de hoy ya estaba completo</string>
+
     <!-- P3 · Modo Docente -->
     <string name="comun_cancelar">Cancelar</string>
     <string name="porcentaje">%1$d\u00A0%%</string>

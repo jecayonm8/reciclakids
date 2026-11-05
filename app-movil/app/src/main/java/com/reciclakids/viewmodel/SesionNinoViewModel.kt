@@ -22,6 +22,10 @@ class SesionNinoViewModel : ViewModel() {
     var ultimoResultado by mutableStateOf<ResultadoReto?>(null)
         private set
 
+    /** El último reto fue de práctica: no se guardó, no sumó al acuario ni dio insignias. */
+    var ultimoFuePractica by mutableStateOf(false)
+        private set
+
     fun abrirReto(reto: Reto) {
         this.reto = reto
         nino = null
@@ -31,7 +35,8 @@ class SesionNinoViewModel : ViewModel() {
         this.nino = nino
     }
 
-    fun terminarReto(resultado: ResultadoReto) {
+    fun terminarReto(resultado: ResultadoReto, practica: Boolean = false) {
         ultimoResultado = resultado
+        ultimoFuePractica = practica
     }
 }

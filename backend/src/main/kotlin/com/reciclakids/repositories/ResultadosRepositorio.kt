@@ -14,6 +14,7 @@ import org.jetbrains.exposed.v1.core.between
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.batchInsert
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
@@ -61,6 +62,12 @@ class ResultadosRepositorio {
 
     fun partidaPorIdLocal(ninoId: String, idLocal: String): PartidaGuardada? =
         Partidas.selectAll().where { (Partidas.ninoId eq ninoId) and (Partidas.idLocal eq idLocal) }.singleOrNull()?.aPartida()
+
+    /** Si el niño ya terminó ese reto con otra partida (otro id local). */
+    fun retoTerminadoConOtraPartida(ninoId: String, retoId: String, idLocal: String): Boolean =
+        Partidas.selectAll().where {
+            (Partidas.ninoId eq ninoId) and (Partidas.retoId eq retoId) and (Partidas.terminada eq true) and (Partidas.idLocal neq idLocal)
+        }.any()
 
     fun crearPartida(partida: PartidaGuardada, idLocal: String, ahora: OffsetDateTime) {
         Partidas.insert {

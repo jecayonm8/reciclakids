@@ -7,6 +7,7 @@ import com.reciclakids.model.Nino
 import com.reciclakids.model.Reto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -15,6 +16,8 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -67,5 +70,25 @@ class JuegoViewModelTest {
         // Unos 10 s: 5 antes de la pausa y 1 tras cada acierto. Con la pausa serían 20; antes del arreglo, 0.
         assertTrue("tiempo guardado: ${partida.tiempoMs}", partida.tiempoMs in 8_000L..12_000L)
         assertNotNull(juego.resultado)
+    }
+
+    @Test
+    fun laPracticaDeUnRetoCompletoNoSeGuardaNiCuenta() = runTest {
+        var sincronizaciones = 0
+        val juego = JuegoViewModel(reto, Nino("n1", "Salomé M."), contenedor.juego, alTerminar = { sincronizaciones++ }, practica = true)
+        esperar(1_000)
+        while (juego.resultado == null) {
+            juego.clasificar(checkNotNull(juego.estado?.residuoActual).categoria)
+            esperar(DuracionAciertoMs + 100)
+        }
+
+        val resultado = checkNotNull(juego.resultado)
+        assertEquals(6, resultado.residuosSeparados)
+        assertFalse(resultado.sumoAlAcuario)
+        assertTrue(resultado.insigniasNuevas.isEmpty())
+        // Ni partida, ni intentos, ni sincronización: el reto de hoy no cuenta dos veces.
+        assertNull(contenedor.baseDatos.juegoDao().leerPartida(1))
+        assertEquals(0, contenedor.juego.intentosPendientes().first())
+        assertEquals(0, sincronizaciones)
     }
 }

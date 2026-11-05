@@ -35,6 +35,10 @@ private const val PasoCronometroMs = 250L
 /**
  * UI-12 Juego. La retroalimentación arranca en el mismo instante del intento y el guardado en
  * el teléfono va detrás, para cumplir los 500 ms del RNF sin depender del disco.
+ *
+ * Con [practica] (el reto de hoy ya estaba completo) la partida vive solo en memoria: no se
+ * guarda, no se sincroniza, no suma al acuario ni a la racha y no da insignias. Así el mismo reto
+ * no cuenta dos veces (hallazgo 9 de la auditoría).
  */
 class JuegoViewModel(
     private val reto: Reto,
@@ -42,6 +46,7 @@ class JuegoViewModel(
     private val repositorio: RepositorioJuego,
     /** Se llama con la partida ya guardada como terminada; programa la sincronización. */
     private val alTerminar: () -> Unit = {},
+    private val practica: Boolean = false,
 ) : ViewModel() {
 
     /** null mientras se abre la partida. */
@@ -78,7 +83,7 @@ class JuegoViewModel(
     private val escrituras = Mutex()
 
     init {
-        viewModelScope.launch { abrir(repositorio.abrirPartida(nino.id, reto)) }
+        viewModelScope.launch { abrir(if (practica) partidaDePractica() else repositorio.abrirPartida(nino.id, reto)) }
     }
 
     fun clasificar(categoria: CategoriaResiduo) {
@@ -89,8 +94,10 @@ class JuegoViewModel(
         estado = intento.estado
         retroalimentacion = if (intento.correcto) Retroalimentacion.Acierto else Retroalimentacion.Rebote
 
-        viewModelScope.launch {
-            escrituras.withLock { repositorio.registrarIntento(partidaId, intento, categoria, tiempoMs) }
+        if (!practica) {
+            viewModelScope.launch {
+                escrituras.withLock { repositorio.registrarIntento(partidaId, intento, categoria, tiempoMs) }
+            }
         }
         viewModelScope.launch {
             delay(if (intento.correcto) DuracionAciertoMs else DuracionReboteMs)
@@ -110,12 +117,14 @@ class JuegoViewModel(
 
     fun reiniciar() {
         viewModelScope.launch {
-            val nueva = escrituras.withLock { repositorio.reiniciarPartida(partidaId, nino.id, reto) }
+            val nueva = if (practica) partidaDePractica() else escrituras.withLock { repositorio.reiniciarPartida(partidaId, nino.id, reto) }
             retroalimentacion = Retroalimentacion.Ninguna
             pausado = false
             abrir(nueva)
         }
     }
+
+    private fun partidaDePractica() = PartidaAbierta(id = 0, estado = EstadoPartida(reto.residuos), tiempoMs = 0)
 
     private fun abrir(partida: PartidaAbierta) {
         partidaId = partida.id
@@ -138,6 +147,10 @@ class JuegoViewModel(
     private fun terminar(final: EstadoPartida) {
         cronometro?.cancel()
         viewModelScope.launch {
+            if (practica) {
+                resultado = ResultadoReto(final.aciertos, final.errores, final.rachaMaxima, sumoAlAcuario = false, insigniasNuevas = emptyList())
+                return@launch
+            }
             resultado = escrituras.withLock {
                 repositorio.terminarPartida(partidaId, nino.id, reto, final, tiempoMs)
             }
