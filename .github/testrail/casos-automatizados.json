@@ -177,5 +177,81 @@
       "FlujoDocenteTest.elPerfilEditadoSeVeAlVolverALaCuenta",
       "FlujoPadresTest.elPerfilEditadoSeVeAlVolverALaCuenta"
     ]
+  },
+  "CP-028": {
+    "app": [
+      "PantallasDocenteTest.agregarSinEscribirNadaMarcaLoQueFalta",
+      "PantallasDocenteTest.unNombreConEtiquetasSeMarcaApenasSeEscribe",
+      "PantallasDocenteTest.unNombreRepetidoSeMarcaHastaQueSeCambie",
+      "AgregarNinoViewModelTest.unNombreConSimbolosNoSeEnvia",
+      "AgregarNinoViewModelTest.unNombreRepetidoQuedaMarcado"
+    ],
+    "backend": [
+      "ReglasTest.losNombresSoloLlevanLetras",
+      "ApiTest.losNinosDelGrupoNoSeRepitenNiLlevanEtiquetas",
+      "ApiTest.elIndiceUnicoTampocoDistingueTildesNiMayusculas"
+    ]
+  },
+  "CP-029": {
+    "app": [
+      "ViewModelsPadresTest.dosCambiosRapidosNoSePisan",
+      "ViewModelsPadresTest.sinConexionElControlVuelveAComoEstabaYSeAvisa",
+      "ServicioPadresApiTest.elControlParentalIdaYVueltaYAvisaAlModoNinoDelTelefono"
+    ],
+    "backend": [
+      "ApiTest.cambiarUnAjusteDelControlParentalNoBorraLosDemas"
+    ]
+  },
+  "CP-030": {
+    "app": [
+      "PantallasAccesoTest.cambiarLaContrasenaPideLaActualYQueLaNuevaCoincida",
+      "PantallasAccesoTest.laContrasenaActualIncorrectaSeMarcaYOlvideLlevaALaRecuperacion",
+      "PantallasAccesoTest.laRecuperacionLlegaConElCorreoDeLaCuenta",
+      "ServicioAccesoApiTest.cambiarLaContrasenaGuardaLaSesionNuevaYReconoceLaActualIncorrecta"
+    ],
+    "backend": [
+      "ApiTest.cambiarLaContrasenaConLaSesionIniciada"
+    ]
+  },
+  "CP-031": {
+    "app": [
+      "ServicioPadresApiTest.descargarMisDatosTraeTodoLoQueGuardaElBackend",
+      "ExportacionDatosTest.elArchivoSeLlamaConElNinoYLaFechaSinTildesNiEspacios"
+    ],
+    "backend": [
+      "ApiTest.recorridoCompletoDocenteNinoYAcudiente"
+    ]
+  },
+  "CP-032": {
+    "app": [
+      "JuegoViewModelTest.laPracticaDeUnRetoCompletoNoSeGuardaNiCuenta"
+    ],
+    "backend": [
+      "ApiTest.recorridoCompletoDocenteNinoYAcudiente"
+    ]
+  },
+  "CP-033": {
+    "app": [
+      "EstadoRedTest.alPonerModoAvionYaNoHayConexion",
+      "EstadoRedTest.alPasarDelWifiALosDatosSigueConectado",
+      "EstadoRedTest.unWifiSinInternetNoCuentaComoConexion",
+      "EstadoRedTest.sinNingunAvisoNoHayConexion"
+    ]
+  },
+  "CP-034": {
+    "app": [
+      "FlujoDocenteTest.lasPestanasCambianDeSeccionYCerrarSesionVuelveAlSelector",
+      "FlujoPadresTest.lasPestanasCambianDeSeccionYCerrarSesionVuelveAlSelector",
+      "FlujoSesionTest.laSesionGuardadaAbreSuModoAlPasarLaPuertaYCerrarlaPideIniciarSesion",
+      "AtrasEditarPerfilTest.sinCambiosElAtrasDelSistemaVuelveALaCuenta",
+      "AtrasEditarPerfilTest.conCambiosElAtrasDelSistemaPreguntaAntesDeDescartar",
+      "PantallasDocenteTest.desdeMiGrupoSeQuitaUnNinoDespuesDeConfirmar"
+    ]
+  },
+  "CP-035": {
+    "app": [
+      "FechasTest.losNombresNoDependenDelIdiomaDelTelefono",
+      "PantallasDocenteTest.programarMuestraLosDiasYLaVistaPreviaLoResume"
+    ]
   }
 }
