@@ -107,6 +107,7 @@ class FlujoDocenteTest {
 
         compose.onNodeWithText("Cuenta").performClick()
         compose.onNodeWithText("Cerrar sesión").performScrollTo().performClick()
+        compose.onNodeWithText("Sí, cerrar sesión").performClick()
 
         compose.onNodeWithText("¡A jugar!").assertIsDisplayed()
     }

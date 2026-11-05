@@ -233,7 +233,7 @@ class PantallasDocenteTest {
         compose.onNodeWithText("Siguiente").performClick()
 
         compose.onNodeWithText("Así lo verá el niño").assertIsDisplayed()
-        compose.onNodeWithText("Programado para jue 24").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Programado para jue 24 sep").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Todo listo").assertIsDisplayed()
     }
 
@@ -404,6 +404,28 @@ class PantallasDocenteTest {
 
         assertEquals("n03", abierto)
         assertEquals(1, agregar)
+    }
+
+    @Test
+    fun desdeMiGrupoSeQuitaUnNinoDespuesDeConfirmar() {
+        val ana = NinoHoy("n03", "Ana L.", EstadoNinoHoy.EnCurso(4))
+        var quitado: NinoHoy? = null
+        compose.setContent {
+            ReciclaKidsTheme {
+                MiGrupoScreen(
+                    EstadoUi.Contenido(GrupoHoy("Jardín B", null, listOf(ana))),
+                    onReintentar = {}, onNino = {}, onAgregarNino = {}, onQuitar = { quitado = it },
+                )
+            }
+        }
+
+        // Hallazgo 13 de la auditoría: la opción está en la fila, no solo al final del detalle.
+        compose.onNodeWithContentDescription("Quitar a Ana L. del grupo").performClick()
+        compose.onNodeWithText("¿Quitar a Ana L. del grupo?").assertIsDisplayed()
+        assertEquals(null, quitado)
+        compose.onNodeWithText("Sí, quitar").performClick()
+
+        assertEquals(ana, quitado)
     }
 
     @Test

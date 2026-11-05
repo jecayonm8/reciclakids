@@ -15,6 +15,8 @@ class FechasTest {
     fun losNombresNoDependenDelIdiomaDelTelefono() {
         assertEquals("mar 22", diaCorto(martes))
         assertEquals("mié 23", diaCorto(martes.plusDays(1)))
+        // Con el mes, como en la biblioteca: «sáb 5» no decía de qué mes era.
+        assertEquals("sáb 5 dic", diaCortoConMes(LocalDate.of(2026, 12, 5)))
         assertEquals("martes 22", diaLargo(martes))
         assertEquals("dom", nombreDiaCorto(LocalDate.of(2026, 9, 27)))
     }

@@ -188,12 +188,25 @@ private fun NavGraphBuilder.pestanas(
             avisoGrupo.value = null
             snackbar.showSnackbar(aviso)
         }
+        val alcance = rememberCoroutineScope()
+        val textoSinConexion = stringResource(R.string.docente_error_accion)
+        val plantillaQuitado = stringResource(R.string.quitar_nino_hecho)
         MiGrupoScreen(
             estado = vm.estado,
             onReintentar = { vm.cargar() },
             onNino = { navController.navigate(RutasDocente.nino(it)) },
             onAgregarNino = { navController.navigate(RutasDocente.AgregarNino) },
             snackbar = snackbar,
+            onQuitar = { nino ->
+                alcance.launch {
+                    if (servicio.quitarNino(nino.id)) {
+                        vm.estado.datosCargados?.let { grupo -> vm.mostrar(grupo.copy(ninos = grupo.ninos - nino)) }
+                        snackbar.showSnackbar(plantillaQuitado.format(nino.nombre))
+                    } else {
+                        snackbar.showSnackbar(textoSinConexion)
+                    }
+                }
+            },
         )
     }
 

@@ -93,6 +93,7 @@ import com.reciclakids.ui.common.caneca
 import com.reciclakids.ui.theme.ReciclaKidsColors
 import com.reciclakids.ui.theme.ReciclaKidsTheme
 import com.reciclakids.util.diaCorto
+import com.reciclakids.util.diaCortoConMes
 import com.reciclakids.util.diaLargo
 import com.reciclakids.viewmodel.AsistenteReto
 import com.reciclakids.viewmodel.EstadoPublicacion
@@ -572,11 +573,11 @@ private fun FilaResumen(etiqueta: String, valor: String, ultima: Boolean = false
     }
 }
 
-/** «Hoy, martes 22» o «Programado para mié 23». */
+/** «Hoy, martes 22» o «Programado para mié 23 sep». */
 @Composable
 private fun textoFechaAsistente(asistente: AsistenteReto): String =
     if (asistente.programado) {
-        stringResource(R.string.crear_fecha_resumen_programada, diaCorto(asistente.diaProgramado))
+        stringResource(R.string.crear_fecha_resumen_programada, diaCortoConMes(asistente.diaProgramado))
     } else {
         stringResource(R.string.crear_fecha_resumen_hoy, diaLargo(asistente.hoy))
     }
@@ -881,7 +882,7 @@ private fun DialogosPublicacion(
                     fondoIcono = MaterialTheme.colorScheme.tertiaryContainer,
                     tintaIcono = MaterialTheme.colorScheme.onTertiaryContainer,
                     titulo = stringResource(R.string.crear_programado_titulo),
-                    texto = stringResource(R.string.crear_programado_texto, if (fecha != null) diaCorto(fecha) else ""),
+                    texto = stringResource(R.string.crear_programado_texto, if (fecha != null) diaCortoConMes(fecha) else ""),
                     principal = stringResource(R.string.crear_ir_tablero) to onIrTablero,
                     secundaria = stringResource(R.string.crear_ver_biblioteca) to onVerBiblioteca,
                 )

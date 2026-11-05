@@ -106,6 +106,7 @@ private fun ContenidoCuenta(
 ) {
     // Toda acción sensible pide confirmación antes de llegar al servicio.
     var confirmarEliminar by rememberSaveable { mutableStateOf(false) }
+    var confirmarCerrarSesion by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -117,7 +118,7 @@ private fun ContenidoCuenta(
         TarjetaPerfil(perfil, onEditarPerfil)
         TarjetaAvisos(perfil.avisos, onAvisos)
         TarjetaCodigosEnGrupo(onIrAGrupo)
-        TarjetaPrivacidad(onVerPolitica, onCambiarContrasena, onCerrarSesion, onEliminar = { confirmarEliminar = true })
+        TarjetaPrivacidad(onVerPolitica, onCambiarContrasena, onCerrarSesion = { confirmarCerrarSesion = true }, onEliminar = { confirmarEliminar = true })
     }
     if (confirmarEliminar) {
         DialogoConfirmacion(
@@ -132,6 +133,28 @@ private fun ContenidoCuenta(
             onCancelar = { confirmarEliminar = false },
         )
     }
+    if (confirmarCerrarSesion) {
+        DialogoCerrarSesion(
+            onConfirmar = {
+                confirmarCerrarSesion = false
+                onCerrarSesion()
+            },
+            onCancelar = { confirmarCerrarSesion = false },
+        )
+    }
+}
+
+/** Cerrar sesión pide confirmación (hallazgo 4 de la auditoría): volver a entrar pide la contraseña. */
+@Composable
+internal fun DialogoCerrarSesion(onConfirmar: () -> Unit, onCancelar: () -> Unit) {
+    DialogoConfirmacion(
+        titulo = stringResource(R.string.cerrar_sesion_titulo),
+        texto = stringResource(R.string.cerrar_sesion_texto),
+        confirmar = stringResource(R.string.cerrar_sesion_confirmar),
+        destructivo = false,
+        onConfirmar = onConfirmar,
+        onCancelar = onCancelar,
+    )
 }
 
 @Composable

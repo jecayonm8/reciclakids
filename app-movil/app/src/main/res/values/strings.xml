@@ -522,6 +522,7 @@
     <string name="quitar_nino_dialogo">Es permanente: se borran su progreso, sus insignias y sus reportes. No se puede deshacer.</string>
     <string name="quitar_nino_confirmar">Sí, quitar</string>
     <string name="quitar_nino_hecho">Quitaste a %1$s del grupo y se borraron sus datos.</string>
+    <string name="grupo_quitar_descripcion">Quitar a %1$s del grupo</string>
 
     <!-- Agregar un niño al grupo (desde UI-25). Solo se guarda «Salomé M.» (Ley 1581 de 2012). -->
     <string name="agregar_nino">Agregar niño</string>
@@ -558,6 +559,9 @@
     <string name="cuenta_privacidad_texto">Los datos de los niños se guardan mínimos: nombre, inicial del apellido y resultados. Ley 1581 de 2012.</string>
     <string name="cuenta_ver_politica">Ver política</string>
     <string name="cuenta_cerrar_sesion">Cerrar sesión</string>
+    <string name="cerrar_sesion_titulo">¿Cerrar sesión?</string>
+    <string name="cerrar_sesion_texto">Para volver a entrar en este teléfono necesitarás tu correo y tu contraseña.</string>
+    <string name="cerrar_sesion_confirmar">Sí, cerrar sesión</string>
     <string name="cuenta_eliminar">Eliminar datos del grupo</string>
     <string name="cuenta_eliminar_titulo">¿Eliminar los datos del grupo?</string>
     <plurals name="cuenta_eliminar_texto">

@@ -114,7 +114,9 @@ internal fun <F : FormularioPerfil<*>> MarcoEditarPerfil(
     var confirmarDescartar by rememberSaveable { mutableStateOf(false) }
     val hayCambios = estado.datosCargados?.hayCambios == true && !guardado.ocupado
     val volver = { if (hayCambios) confirmarDescartar = true else onVolver() }
-    BackHandler(enabled = hayCambios) { confirmarDescartar = true }
+    // El atrás del sistema hace siempre lo mismo que la flecha de la barra, también sin cambios
+    // (hallazgo 5 de la auditoría: no respondía). No se deja en manos del NavHost anidado del modo.
+    BackHandler(onBack = volver)
 
     MarcoDocente(
         modifier = modifier,
