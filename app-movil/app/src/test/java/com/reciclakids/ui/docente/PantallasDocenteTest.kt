@@ -228,8 +228,8 @@ class PantallasDocenteTest {
         compose.setContent { ReciclaKidsTheme { AsistenteDePrueba(AsistenteReto(martes, paso = 3)) } }
 
         compose.onNodeWithText("Programar").performClick()
-        compose.onNodeWithText("mié 23").assertIsDisplayed()
-        compose.onNodeWithText("jue 24").performScrollTo().performClick()
+        compose.onNodeWithText("mié 23 sep").assertIsDisplayed()
+        compose.onNodeWithText("jue 24 sep").performScrollTo().performClick()
         compose.onNodeWithText("Siguiente").performClick()
 
         compose.onNodeWithText("Así lo verá el niño").assertIsDisplayed()

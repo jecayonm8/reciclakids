@@ -92,7 +92,6 @@ import com.reciclakids.ui.common.MarcadorIlustracion
 import com.reciclakids.ui.common.caneca
 import com.reciclakids.ui.theme.ReciclaKidsColors
 import com.reciclakids.ui.theme.ReciclaKidsTheme
-import com.reciclakids.util.diaCorto
 import com.reciclakids.util.diaCortoConMes
 import com.reciclakids.util.diaLargo
 import com.reciclakids.viewmodel.AsistenteReto
@@ -525,7 +524,7 @@ private fun ChipDia(dia: LocalDate, elegido: Boolean, onClick: () -> Unit) {
         border = BorderStroke(1.dp, if (elegido) esquema.primary else esquema.outline),
     ) {
         Box(Modifier.heightIn(min = 40.dp).padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
-            Text(diaCorto(dia), style = MaterialTheme.typography.labelLarge)
+            Text(diaCortoConMes(dia), style = MaterialTheme.typography.labelLarge)
         }
     }
 }
