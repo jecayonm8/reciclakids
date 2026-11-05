@@ -1,5 +1,6 @@
 package com.reciclakids.network.api
 
+import com.reciclakids.model.CambioControlParental
 import com.reciclakids.model.CatalogoResiduos
 import com.reciclakids.model.Conteo
 import com.reciclakids.model.ControlParental
@@ -111,17 +112,20 @@ class ServicioPadresApi(
             ControlParental(it.limiteMinutosDiarios, it.dificultadSugerida, it.correosLogro, it.reporteSemanal, it.recordatorioSinJugar)
         }
 
-    override suspend fun guardarControlParental(hijoId: String, control: ControlParental): Boolean {
-        val dto = ControlParentalDto(
-            control.limiteMinutosDiarios,
-            control.dificultadSugerida,
-            control.correosLogro,
-            control.reporteSemanal,
-            control.recordatorioSinJugar,
+    // PATCH: si viajara el control completo, un cambio podría devolver los demás ajustes a como
+    // estaban en otro teléfono o en un envío anterior que llegó tarde.
+    override suspend fun cambiarControlParental(hijoId: String, cambio: CambioControlParental): Boolean {
+        val dto = CambioControlParentalDto(
+            cambio.limiteMinutosDiarios,
+            cambio.dificultadSugerida,
+            cambio.correosLogro,
+            cambio.reporteSemanal,
+            cambio.recordatorioSinJugar,
         )
-        val guardado = cliente.put<Unit>("acudiente/hijos/$hijoId/control-parental", dto).exitosa
-        if (guardado) alGuardarLimite(hijoId, control.limiteMinutosDiarios)
-        return guardado
+        val respuesta = cliente.patch<ControlParentalDto>("acudiente/hijos/$hijoId/control-parental", dto)
+        if (respuesta !is RespuestaApi.Exito) return false
+        alGuardarLimite(hijoId, respuesta.dato.limiteMinutosDiarios)
+        return true
     }
 
     override suspend fun privacidad(hijoId: String): Respuesta<PrivacidadHijo> =

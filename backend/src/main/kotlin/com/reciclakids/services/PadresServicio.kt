@@ -4,6 +4,7 @@ import com.reciclakids.config.BaseDatos
 import com.reciclakids.models.CatalogoResiduos
 import com.reciclakids.models.Insignia
 import com.reciclakids.models.dto.ConteoDto
+import com.reciclakids.models.dto.CambioControlParentalDto
 import com.reciclakids.models.dto.ControlParentalDto
 import com.reciclakids.models.dto.CorreoEnviadoDto
 import com.reciclakids.models.dto.DiaDeJuegoDto
@@ -22,6 +23,7 @@ import com.reciclakids.models.dto.TipoCorreoDto
 import com.reciclakids.models.dto.VinculacionDto
 import com.reciclakids.plugins.DatosInvalidos
 import com.reciclakids.plugins.NoEncontrado
+import com.reciclakids.repositories.CambioControl
 import com.reciclakids.repositories.ControlGuardado
 import com.reciclakids.repositories.CuentasRepositorio
 import com.reciclakids.repositories.HijoGuardado
@@ -124,8 +126,7 @@ class PadresServicio(
     }
 
     suspend fun guardarControlParental(acudienteId: String, hijoId: String, control: ControlParentalDto) {
-        val limite = control.limiteMinutosDiarios
-        if (limite !in 5..45 || limite % 5 != 0) throw DatosInvalidos("El tiempo diario va de 5 a 45 minutos, de 5 en 5", "limite_invalido")
+        val limite = validarLimite(control.limiteMinutosDiarios)
         bd.transaccion {
             val hijo = hijoDe(acudienteId, hijoId)
             ninos.guardarControl(
@@ -134,6 +135,31 @@ class PadresServicio(
                 reloj.ahora(),
             )
         }
+    }
+
+    /** Cambia solo los ajustes que llegan y devuelve el control completo como quedó. */
+    suspend fun cambiarControlParental(acudienteId: String, hijoId: String, cambio: CambioControlParentalDto): ControlParentalDto {
+        cambio.limiteMinutosDiarios?.let(::validarLimite)
+        return bd.transaccion {
+            val ninoId = hijoDe(acudienteId, hijoId).nino.id
+            ninos.cambiarControl(
+                ninoId,
+                CambioControl(
+                    cambio.limiteMinutosDiarios,
+                    cambio.dificultadSugerida,
+                    cambio.correosLogro,
+                    cambio.reporteSemanal,
+                    cambio.recordatorioSinJugar,
+                ),
+                reloj.ahora(),
+            )
+            ninos.control(ninoId).aDto()
+        }
+    }
+
+    private fun validarLimite(limite: Int): Int {
+        if (limite !in 5..45 || limite % 5 != 0) throw DatosInvalidos("El tiempo diario va de 5 a 45 minutos, de 5 en 5", "limite_invalido")
+        return limite
     }
 
     suspend fun privacidad(acudienteId: String, hijoId: String): PrivacidadHijoDto = bd.transaccion {

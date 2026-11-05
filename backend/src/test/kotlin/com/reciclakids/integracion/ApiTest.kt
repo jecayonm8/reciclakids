@@ -6,6 +6,7 @@ import com.reciclakids.models.Dificultad
 import com.reciclakids.models.EstadoReto
 import com.reciclakids.models.Insignia
 import com.reciclakids.models.dto.AgregarNinoSolicitud
+import com.reciclakids.models.dto.CambioControlParentalDto
 import com.reciclakids.models.dto.CodigoRetoDto
 import com.reciclakids.models.dto.ControlParentalDto
 import com.reciclakids.models.dto.CuentaDto
@@ -208,14 +209,35 @@ class ApiTest {
         assertEquals("Marta Ruiz", privacidad.autorizadaPor)
 
         // El control parental llega al niño.
-        assertEquals(HttpStatusCode.NoContent, put("/api/v1/acudiente/hijos/${salome.id}/control-parental", ControlParentalDto(limiteMinutosDiarios = 25), acudiente).status)
+        val control = "/api/v1/acudiente/hijos/${salome.id}/control-parental"
+        assertEquals(HttpStatusCode.OK, patch(control, CambioControlParentalDto(limiteMinutosDiarios = 25), acudiente).status)
         assertEquals(25, get("/api/v1/nino/progreso", sesionNino.token).body<ProgresoNinoDto>().limiteMinutosDiarios)
         // El recordatorio si no juega (UI-33) se guarda con lo demás.
-        assertFalse(get("/api/v1/acudiente/hijos/${salome.id}/control-parental", acudiente).body<ControlParentalDto>().recordatorioSinJugar)
-        val conRecordatorio = ControlParentalDto(limiteMinutosDiarios = 25, correosLogro = false, recordatorioSinJugar = true)
-        assertEquals(HttpStatusCode.NoContent, put("/api/v1/acudiente/hijos/${salome.id}/control-parental", conRecordatorio, acudiente).status)
-        assertEquals(conRecordatorio, get("/api/v1/acudiente/hijos/${salome.id}/control-parental", acudiente).body<ControlParentalDto>())
-        assertEquals(HttpStatusCode.UnprocessableEntity, put("/api/v1/acudiente/hijos/${salome.id}/control-parental", ControlParentalDto(limiteMinutosDiarios = 7), acudiente).status)
+        assertFalse(get(control, acudiente).body<ControlParentalDto>().recordatorioSinJugar)
+        val conRecordatorio = ControlParentalDto(25, Dificultad.Medio, correosLogro = false, reporteSemanal = true, recordatorioSinJugar = true)
+        assertEquals(HttpStatusCode.NoContent, put(control, conRecordatorio, acudiente).status)
+        assertEquals(conRecordatorio, get(control, acudiente).body<ControlParentalDto>())
+        assertEquals(HttpStatusCode.UnprocessableEntity, patch(control, CambioControlParentalDto(limiteMinutosDiarios = 7), acudiente).status)
+    }
+
+    @Test
+    fun cambiarUnAjusteDelControlParentalNoBorraLosDemas() = probarApi {
+        val docente = registrarDocente()
+        val salome = agregarNino(docente, "Salomé", "M")
+        val acudiente = registrarAcudiente(salome.codigoVinculacion)
+        val control = "/api/v1/acudiente/hijos/${salome.id}/control-parental"
+        // El caso de la auditoría: 15 minutos, difícil y sin correos de logros.
+        val elegido = ControlParentalDto(15, Dificultad.Dificil, correosLogro = false, reporteSemanal = true, recordatorioSinJugar = false)
+        assertEquals(HttpStatusCode.NoContent, put(control, elegido, acudiente).status)
+
+        val trasCambio = patch(control, CambioControlParentalDto(reporteSemanal = false), acudiente).body<ControlParentalDto>()
+
+        assertEquals(elegido.copy(reporteSemanal = false), trasCambio)
+        assertEquals(trasCambio, get(control, acudiente).body<ControlParentalDto>())
+        // Un PUT incompleto ya no deja el resto en sus valores iniciales: se rechaza.
+        val incompleto = put(control, """{"limiteMinutosDiarios":30}""", acudiente)
+        assertEquals(HttpStatusCode.BadRequest, incompleto.status)
+        assertEquals(trasCambio, get(control, acudiente).body<ControlParentalDto>())
     }
 
     @Test

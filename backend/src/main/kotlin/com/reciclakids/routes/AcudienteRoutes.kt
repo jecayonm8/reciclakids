@@ -1,5 +1,6 @@
 package com.reciclakids.routes
 
+import com.reciclakids.models.dto.CambioControlParentalDto
 import com.reciclakids.models.dto.ControlParentalDto
 import com.reciclakids.models.dto.PerfilAcudienteSolicitud
 import com.reciclakids.models.dto.SolicitudEliminacionDto
@@ -16,6 +17,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
+import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
@@ -45,6 +47,9 @@ fun Route.rutasAcudiente(servicio: PadresServicio) {
                     put {
                         servicio.guardarControlParental(call.acudiente(), call.id(), call.receive<ControlParentalDto>())
                         call.respond(HttpStatusCode.NoContent)
+                    }
+                    patch {
+                        call.respond(servicio.cambiarControlParental(call.acudiente(), call.id(), call.receive<CambioControlParentalDto>()))
                     }
                 }
                 route("/privacidad") {

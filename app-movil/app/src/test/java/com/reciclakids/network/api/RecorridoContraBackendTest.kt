@@ -5,6 +5,7 @@ import com.reciclakids.local.BaseDatosReciclaKids
 import com.reciclakids.local.LimitesJuegoLocales
 import com.reciclakids.local.RepositorioJuego
 import com.reciclakids.model.CategoriaResiduo
+import com.reciclakids.model.CambioControlParental
 import com.reciclakids.model.ControlParental
 import com.reciclakids.model.Dificultad
 import com.reciclakids.model.EstadoNinoHoy
@@ -155,7 +156,7 @@ class RecorridoContraBackendTest {
 
         // El control parental llega al niño con su próxima sincronización.
         val control = (padres.controlParental(salome.id) as Respuesta.Ok).dato
-        assertTrue(padres.guardarControlParental(salome.id, control.copy(limiteMinutosDiarios = 15, recordatorioSinJugar = true)))
+        assertTrue(padres.cambiarControlParental(salome.id, CambioControlParental.entre(control, control.copy(limiteMinutosDiarios = 15, recordatorioSinJugar = true))))
         assertTrue((padres.controlParental(salome.id) as Respuesta.Ok).dato.recordatorioSinJugar)
         sesionesNino.actualizarLimite(nino.id, checkNotNull(sesionesNino.token(nino.id)))
         assertEquals(15, limites.observar(nino.id).first().limiteMinutosDiarios)

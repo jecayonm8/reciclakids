@@ -354,6 +354,16 @@ data class ControlParentalDto(
     val recordatorioSinJugar: Boolean = false,
 )
 
+/** Solo los ajustes que cambiaron; el backend deja los demás como estaban. */
+@Serializable
+data class CambioControlParentalDto(
+    val limiteMinutosDiarios: Int? = null,
+    val dificultadSugerida: Dificultad? = null,
+    val correosLogro: Boolean? = null,
+    val reporteSemanal: Boolean? = null,
+    val recordatorioSinJugar: Boolean? = null,
+)
+
 @Serializable
 data class PrivacidadHijoDto(
     val hijo: HijoDto,

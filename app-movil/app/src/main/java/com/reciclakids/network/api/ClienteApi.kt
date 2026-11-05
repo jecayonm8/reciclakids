@@ -104,6 +104,9 @@ class ClienteApi(
     suspend inline fun <reified T> put(ruta: String, cuerpo: Any, credencial: Credencial = Credencial.Adulto): RespuestaApi<T> =
         pedir(typeInfo<T>(), credencial) { conCuerpo(HttpMethod.Put, ruta, cuerpo) }
 
+    suspend inline fun <reified T> patch(ruta: String, cuerpo: Any, credencial: Credencial = Credencial.Adulto): RespuestaApi<T> =
+        pedir(typeInfo<T>(), credencial) { conCuerpo(HttpMethod.Patch, ruta, cuerpo) }
+
     suspend inline fun <reified T> delete(ruta: String, credencial: Credencial = Credencial.Adulto): RespuestaApi<T> =
         pedir(typeInfo<T>(), credencial) {
             method = HttpMethod.Delete

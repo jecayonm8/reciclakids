@@ -2,6 +2,7 @@ package com.reciclakids.viewmodel
 
 import com.reciclakids.model.ControlParental
 import com.reciclakids.model.CuentaAdulto
+import com.reciclakids.model.Dificultad
 import com.reciclakids.model.RolAdulto
 import com.reciclakids.network.ControlesParentales
 import com.reciclakids.network.DatosDemoPadres
@@ -83,6 +84,23 @@ class ViewModelsPadresTest {
         assertEquals(20, vm.estado.datosCargados?.limiteMinutosDiarios)
         // Deshacer no ofrece deshacer otra vez.
         assertNull(vm.aviso)
+    }
+
+    @Test
+    fun dosCambiosRapidosNoSePisan() {
+        val vm = ControlParentalViewModel(servicio, salome)
+        vm.cargar()
+        esperar()
+
+        // El caso de la auditoría: se cambian varios ajustes seguidos, sin esperar a que se guarden.
+        vm.cambiar(ControlParental().conMinutos(15))
+        vm.cambiar(vm.estado.datosCargados!!.copy(dificultadSugerida = Dificultad.Dificil))
+        vm.cambiar(vm.estado.datosCargados!!.copy(correosLogro = false))
+        esperar()
+
+        val esperado = ControlParental(15, Dificultad.Dificil, correosLogro = false)
+        assertEquals(esperado, controles.de(salome))
+        assertEquals(esperado, vm.estado.datosCargados)
     }
 
     @Test

@@ -98,11 +98,23 @@ data class HistorialCorreosDto(val hijo: HijoDto, val hoy: String, val correos: 
 /** [recordatorioSinJugar]: aviso si lleva tres días seguidos sin jugar (se guarda; el correo aún no sale). */
 @Serializable
 data class ControlParentalDto(
-    val limiteMinutosDiarios: Int = 20,
-    val dificultadSugerida: Dificultad = Dificultad.Medio,
-    val correosLogro: Boolean = true,
-    val reporteSemanal: Boolean = true,
-    val recordatorioSinJugar: Boolean = false,
+    // Sin valores por defecto: un PUT al que le falte un campo se rechaza en vez de dejarlo en su
+    // valor inicial (hallazgo 11 de la auditoría). Para cambiar un solo ajuste está el PATCH.
+    val limiteMinutosDiarios: Int,
+    val dificultadSugerida: Dificultad,
+    val correosLogro: Boolean,
+    val reporteSemanal: Boolean,
+    val recordatorioSinJugar: Boolean,
+)
+
+/** PATCH del control parental: solo viajan los ajustes que cambiaron; los demás se quedan como estaban. */
+@Serializable
+data class CambioControlParentalDto(
+    val limiteMinutosDiarios: Int? = null,
+    val dificultadSugerida: Dificultad? = null,
+    val correosLogro: Boolean? = null,
+    val reporteSemanal: Boolean? = null,
+    val recordatorioSinJugar: Boolean? = null,
 )
 
 @Serializable

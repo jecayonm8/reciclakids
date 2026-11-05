@@ -43,6 +43,15 @@ data class ControlGuardado(
     val recordatorioSinJugar: Boolean = false,
 )
 
+/** Lo que cambia del control parental: lo que viene en `null` se queda como estaba. */
+data class CambioControl(
+    val limiteMinutos: Int? = null,
+    val dificultadSugerida: Dificultad? = null,
+    val correosLogro: Boolean? = null,
+    val reporteSemanal: Boolean? = null,
+    val recordatorioSinJugar: Boolean? = null,
+)
+
 data class AcudienteDeNino(val id: String, val nombre: String, val correo: String)
 
 /** Niños, vinculaciones con acudientes y control parental. Se llama dentro de una transacción. */
@@ -146,6 +155,21 @@ class NinosRepositorio {
             it[correosLogro] = control.correosLogro
             it[reporteSemanal] = control.reporteSemanal
             it[recordatorioSinJugar] = control.recordatorioSinJugar
+            it[actualizadoEn] = ahora
+        }
+    }
+
+    /**
+     * Escribe solo las columnas de [cambio] que no vienen en `null`, en un único UPDATE: dos
+     * cambios a la vez sobre campos distintos no se pisan (hallazgo 11 de la auditoría).
+     */
+    fun cambiarControl(ninoId: String, cambio: CambioControl, ahora: OffsetDateTime) {
+        ControlesParentales.update({ ControlesParentales.ninoId eq ninoId }) {
+            cambio.limiteMinutos?.let { valor -> it[limiteMinutos] = valor.toShort() }
+            cambio.dificultadSugerida?.let { valor -> it[dificultadSugerida] = valor.aColumna() }
+            cambio.correosLogro?.let { valor -> it[correosLogro] = valor }
+            cambio.reporteSemanal?.let { valor -> it[reporteSemanal] = valor }
+            cambio.recordatorioSinJugar?.let { valor -> it[recordatorioSinJugar] = valor }
             it[actualizadoEn] = ahora
         }
     }

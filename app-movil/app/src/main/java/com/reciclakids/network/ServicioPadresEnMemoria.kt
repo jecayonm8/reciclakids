@@ -1,5 +1,6 @@
 package com.reciclakids.network
 
+import com.reciclakids.model.CambioControlParental
 import com.reciclakids.model.ControlParental
 import com.reciclakids.model.CorreoEnviado
 import com.reciclakids.model.CuentaAdulto
@@ -135,9 +136,9 @@ class ServicioPadresEnMemoria(
         controles.de(hijoId)
     }
 
-    override suspend fun guardarControlParental(hijoId: String, control: ControlParental): Boolean = accion {
+    override suspend fun cambiarControlParental(hijoId: String, cambio: CambioControlParental): Boolean = accion {
         hijo(hijoId)
-        controles.guardar(hijoId, control)
+        controles.guardar(hijoId, cambio.aplicarA(controles.de(hijoId)))
     }
 
     override suspend fun privacidad(hijoId: String): Respuesta<PrivacidadHijo> = consultar {

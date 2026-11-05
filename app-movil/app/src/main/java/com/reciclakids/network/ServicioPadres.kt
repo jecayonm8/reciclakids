@@ -1,5 +1,6 @@
 package com.reciclakids.network
 
+import com.reciclakids.model.CambioControlParental
 import com.reciclakids.model.ControlParental
 import com.reciclakids.model.HijoVinculado
 import com.reciclakids.model.HistorialCorreos
@@ -42,7 +43,8 @@ interface ServicioPadres {
 
     suspend fun controlParental(hijoId: String): Respuesta<ControlParental>
 
-    suspend fun guardarControlParental(hijoId: String, control: ControlParental): Boolean
+    /** Envía solo los ajustes de [cambio]: los demás quedan como estaban en el servidor. */
+    suspend fun cambiarControlParental(hijoId: String, cambio: CambioControlParental): Boolean
 
     suspend fun privacidad(hijoId: String): Respuesta<PrivacidadHijo>
 
