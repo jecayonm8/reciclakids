@@ -133,7 +133,7 @@ class ServicioDocenteEnMemoriaTest {
         assertEquals(emptyList<Int>(), servicio.ninosQueEntraron(DatosDemoDocente.IdRetoHoy).toList())
         assertEquals(false, servicio.enviarReporteAcudientes())
         assertNull(servicio.regenerarCodigoVinculacion(DatosDemoPadres.IdSalome))
-        assertEquals(Respuesta.SinConexion, servicio.agregarNino("Pedro", "Q"))
+        assertEquals(ResultadoAgregarNino.SinConexion, servicio.agregarNino("Pedro", "Q"))
         assertEquals(false, servicio.quitarNino(DatosDemoPadres.IdSalome))
     }
 
@@ -216,7 +216,9 @@ class ServicioDocenteEnMemoriaTest {
     fun agregarUnNinoGuardaSoloSuNombreConLaInicialYLeDaSuPropioCodigo() = runBlocking {
         val servicio = servicio()
 
-        val nuevo = servicio.agregarNino(" Pedro ", "q").dato()
+        val nuevo = (servicio.agregarNino(" Pedro ", "q") as ResultadoAgregarNino.Agregado).nino
+        // El mismo nombre, con otras mayúsculas o sin tilde, ya no entra.
+        assertEquals(ResultadoAgregarNino.Repetido, servicio.agregarNino("pedro", "Q"))
 
         assertEquals("Pedro Q.", nuevo.nombre)
         assertTrue("código ${nuevo.codigoVinculacion}", codigoGenerado.matches(nuevo.codigoVinculacion))

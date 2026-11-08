@@ -5,6 +5,7 @@ import com.reciclakids.local.BaseDatosReciclaKids
 import com.reciclakids.local.LimitesJuegoLocales
 import com.reciclakids.local.RepositorioJuego
 import com.reciclakids.model.CategoriaResiduo
+import com.reciclakids.model.CambioControlParental
 import com.reciclakids.model.ControlParental
 import com.reciclakids.model.Dificultad
 import com.reciclakids.model.EstadoNinoHoy
@@ -13,6 +14,7 @@ import com.reciclakids.model.RolAdulto
 import com.reciclakids.network.RegistroAcudiente
 import com.reciclakids.network.RegistroDocente
 import com.reciclakids.network.Respuesta
+import com.reciclakids.network.ResultadoAgregarNino
 import com.reciclakids.network.ResultadoCodigo
 import com.reciclakids.network.ResultadoPublicacion
 import com.reciclakids.network.ResultadoRegistro
@@ -78,7 +80,7 @@ class RecorridoContraBackendTest {
         assertEquals(RolAdulto.Docente, (sesionDocente as ResultadoSesion.Iniciada).cuenta.rol)
         val servicioDocente = ServicioDocenteApi(docente.cliente, docente.sesion)
         val hoy = (servicioDocente.tablero() as Respuesta.Ok).dato.hoy
-        val salome = (servicioDocente.agregarNino("Salomé", "M") as Respuesta.Ok).dato
+        val salome = (servicioDocente.agregarNino("Salomé", "M") as ResultadoAgregarNino.Agregado).nino
         assertEquals("Salomé M.", salome.nombre)
         val publicado = servicioDocente.publicar(RetoBorrador(CategoriaResiduo.entries.toSet(), Dificultad.Facil, hoy))
         val reto = (publicado as ResultadoPublicacion.Publicado).reto
@@ -154,7 +156,7 @@ class RecorridoContraBackendTest {
 
         // El control parental llega al niño con su próxima sincronización.
         val control = (padres.controlParental(salome.id) as Respuesta.Ok).dato
-        assertTrue(padres.guardarControlParental(salome.id, control.copy(limiteMinutosDiarios = 15, recordatorioSinJugar = true)))
+        assertTrue(padres.cambiarControlParental(salome.id, CambioControlParental.entre(control, control.copy(limiteMinutosDiarios = 15, recordatorioSinJugar = true))))
         assertTrue((padres.controlParental(salome.id) as Respuesta.Ok).dato.recordatorioSinJugar)
         sesionesNino.actualizarLimite(nino.id, checkNotNull(sesionesNino.token(nino.id)))
         assertEquals(15, limites.observar(nino.id).first().limiteMinutosDiarios)

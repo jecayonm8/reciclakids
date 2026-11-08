@@ -34,6 +34,7 @@ import com.reciclakids.model.NinoAgregado
 import com.reciclakids.ui.acceso.AvisoError
 import com.reciclakids.ui.acceso.CampoTexto
 import com.reciclakids.ui.theme.ReciclaKidsTheme
+import com.reciclakids.viewmodel.ErrorCampoNino
 import com.reciclakids.viewmodel.EstadoAgregarNino
 import com.reciclakids.viewmodel.FormularioNino
 
@@ -82,11 +83,13 @@ private fun FormularioAgregar(formulario: FormularioNino, estado: EstadoAgregarN
         )
         CampoTexto(
             formulario.nombre, { formulario.nombre = it }, stringResource(R.string.agregar_nino_nombre),
+            error = errorNombreNino(formulario, estado),
             teclado = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
             habilitado = !guardando,
         )
         CampoTexto(
             formulario.inicial, formulario::escribirInicial, stringResource(R.string.agregar_nino_inicial),
+            error = if (formulario.intentoGuardar && formulario.errorInicial != null) stringResource(R.string.agregar_nino_error_inicial) else null,
             ayuda = stringResource(R.string.agregar_nino_inicial_ayuda),
             teclado = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Characters,
@@ -113,11 +116,25 @@ private fun FormularioAgregar(formulario: FormularioNino, estado: EstadoAgregarN
             stringResource(R.string.agregar_nino_guardar),
             onClick = onGuardar,
             modifier = Modifier.fillMaxWidth(),
-            // Mientras guarda sigue habilitado para que el progreso se vea sobre el color principal.
-            habilitado = guardando || formulario.valido,
+            // Siempre habilitado: con campos vacíos, tocarlo marca qué falta.
             cargando = guardando,
         )
     }
+}
+
+/**
+ * Un nombre repetido o rechazado por el backend se marca mientras siga escrito igual; los
+ * símbolos, apenas se escriben; el campo vacío, solo después de tocar «Agregar al grupo».
+ */
+@Composable
+private fun errorNombreNino(formulario: FormularioNino, estado: EstadoAgregarNino): String? = when {
+    estado is EstadoAgregarNino.Repetido && estado.nombre == formulario.nombreGuardado ->
+        stringResource(R.string.agregar_nino_error_repetido, estado.nombre)
+    estado is EstadoAgregarNino.NombreInvalido && estado.nombre == formulario.nombreGuardado ->
+        stringResource(R.string.error_nombre_solo_letras)
+    formulario.errorNombre == ErrorCampoNino.Simbolos -> stringResource(R.string.error_nombre_solo_letras)
+    formulario.errorNombre == ErrorCampoNino.Vacio && formulario.intentoGuardar -> stringResource(R.string.agregar_nino_error_nombre)
+    else -> null
 }
 
 @Composable

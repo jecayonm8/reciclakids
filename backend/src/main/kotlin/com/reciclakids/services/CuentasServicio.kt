@@ -36,7 +36,7 @@ class CuentasServicio(
     private val urlPublica: String,
 ) {
     suspend fun registrarDocente(datos: RegistroDocenteSolicitud) {
-        val nombre = Validacion.texto(datos.nombre, "tu nombre", 120)
+        val nombre = Validacion.nombre(datos.nombre, "tu nombre", 120)
         val correo = Validacion.correo(datos.correo)
         val jardin = Validacion.texto(datos.jardin, "el jardín infantil", 120)
         val grupo = Validacion.texto(datos.grupo, "el grupo", 80)
@@ -54,7 +54,7 @@ class CuentasServicio(
         if (!datos.autorizaDatosMenor) {
             throw DatosInvalidos("Sin la autorización de datos del menor no se puede crear la cuenta", "autorizacion_requerida")
         }
-        val nombre = Validacion.texto(datos.nombre, "tu nombre", 120)
+        val nombre = Validacion.nombre(datos.nombre, "tu nombre", 120)
         val correo = Validacion.correo(datos.correo)
         val hash = hashear(Validacion.contrasena(datos.contrasena))
         bd.transaccion {
@@ -117,6 +117,25 @@ class CuentasServicio(
             cuentas.cambiarContrasena(recuperacion.usuarioId, hash)
             cuentas.marcarRecuperacionUsada(recuperacion.id)
             cuentas.revocarSesionesDe(recuperacion.usuarioId)
+        }
+    }
+
+    /**
+     * Cambiar la contraseña con la sesión iniciada (hallazgo 7 de la auditoría): pide la actual en
+     * vez de mandar un enlace. Las demás sesiones se cierran y este teléfono recibe una nueva.
+     */
+    suspend fun cambiarContrasena(usuarioId: String, actual: String, nueva: String): SesionDto {
+        val usuario = bd.transaccion { cuentas.usuarioPorId(usuarioId) } ?: throw NoAutenticado()
+        // 422 y no 401: un 401 haría que la app cierre la sesión.
+        if (!BCrypt.verifyer().verify(actual.toCharArray(), usuario.hashContrasena).verified) {
+            throw DatosInvalidos("La contraseña actual no es correcta", "contrasena_actual_incorrecta")
+        }
+        if (nueva == actual) throw DatosInvalidos("La nueva contraseña debe ser distinta de la actual", "contrasena_igual")
+        val hash = hashear(Validacion.contrasena(nueva))
+        return bd.transaccion {
+            cuentas.cambiarContrasena(usuario.id, hash)
+            cuentas.borrarSesionesDe(usuario.id)
+            abrirSesion(usuario)
         }
     }
 

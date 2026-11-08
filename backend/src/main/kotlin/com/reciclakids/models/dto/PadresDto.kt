@@ -98,11 +98,23 @@ data class HistorialCorreosDto(val hijo: HijoDto, val hoy: String, val correos: 
 /** [recordatorioSinJugar]: aviso si lleva tres días seguidos sin jugar (se guarda; el correo aún no sale). */
 @Serializable
 data class ControlParentalDto(
-    val limiteMinutosDiarios: Int = 20,
-    val dificultadSugerida: Dificultad = Dificultad.Medio,
-    val correosLogro: Boolean = true,
-    val reporteSemanal: Boolean = true,
-    val recordatorioSinJugar: Boolean = false,
+    // Sin valores por defecto: un PUT al que le falte un campo se rechaza en vez de dejarlo en su
+    // valor inicial (hallazgo 11 de la auditoría). Para cambiar un solo ajuste está el PATCH.
+    val limiteMinutosDiarios: Int,
+    val dificultadSugerida: Dificultad,
+    val correosLogro: Boolean,
+    val reporteSemanal: Boolean,
+    val recordatorioSinJugar: Boolean,
+)
+
+/** PATCH del control parental: solo viajan los ajustes que cambiaron; los demás se quedan como estaban. */
+@Serializable
+data class CambioControlParentalDto(
+    val limiteMinutosDiarios: Int? = null,
+    val dificultadSugerida: Dificultad? = null,
+    val correosLogro: Boolean? = null,
+    val reporteSemanal: Boolean? = null,
+    val recordatorioSinJugar: Boolean? = null,
 )
 
 @Serializable
@@ -129,3 +141,58 @@ data class VincularSolicitud(val codigo: String)
 
 @Serializable
 data class VinculacionDto(val hijo: HijoDto, val yaEstaba: Boolean)
+
+/**
+ * «Descargar mis datos» (Ley 1581 de 2012, derecho de acceso): todo lo que el backend guarda del
+ * niño, para que el acudiente lo tenga en un archivo (hallazgo 6 de la auditoría).
+ */
+@Serializable
+data class ExportacionDatosDto(
+    val generadoEn: String,
+    val nino: NinoExportadoDto,
+    val acudiente: AcudienteExportadoDto,
+    val controlParental: ControlParentalDto,
+    val partidas: List<PartidaExportadaDto>,
+    val insignias: List<InsigniaExportadaDto>,
+    val correos: List<CorreoExportadoDto>,
+    /** Fecha en que se pidió borrar sus datos, si está pendiente. */
+    val solicitudEliminacion: String?,
+    val noGuardamos: String = "Documento de identidad, dirección, fotos, voz ni ubicación.",
+)
+
+/** Del niño solo se guarda el nombre con la inicial del apellido. */
+@Serializable
+data class NinoExportadoDto(
+    val nombre: String,
+    val edad: Int?,
+    val avatar: String,
+    val jardin: String,
+    val grupo: String,
+    val rachaEntreRetos: Int,
+    val mejorRachaEntreRetos: Int,
+)
+
+@Serializable
+data class AcudienteExportadoDto(val nombre: String, val correo: String, val vinculadoEn: String, val autorizacionDatosEn: String)
+
+@Serializable
+data class PartidaExportadaDto(
+    val fecha: String,
+    val reto: String?,
+    val dificultad: Dificultad?,
+    val terminada: Boolean,
+    val aciertos: Int,
+    val errores: Int,
+    val rachaMaxima: Int,
+    val segundosJugados: Long,
+    val intentos: List<IntentoExportadoDto>,
+)
+
+@Serializable
+data class IntentoExportadoDto(val momento: String, val residuo: String, val canecaElegida: CategoriaResiduo, val correcto: Boolean)
+
+@Serializable
+data class InsigniaExportadaDto(val nombre: String, val logro: String, val ganadaEl: String)
+
+@Serializable
+data class CorreoExportadoDto(val tipo: String, val destinatario: String, val enviadoEn: String)

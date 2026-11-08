@@ -6,10 +6,13 @@ import com.reciclakids.models.Dificultad
 import com.reciclakids.models.EstadoReto
 import com.reciclakids.models.Insignia
 import com.reciclakids.models.dto.AgregarNinoSolicitud
+import com.reciclakids.models.dto.CambioContrasenaSolicitud
+import com.reciclakids.models.dto.CambioControlParentalDto
 import com.reciclakids.models.dto.CodigoRetoDto
 import com.reciclakids.models.dto.ControlParentalDto
 import com.reciclakids.models.dto.CuentaDto
 import com.reciclakids.models.dto.DetalleNinoDto
+import com.reciclakids.models.dto.ExportacionDatosDto
 import com.reciclakids.models.dto.GrupoHoyDto
 import com.reciclakids.models.dto.HijoDto
 import com.reciclakids.models.dto.HistorialCorreosDto
@@ -50,8 +53,11 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.parameters
+import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
@@ -158,8 +164,8 @@ class ApiTest {
         assertEquals(20, sesionNino.limiteMinutosDiarios)
         assertEquals(1, get("/api/v1/docente/retos/${reto.id}/ingresos", docente).body<IngresosDto>().ninosQueEntraron)
 
-        // Primera partida con un error: no hay insignias todavía.
-        val primera = partida(sesionNino.reto, "local-1", errores = 1, inicioMs = 1_000)
+        // Primera partida con un error, sin terminar (cerró la app): no hay insignias todavía.
+        val primera = partida(sesionNino.reto, "local-1", errores = 1, inicioMs = 1_000).copy(terminada = false)
         assertEquals(emptyList(), enviarPartidas(sesionNino.token, primera).insigniasNuevas)
         // Reenviar el mismo lote no duplica nada.
         enviarPartidas(sesionNino.token, primera)
@@ -173,6 +179,9 @@ class ApiTest {
         val segunda = partida(sesionNino.reto, "local-2", errores = 0, inicioMs = 10_000)
         val lote = enviarPartidas(sesionNino.token, segunda)
         assertEquals(listOf(Insignia.AmigaTortuga, Insignia.RachaDeCinco), lote.insigniasNuevas)
+        // Repetir el reto ya terminado no cuenta otra vez: ni racha, ni intentos, ni reportes.
+        val repetida = partida(sesionNino.reto, "local-3", errores = 0, inicioMs = 20_000)
+        assertEquals(emptyList(), enviarPartidas(sesionNino.token, repetida).insigniasNuevas)
         val progreso = get("/api/v1/nino/progreso", sesionNino.token).body<ProgresoNinoDto>()
         assertEquals(1, progreso.retosCompletados)
         assertEquals(8, progreso.mejorRachaEntreRetos)
@@ -207,15 +216,49 @@ class ApiTest {
         assertEquals(5 + 4, privacidad.registros)
         assertEquals("Marta Ruiz", privacidad.autorizadaPor)
 
+        // «Descargar mis datos» trae todo lo guardado, no un resumen (hallazgo 6 de la auditoría).
+        val datos = get("/api/v1/acudiente/hijos/${salome.id}/privacidad/exportacion", acudiente).body<ExportacionDatosDto>()
+        assertEquals("Salomé M.", datos.nino.nombre)
+        assertEquals("marta@casa.co", datos.acudiente.correo)
+        assertEquals(listOf(false, true), datos.partidas.map { it.terminada })
+        assertEquals(5 + 4, datos.partidas.sumOf { it.intentos.size })
+        assertEquals(1, datos.partidas.first().intentos.count { !it.correcto })
+        assertEquals(listOf("Amiga tortuga", "Racha de 5"), datos.insignias.map { it.nombre }.sorted())
+        assertEquals(1, datos.correos.size)
+        // Solo el acudiente del niño: otro no ve si existe.
+        val otraMama = registrarAcudiente(juan.codigoVinculacion, "otra@casa.co")
+        assertEquals(HttpStatusCode.NotFound, get("/api/v1/acudiente/hijos/${salome.id}/privacidad/exportacion", otraMama).status)
+
         // El control parental llega al niño.
-        assertEquals(HttpStatusCode.NoContent, put("/api/v1/acudiente/hijos/${salome.id}/control-parental", ControlParentalDto(limiteMinutosDiarios = 25), acudiente).status)
+        val control = "/api/v1/acudiente/hijos/${salome.id}/control-parental"
+        assertEquals(HttpStatusCode.OK, patch(control, CambioControlParentalDto(limiteMinutosDiarios = 25), acudiente).status)
         assertEquals(25, get("/api/v1/nino/progreso", sesionNino.token).body<ProgresoNinoDto>().limiteMinutosDiarios)
         // El recordatorio si no juega (UI-33) se guarda con lo demás.
-        assertFalse(get("/api/v1/acudiente/hijos/${salome.id}/control-parental", acudiente).body<ControlParentalDto>().recordatorioSinJugar)
-        val conRecordatorio = ControlParentalDto(limiteMinutosDiarios = 25, correosLogro = false, recordatorioSinJugar = true)
-        assertEquals(HttpStatusCode.NoContent, put("/api/v1/acudiente/hijos/${salome.id}/control-parental", conRecordatorio, acudiente).status)
-        assertEquals(conRecordatorio, get("/api/v1/acudiente/hijos/${salome.id}/control-parental", acudiente).body<ControlParentalDto>())
-        assertEquals(HttpStatusCode.UnprocessableEntity, put("/api/v1/acudiente/hijos/${salome.id}/control-parental", ControlParentalDto(limiteMinutosDiarios = 7), acudiente).status)
+        assertFalse(get(control, acudiente).body<ControlParentalDto>().recordatorioSinJugar)
+        val conRecordatorio = ControlParentalDto(25, Dificultad.Medio, correosLogro = false, reporteSemanal = true, recordatorioSinJugar = true)
+        assertEquals(HttpStatusCode.NoContent, put(control, conRecordatorio, acudiente).status)
+        assertEquals(conRecordatorio, get(control, acudiente).body<ControlParentalDto>())
+        assertEquals(HttpStatusCode.UnprocessableEntity, patch(control, CambioControlParentalDto(limiteMinutosDiarios = 7), acudiente).status)
+    }
+
+    @Test
+    fun cambiarUnAjusteDelControlParentalNoBorraLosDemas() = probarApi {
+        val docente = registrarDocente()
+        val salome = agregarNino(docente, "Salomé", "M")
+        val acudiente = registrarAcudiente(salome.codigoVinculacion)
+        val control = "/api/v1/acudiente/hijos/${salome.id}/control-parental"
+        // El caso de la auditoría: 15 minutos, difícil y sin correos de logros.
+        val elegido = ControlParentalDto(15, Dificultad.Dificil, correosLogro = false, reporteSemanal = true, recordatorioSinJugar = false)
+        assertEquals(HttpStatusCode.NoContent, put(control, elegido, acudiente).status)
+
+        val trasCambio = patch(control, CambioControlParentalDto(reporteSemanal = false), acudiente).body<ControlParentalDto>()
+
+        assertEquals(elegido.copy(reporteSemanal = false), trasCambio)
+        assertEquals(trasCambio, get(control, acudiente).body<ControlParentalDto>())
+        // Un PUT incompleto ya no deja el resto en sus valores iniciales: se rechaza.
+        val incompleto = put(control, """{"limiteMinutosDiarios":30}""", acudiente)
+        assertEquals(HttpStatusCode.BadRequest, incompleto.status)
+        assertEquals(trasCambio, get(control, acudiente).body<ControlParentalDto>())
     }
 
     @Test
@@ -339,6 +382,31 @@ class ApiTest {
     }
 
     @Test
+    fun cambiarLaContrasenaConLaSesionIniciada() = probarApi {
+        registrarDocente()
+        val esteTelefono = iniciarSesion("laura@jardin.co")
+        val otroTelefono = iniciarSesion("laura@jardin.co")
+        val ruta = "/api/v1/cuenta/contrasena"
+
+        // Pide la contraseña actual, no un enlace por correo (hallazgo 7 de la auditoría).
+        val malaActual = post(ruta, CambioContrasenaSolicitud("otra-clave", "NuevaClave99"), esteTelefono.tokenAcceso)
+        assertEquals(HttpStatusCode.UnprocessableEntity, malaActual.status)
+        assertEquals("contrasena_actual_incorrecta", malaActual.body<CuerpoError>().error)
+        assertEquals("contrasena_corta", post(ruta, CambioContrasenaSolicitud("Clave1234", "123"), esteTelefono.tokenAcceso).body<CuerpoError>().error)
+        assertEquals(HttpStatusCode.Unauthorized, post(ruta, CambioContrasenaSolicitud("Clave1234", "NuevaClave99")).status)
+
+        val cambio = post(ruta, CambioContrasenaSolicitud("Clave1234", "NuevaClave99"), esteTelefono.tokenAcceso)
+        assertEquals(HttpStatusCode.OK, cambio.status, cambio.bodyAsText())
+        val nueva = cambio.body<SesionDto>()
+
+        // El otro teléfono tiene que volver a entrar, sin cerrar la sesión nueva de este.
+        assertEquals(HttpStatusCode.Unauthorized, post("/api/v1/auth/refresco", RefrescoSolicitud(otroTelefono.tokenRefresco)).status)
+        assertEquals(HttpStatusCode.OK, post("/api/v1/auth/refresco", RefrescoSolicitud(nueva.tokenRefresco)).status)
+        assertEquals(HttpStatusCode.Unauthorized, post("/api/v1/auth/sesion", InicioSesionSolicitud("laura@jardin.co", "Clave1234")).status)
+        iniciarSesion("laura@jardin.co", "NuevaClave99")
+    }
+
+    @Test
     fun elLimiteDeIntentosFrenaLaFuerzaBruta() = probarApi {
         val atacante = clienteDesde("203.0.113.9")
         val estados = (1..12).map {
@@ -420,5 +488,39 @@ class ApiTest {
         assertEquals(0, tablero.completaron)
         assertEquals(1, tablero.totalNinos)
         assertTrue(get("/api/v1/docente/ninos/${salome.id}", docente).body<DetalleNinoDto>().insignias.none { it.ganada })
+    }
+
+    @Test
+    fun losNinosDelGrupoNoSeRepitenNiLlevanEtiquetas() = probarApi {
+        val docente = registrarDocente()
+        agregarNino(docente, "Salomé", "M")
+
+        val repetido = post("/api/v1/docente/ninos", AgregarNinoSolicitud("salome", "m"), docente)
+        assertEquals(HttpStatusCode.Conflict, repetido.status)
+        assertEquals("nino_repetido", repetido.body<CuerpoError>().error)
+        // Con su segundo nombre ya se distingue en el aula.
+        assertEquals("Salomé Andrea M.", agregarNino(docente, "Salomé Andrea", "M").nombre)
+
+        val conEtiquetas = post("/api/v1/docente/ninos", AgregarNinoSolicitud("<b>Pedro</b>", "Q"), docente)
+        assertEquals(HttpStatusCode.UnprocessableEntity, conEtiquetas.status)
+        assertEquals("caracteres_invalidos", conEtiquetas.body<CuerpoError>().error)
+        assertEquals(2, get("/api/v1/docente/grupo/hoy", docente).body<GrupoHoyDto>().ninos.size)
+    }
+
+    @Test
+    fun elIndiceUnicoTampocoDistingueTildesNiMayusculas() = probarApi {
+        val docente = registrarDocente()
+        agregarNino(docente, "Salomé", "M")
+
+        // Como una segunda alta que entra al mismo tiempo y se salta la consulta del servicio.
+        val error = assertFailsWith<ExposedSQLException> {
+            transaction(PostgresDePrueba.bd.database) {
+                exec(
+                    "INSERT INTO ninos (id, grupo_id, nombre, avatar, codigo_vinculacion, creado_en) " +
+                        "SELECT 'nino-paralelo', grupo_id, 'SALOME m.', avatar, 'ZZ-0000', creado_en FROM ninos",
+                )
+            }
+        }
+        assertEquals("23505", error.sqlState)
     }
 }

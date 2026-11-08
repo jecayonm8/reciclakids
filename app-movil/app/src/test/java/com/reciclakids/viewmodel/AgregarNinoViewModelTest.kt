@@ -3,7 +3,7 @@ package com.reciclakids.viewmodel
 import com.reciclakids.model.NinoAgregado
 import com.reciclakids.model.inicialDe
 import com.reciclakids.model.nombreConInicial
-import com.reciclakids.network.Respuesta
+import com.reciclakids.network.ResultadoAgregarNino
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -17,7 +17,7 @@ import org.robolectric.shadows.ShadowLooper
 class AgregarNinoViewModelTest {
 
     private val enviados = mutableListOf<Pair<String, String>>()
-    private var respuesta: Respuesta<NinoAgregado> = Respuesta.Ok(NinoAgregado("nino-11", "Pedro Q.", "JB-7KQ4"))
+    private var respuesta: ResultadoAgregarNino = ResultadoAgregarNino.Agregado(NinoAgregado("nino-11", "Pedro Q.", "JB-7KQ4"))
     private val vm = AgregarNinoViewModel { nombre, inicial ->
         enviados += nombre to inicial
         respuesta
@@ -37,6 +37,10 @@ class AgregarNinoViewModelTest {
     fun soloSeEnvianElNombreYUnaLetra() {
         vm.guardar()
         assertTrue(enviados.isEmpty())
+        // Tocar «Agregar al grupo» con todo vacío marca los dos campos.
+        assertTrue(vm.formulario.intentoGuardar)
+        assertEquals(ErrorCampoNino.Vacio, vm.formulario.errorNombre)
+        assertEquals(ErrorCampoNino.Vacio, vm.formulario.errorInicial)
 
         vm.formulario.nombre = " Pedro "
         vm.formulario.escribirInicial("Quintero")
@@ -51,7 +55,7 @@ class AgregarNinoViewModelTest {
 
     @Test
     fun sinConexionAvisaYAgregarOtroEmpiezaEnBlanco() {
-        respuesta = Respuesta.SinConexion
+        respuesta = ResultadoAgregarNino.SinConexion
         vm.formulario.nombre = "Pedro"
         vm.formulario.escribirInicial("Q")
 
@@ -63,5 +67,31 @@ class AgregarNinoViewModelTest {
         assertEquals(EstadoAgregarNino.Editando, vm.estado)
         assertEquals("", vm.formulario.nombre)
         assertFalse(vm.formulario.valido)
+        assertFalse(vm.formulario.intentoGuardar)
+    }
+
+    @Test
+    fun unNombreConSimbolosNoSeEnvia() {
+        vm.formulario.nombre = "<b>Pedro</b>"
+        vm.formulario.escribirInicial("Q")
+
+        vm.guardar()
+
+        assertEquals(ErrorCampoNino.Simbolos, vm.formulario.errorNombre)
+        assertTrue(enviados.isEmpty())
+        vm.formulario.nombre = "María-José D'Ávila"
+        assertTrue(vm.formulario.valido)
+    }
+
+    @Test
+    fun unNombreRepetidoQuedaMarcado() {
+        respuesta = ResultadoAgregarNino.Repetido
+        vm.formulario.nombre = "Salomé"
+        vm.formulario.escribirInicial("M")
+
+        vm.guardar()
+        esperar()
+
+        assertEquals(EstadoAgregarNino.Repetido("Salomé M."), vm.estado)
     }
 }

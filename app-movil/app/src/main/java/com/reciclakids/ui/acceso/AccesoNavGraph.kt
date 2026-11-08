@@ -17,6 +17,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.reciclakids.model.CuentaAdulto
+import com.reciclakids.network.ResultadoCambioContrasena
 import com.reciclakids.network.ResultadoRegistro
 import com.reciclakids.network.ResultadoSesion
 import com.reciclakids.network.ServicioAcceso
@@ -35,6 +36,7 @@ object RutasAcceso {
     const val RegistroDatos = "acceso/registro/datos"
     const val Autorizacion = "acceso/registro/autorizacion"
     const val Recuperar = "acceso/recuperar"
+    const val CambiarContrasena = "acceso/cambiar-contrasena"
     const val Politica = "acceso/politica"
 
     /** Pantallas que ve el niño: van en modo inmersivo. */
@@ -54,6 +56,8 @@ fun NavGraphBuilder.accesoGraph(
     servicio: ServicioAcceso,
     onJugar: () -> Unit,
     onSesionIniciada: (CuentaAdulto) -> Unit,
+    /** Correo de la sesión abierta, si la hay: llena el de la recuperación. */
+    correoSesion: () -> String? = { null },
 ) {
     navigation(startDestination = RutasAcceso.Bienvenida, route = RutasAcceso.Grafo) {
         composable(RutasAcceso.Bienvenida) {
@@ -204,6 +208,27 @@ fun NavGraphBuilder.accesoGraph(
                 enviando = enviando,
                 enviado = enviado,
                 sinConexion = sinConexion,
+                correoInicial = correoSesion().orEmpty(),
+            )
+        }
+
+        composable(RutasAcceso.CambiarContrasena) {
+            val alcance = rememberCoroutineScope()
+            var cambiando by remember { mutableStateOf(false) }
+            var resultado by remember { mutableStateOf<ResultadoCambioContrasena?>(null) }
+            CambiarContrasenaScreen(
+                onAtras = { navController.popBackStack() },
+                onCambiar = { actual, nueva ->
+                    cambiando = true
+                    resultado = null
+                    alcance.launch {
+                        resultado = servicio.cambiarContrasena(actual, nueva)
+                        cambiando = false
+                    }
+                },
+                onOlvide = { navController.navigate(RutasAcceso.Recuperar) },
+                cambiando = cambiando,
+                resultado = resultado,
             )
         }
 

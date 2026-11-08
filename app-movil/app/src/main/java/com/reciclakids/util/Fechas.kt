@@ -18,6 +18,9 @@ private val MesesCortos = listOf("ene", "feb", "mar", "abr", "may", "jun", "jul"
 /** «mié 23» */
 fun diaCorto(fecha: LocalDate): String = "${DiasCortos[fecha.dayOfWeek.value - 1]} ${fecha.dayOfMonth}"
 
+/** «sáb 5 dic»: con el mes, para no confundir el 5 de este mes con el del siguiente. */
+fun diaCortoConMes(fecha: LocalDate): String = "${diaCorto(fecha)} ${MesesCortos[fecha.monthValue - 1]}"
+
 /** «martes 22» */
 fun diaLargo(fecha: LocalDate): String = "${DiasLargos[fecha.dayOfWeek.value - 1]} ${fecha.dayOfMonth}"
 

@@ -18,6 +18,7 @@ import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -120,6 +121,8 @@ class ApiDePrueba(
         http.post(ruta) { autorizar(token); if (cuerpo != null) setBody(cuerpo) }
     suspend fun put(ruta: String, cuerpo: Any, token: String? = null): HttpResponse =
         http.put(ruta) { autorizar(token); setBody(cuerpo) }
+    suspend fun patch(ruta: String, cuerpo: Any, token: String? = null): HttpResponse =
+        http.patch(ruta) { autorizar(token); setBody(cuerpo) }
 
     private fun HttpRequestBuilder.autorizar(token: String?) { if (token != null) bearerAuth(token) }
 }

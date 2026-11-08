@@ -42,6 +42,10 @@ data class RecuperacionSolicitud(val correo: String)
 @Serializable
 data class RestablecerSolicitud(val token: String, val contrasena: String)
 
+/** Cambiar la contraseña con la sesión iniciada: se pide la actual, no un enlace por correo. */
+@Serializable
+data class CambioContrasenaSolicitud(val actual: String, val nueva: String)
+
 /** [jardin] y [grupo] solo vienen en la cuenta de una docente. */
 @Serializable
 data class CuentaDto(

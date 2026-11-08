@@ -9,6 +9,7 @@ import com.reciclakids.model.NinoAgregado
 import com.reciclakids.model.RetoBorrador
 import com.reciclakids.network.DatosPerfilDocente
 import com.reciclakids.network.Respuesta
+import com.reciclakids.network.ResultadoAgregarNino
 import com.reciclakids.network.ResultadoEdicionPerfil
 import com.reciclakids.network.ResultadoPublicacion
 import io.ktor.http.HttpMethod
@@ -167,7 +168,7 @@ class ServicioDocenteApiTest {
         }
         val servicio = servicio(api)
 
-        assertEquals(Respuesta.Ok(NinoAgregado("n9", "Emilio R.", "JB-5H8W")), servicio.agregarNino("Emilio ", "R"))
+        assertEquals(ResultadoAgregarNino.Agregado(NinoAgregado("n9", "Emilio R.", "JB-5H8W")), servicio.agregarNino("Emilio ", "R"))
         assertEquals("Emilio", api.peticiones[0].json["nombre"]?.jsonPrimitive?.content)
         assertEquals("R", api.peticiones[0].json["inicialApellido"]?.jsonPrimitive?.content)
         assertEquals("JB-7K3P", servicio.regenerarCodigoVinculacion("n9"))

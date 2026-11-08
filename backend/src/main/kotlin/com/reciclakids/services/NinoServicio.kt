@@ -94,6 +94,10 @@ class NinoServicio(
         if (dto.idLocal.isBlank() || dto.idLocal.length > 64) throw DatosInvalidos("Cada partida necesita su id local")
         val reto = retos.porId(dto.retoId)?.takeIf { it.grupoId == nino.grupoId && it.fecha != null }
             ?: throw Prohibido("Ese reto no es del grupo del niño")
+        // Un reto terminado no se cuenta otra vez: la repetición no suma racha, insignias ni
+        // reportes (hallazgo 9 de la auditoría). Se acepta sin guardarla para que el teléfono no
+        // la reintente.
+        if (resultados.retoTerminadoConOtraPartida(nino.id, reto.id, dto.idLocal)) return nino
         val ahora = reloj.ahora()
         val anterior = resultados.partidaPorIdLocal(nino.id, dto.idLocal)
         val partida = PartidaGuardada(

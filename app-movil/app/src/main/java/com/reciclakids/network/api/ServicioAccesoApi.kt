@@ -3,6 +3,7 @@ package com.reciclakids.network.api
 import com.reciclakids.model.CuentaAdulto
 import com.reciclakids.network.RegistroAcudiente
 import com.reciclakids.network.RegistroDocente
+import com.reciclakids.network.ResultadoCambioContrasena
 import com.reciclakids.network.ResultadoRegistro
 import com.reciclakids.network.ResultadoSesion
 import com.reciclakids.network.ServicioAcceso
@@ -57,6 +58,18 @@ class ServicioAccesoApi(
         when (cliente.post<Unit>("auth/recuperacion", RecuperacionSolicitud(correo.trim()), Credencial.Ninguna)) {
             is RespuestaApi.Exito, is RespuestaApi.Rechazo -> true
             RespuestaApi.SinConexion, RespuestaApi.SesionVencida -> false
+        }
+
+    override suspend fun cambiarContrasena(actual: String, nueva: String): ResultadoCambioContrasena =
+        when (val respuesta = cliente.post<SesionDto>("cuenta/contrasena", CambioContrasenaSolicitud(actual, nueva))) {
+            is RespuestaApi.Exito -> {
+                // El backend cerró las demás sesiones y abrió una nueva para este teléfono.
+                sesion.guardar(respuesta.dato)
+                ResultadoCambioContrasena.Cambiada
+            }
+            is RespuestaApi.Rechazo ->
+                if (respuesta.error == "contrasena_actual_incorrecta") ResultadoCambioContrasena.ActualIncorrecta else ResultadoCambioContrasena.SinConexion
+            RespuestaApi.SinConexion, RespuestaApi.SesionVencida -> ResultadoCambioContrasena.SinConexion
         }
 
     override suspend fun sesionGuardada(): CuentaAdulto? {

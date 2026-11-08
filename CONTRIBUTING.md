@@ -15,6 +15,12 @@
 - El PR debe pasar el pipeline de GitHub Actions (build + tests) antes de poder mergear.
 - Al mergear, borrar la rama.
 
+## Uso de inteligencia artificial
+- Si un asistente de IA participó en un commit, el commit lo dice con la línea `Co-Authored-By` del asistente.
+- Lo que escribe la IA pasa por la misma revisión que el código escrito a mano: lo lee y lo prueba quien hace el commit, y luego va por PR con aprobación y pipeline.
+- Nunca se le pasan datos reales de niños, acudientes o docentes, ni secretos.
+- Detalle en [docs/uso-de-ia.md](docs/uso-de-ia.md).
+
 ## Definición de terminado
 Una historia no está "Done" en Jira hasta que:
 - Tiene pruebas (unitarias mínimo).

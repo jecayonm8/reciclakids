@@ -25,7 +25,11 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +53,7 @@ import com.reciclakids.ui.docente.BarraDocente
 import com.reciclakids.ui.docente.BotonContorno
 import com.reciclakids.ui.docente.BotonLleno
 import com.reciclakids.ui.docente.BotonTexto
+import com.reciclakids.ui.docente.DialogoCerrarSesion
 import com.reciclakids.ui.docente.EsqueletoCarga
 import com.reciclakids.ui.docente.EstadoErrorRed
 import com.reciclakids.ui.docente.FormaTarjeta
@@ -76,6 +81,7 @@ fun CuentaPadresScreen(
     snackbar: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
+    var confirmarCerrarSesion by rememberSaveable { mutableStateOf(false) }
     MarcoDocente(
         modifier = modifier,
         snackbar = snackbar,
@@ -110,12 +116,21 @@ fun CuentaPadresScreen(
                 TarjetaHijos(estado.datos.hijos, onVincular)
                 BotonTexto(
                     stringResource(R.string.cuenta_cerrar_sesion),
-                    onClick = onCerrarSesion,
+                    onClick = { confirmarCerrarSesion = true },
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
+    }
+    if (confirmarCerrarSesion) {
+        DialogoCerrarSesion(
+            onConfirmar = {
+                confirmarCerrarSesion = false
+                onCerrarSesion()
+            },
+            onCancelar = { confirmarCerrarSesion = false },
+        )
     }
 }
 

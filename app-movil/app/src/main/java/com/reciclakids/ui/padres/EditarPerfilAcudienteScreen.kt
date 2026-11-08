@@ -11,6 +11,7 @@ import com.reciclakids.R
 import com.reciclakids.network.DatosPerfilAcudiente
 import com.reciclakids.ui.acceso.CampoCorreo
 import com.reciclakids.ui.acceso.CampoTexto
+import com.reciclakids.ui.acceso.errorNombre
 import com.reciclakids.ui.docente.MarcoEditarPerfil
 import com.reciclakids.ui.docente.errorCorreoPerfil
 import com.reciclakids.ui.theme.ReciclaKidsTheme
@@ -35,7 +36,7 @@ fun EditarPerfilAcudienteScreen(
     ) { formulario, habilitado ->
         CampoTexto(
             formulario.nombre, { formulario.nombre = it }, stringResource(R.string.registro_tu_nombre),
-            error = if (formulario.nombre.isBlank()) stringResource(R.string.error_campo_obligatorio) else null,
+            error = errorNombre(formulario.nombre, mostrarVacio = true),
             teclado = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
             habilitado = habilitado,
         )

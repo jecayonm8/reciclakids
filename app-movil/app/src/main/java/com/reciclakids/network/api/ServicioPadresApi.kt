@@ -1,5 +1,6 @@
 package com.reciclakids.network.api
 
+import com.reciclakids.model.CambioControlParental
 import com.reciclakids.model.CatalogoResiduos
 import com.reciclakids.model.Conteo
 import com.reciclakids.model.ControlParental
@@ -20,9 +21,13 @@ import com.reciclakids.network.Respuesta
 import com.reciclakids.network.ResultadoEdicionPerfil
 import com.reciclakids.network.ResultadoVinculacion
 import com.reciclakids.network.ServicioPadres
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
+
+private val JsonLegible = Json { prettyPrint = true }
 
 /**
  * El Modo Padres (UI-29 a UI-35) contra la API /acudiente, con el token del acudiente. El backend
@@ -111,18 +116,27 @@ class ServicioPadresApi(
             ControlParental(it.limiteMinutosDiarios, it.dificultadSugerida, it.correosLogro, it.reporteSemanal, it.recordatorioSinJugar)
         }
 
-    override suspend fun guardarControlParental(hijoId: String, control: ControlParental): Boolean {
-        val dto = ControlParentalDto(
-            control.limiteMinutosDiarios,
-            control.dificultadSugerida,
-            control.correosLogro,
-            control.reporteSemanal,
-            control.recordatorioSinJugar,
+    // PATCH: si viajara el control completo, un cambio podría devolver los demás ajustes a como
+    // estaban en otro teléfono o en un envío anterior que llegó tarde.
+    override suspend fun cambiarControlParental(hijoId: String, cambio: CambioControlParental): Boolean {
+        val dto = CambioControlParentalDto(
+            cambio.limiteMinutosDiarios,
+            cambio.dificultadSugerida,
+            cambio.correosLogro,
+            cambio.reporteSemanal,
+            cambio.recordatorioSinJugar,
         )
-        val guardado = cliente.put<Unit>("acudiente/hijos/$hijoId/control-parental", dto).exitosa
-        if (guardado) alGuardarLimite(hijoId, control.limiteMinutosDiarios)
-        return guardado
+        val respuesta = cliente.patch<ControlParentalDto>("acudiente/hijos/$hijoId/control-parental", dto)
+        if (respuesta !is RespuestaApi.Exito) return false
+        alGuardarLimite(hijoId, respuesta.dato.limiteMinutosDiarios)
+        return true
     }
+
+    // Se pasa tal cual llega, con sangría para que se pueda leer: así el archivo trae todo lo que el
+    // backend guarda, aunque mañana agregue un campo que la app todavía no conoce.
+    override suspend fun exportarDatos(hijoId: String): String? =
+        (cliente.get<JsonObject>("acudiente/hijos/$hijoId/privacidad/exportacion") as? RespuestaApi.Exito)?.dato
+            ?.let { JsonLegible.encodeToString(JsonObject.serializer(), it) }
 
     override suspend fun privacidad(hijoId: String): Respuesta<PrivacidadHijo> =
         cliente.get<PrivacidadHijoDto>("acudiente/hijos/$hijoId/privacidad").comoRespuesta {

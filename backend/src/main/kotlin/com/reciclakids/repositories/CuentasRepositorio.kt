@@ -8,6 +8,7 @@ import com.reciclakids.models.Usuarios
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.lowerCase
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
@@ -96,6 +97,15 @@ class CuentasRepositorio {
 
     fun revocarSesionesDe(usuarioId: String) {
         Sesiones.update({ (Sesiones.usuarioId eq usuarioId) and (Sesiones.revocada eq false) }) { it[Sesiones.revocada] = true }
+    }
+
+    /**
+     * Borra (no revoca) las sesiones del usuario. Un token revocado que vuelve a llegar se toma
+     * como copia y cierra todas las sesiones; uno borrado solo responde «sesión vencida», así el
+     * otro teléfono no cierra la sesión recién abierta.
+     */
+    fun borrarSesionesDe(usuarioId: String) {
+        Sesiones.deleteWhere { Sesiones.usuarioId eq usuarioId }
     }
 
     fun crearRecuperacion(id: String, usuarioId: String, hashToken: String, expiraEn: OffsetDateTime, ahora: OffsetDateTime) {

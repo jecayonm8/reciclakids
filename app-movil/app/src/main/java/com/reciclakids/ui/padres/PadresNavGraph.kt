@@ -2,6 +2,8 @@ package com.reciclakids.ui.padres
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -57,9 +58,7 @@ import com.reciclakids.ui.docente.BarraDocente
 import com.reciclakids.ui.docente.EsqueletoCarga
 import com.reciclakids.ui.docente.EstadoErrorRed
 import com.reciclakids.ui.docente.MarcoDocente
-import com.reciclakids.ui.docente.compartirTexto
 import com.reciclakids.ui.theme.Duracion
-import com.reciclakids.util.fechaLarga
 import com.reciclakids.viewmodel.AvisoControl
 import com.reciclakids.viewmodel.CargaViewModel
 import com.reciclakids.viewmodel.ControlParentalViewModel
@@ -73,6 +72,7 @@ import com.reciclakids.viewmodel.VincularHijoViewModel
 import com.reciclakids.viewmodel.datosCargados
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import java.time.LocalDate
 
 /** Rutas del proceso P4 · Padres (UI-29 a UI-35). */
 object RutasPadres {
@@ -322,23 +322,34 @@ private fun NavGraphBuilder.subpantallas(
         var enviando by remember { mutableStateOf(false) }
         val textoSinConexion = stringResource(R.string.docente_error_accion)
         val textoCancelada = stringResource(R.string.privacidad_solicitud_cancelada)
-        val plantillaExportar = stringResource(R.string.privacidad_exportar_texto)
-        val registros = vm.estado.datosCargados?.let { pluralStringResource(R.plurals.privacidad_registros, it.registros, it.registros) }.orEmpty()
-        val insignias = vm.estado.datosCargados?.let { pluralStringResource(R.plurals.privacidad_insignias, it.insignias, it.insignias) }.orEmpty()
+        val textoDescargado = stringResource(R.string.privacidad_descargado)
+        val textoNoDescargado = stringResource(R.string.privacidad_no_descargado)
+        // Primero se traen los datos y después el acudiente elige dónde guardar el archivo.
+        var exportacion by remember { mutableStateOf<String?>(null) }
+        val elegirArchivo = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { destino ->
+            val contenido = exportacion
+            exportacion = null
+            if (destino != null && contenido != null) {
+                alcance.launch {
+                    snackbar.showSnackbar(if (escribirArchivo(contexto, destino, contenido)) textoDescargado else textoNoDescargado)
+                }
+            }
+        }
         PrivacidadDatosScreen(
             estado = vm.estado,
             enviando = enviando,
             onDescargar = { datos ->
-                val texto = plantillaExportar.format(
-                    datos.hijo.nombre,
-                    datos.hijo.grupo,
-                    datos.hijo.avatar,
-                    registros,
-                    insignias,
-                    fechaLarga(datos.autorizadaEl),
-                    datos.autorizadaPor,
-                )
-                compartirTexto(contexto, texto)
+                enviando = true
+                alcance.launch {
+                    val contenido = servicio.exportarDatos(hijo.id)
+                    enviando = false
+                    if (contenido == null) {
+                        snackbar.showSnackbar(textoSinConexion)
+                    } else {
+                        exportacion = contenido
+                        elegirArchivo.launch(nombreArchivoExportacion(datos.hijo.nombre, LocalDate.now()))
+                    }
+                }
             },
             onVerPolitica = onVerPolitica,
             onSolicitarEliminacion = {

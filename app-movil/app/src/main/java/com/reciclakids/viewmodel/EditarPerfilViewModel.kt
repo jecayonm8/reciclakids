@@ -11,11 +11,13 @@ import com.reciclakids.network.DatosPerfilDocente
 import com.reciclakids.network.Respuesta
 import com.reciclakids.network.ResultadoEdicionPerfil
 import com.reciclakids.util.correoValido
+import com.reciclakids.util.nombreValido
+import com.reciclakids.util.textoLibreValido
 import kotlinx.coroutines.launch
 
 /**
  * Campos de un perfil en edición: arrancan con lo guardado y saben si algo cambió. Validan
- * igual que el registro (UI-04/05): nombre obligatorio y correo con formato válido.
+ * igual que el registro (UI-04/05): nombre solo con letras y correo con formato válido.
  */
 @Stable
 abstract class FormularioPerfil<D>(private val original: D, nombre: String, correo: String) {
@@ -26,7 +28,7 @@ abstract class FormularioPerfil<D>(private val original: D, nombre: String, corr
     abstract val datos: D
 
     open val valido: Boolean
-        get() = nombre.isNotBlank() && correoValido(correo)
+        get() = nombreValido(nombre) && correoValido(correo)
 
     val hayCambios: Boolean
         get() = datos != original
@@ -42,7 +44,7 @@ class FormularioPerfilDocente(original: DatosPerfilDocente) :
         get() = DatosPerfilDocente(nombre.trim(), correo.trim(), jardin.trim(), grupo.trim())
 
     override val valido: Boolean
-        get() = super.valido && jardin.isNotBlank() && grupo.isNotBlank()
+        get() = super.valido && textoLibreValido(jardin) && textoLibreValido(grupo)
 }
 
 @Stable
